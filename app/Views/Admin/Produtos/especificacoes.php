@@ -248,6 +248,66 @@
     .customizavel-switch {
         transform: scale(0.8);
     }
+
+    /* Melhorias estéticas sutis */
+    .especificacao-item {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: all 0.2s ease;
+    }
+
+    .especificacao-item:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    /* Estilo para especificações duplicadas */
+    .especificacao-item.duplicada {
+        border-color: #dc3545;
+        background-color: #f8d7da;
+        animation: shake 0.5s ease;
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-3px); }
+        75% { transform: translateX(3px); }
+    }
+
+    /* Alerta de duplicatas */
+    .alert-duplicata {
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        border-radius: 0.375rem;
+        color: #721c24;
+        padding: 0.75rem 1rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Validação de campos */
+    .form-control.is-invalid {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+
+    /* Melhorias nos inputs */
+    .form-control {
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    .form-control:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    /* Botão desabilitado */
+    .btn-success:disabled {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        opacity: 0.65;
+        cursor: not-allowed;
+    }
 </style>
 <?php echo $this->endSection(); ?>
 
@@ -358,6 +418,12 @@
                                         </a>
                                     </div>
                                 <?php else: ?>
+                                    <!-- Alerta de medidas duplicadas -->
+                                    <div id="alert-duplicatas" class="alert-duplicata" style="display: none;">
+                                        <i class="mdi mdi-alert-circle"></i>
+                                        <span>Atenção! Existem medidas duplicadas. Cada medida deve ser única por produto.</span>
+                                    </div>
+                                    
                                     <form id="form-especificacoes" action="<?= site_url("admin/produtos/salvar-especificacoes/$produto->id") ?>" method="post">
                                         <input type="hidden" name="<?= csrf_token() ?>" value="<?= csrf_hash() ?>" />
                                         
@@ -430,7 +496,7 @@
                                         </div>
                                         
                                         <div class="text-center">
-                                            <button type="submit" class="btn btn-success">
+                                            <button type="submit" id="btn-salvar-especificacoes" class="btn btn-success">
                                                 <i class="mdi mdi-content-save"></i> Salvar Especificações
                                             </button>
                                         </div>
@@ -518,6 +584,45 @@
     $(document).ready(function () {
         let especificacaoIndex = <?= count($produtoEspecificacoes ?? []) ?>;
         
+        // Função para verificar medidas duplicadas
+        function verificarMedidasDuplicadas() {
+            const medidasSelecionadas = [];
+            let temDuplicatas = false;
+            
+            // Limpar classes de duplicata
+            $('.especificacao-item').removeClass('duplicada');
+            
+            $('.medida-select').each(function() {
+                const medidaId = $(this).val();
+                const $container = $(this).closest('.especificacao-item');
+                
+                if (medidaId && medidaId !== '') {
+                    if (medidasSelecionadas.includes(medidaId)) {
+                        // Medida duplicada encontrada
+                        $container.addClass('duplicada');
+                        $(this).addClass('is-invalid');
+                        temDuplicatas = true;
+                    } else {
+                        medidasSelecionadas.push(medidaId);
+                        $(this).removeClass('is-invalid');
+                    }
+                } else {
+                    $(this).removeClass('is-invalid');
+                }
+            });
+            
+            // Mostrar/ocultar alerta
+            if (temDuplicatas) {
+                $('#alert-duplicatas').slideDown(300);
+                $('#btn-salvar-especificacoes').prop('disabled', true);
+            } else {
+                $('#alert-duplicatas').slideUp(300);
+                $('#btn-salvar-especificacoes').prop('disabled', false);
+            }
+            
+            return !temDuplicatas;
+        }
+        
         // Inicializar Select2 para selects existentes
         function initSelect2(element) {
             $(element).select2({
@@ -560,6 +665,14 @@
         // Inicializar Select2 para todos os selects existentes
         $('.medida-select').each(function() {
             initSelect2(this);
+        });
+        
+        // Verificar duplicatas ao carregar a página
+        verificarMedidasDuplicadas();
+        
+        // Event listener para mudanças nas medidas
+        $(document).on('change', '.medida-select', function() {
+            verificarMedidasDuplicadas();
         });
         
         // Função para redimensionar Select2 quando o layout muda
@@ -691,6 +804,9 @@
                 setTimeout(function() {
                     novoSelect.select2('close');
                 }, 50);
+                
+                // Verificar duplicatas após adição
+                verificarMedidasDuplicadas();
             }, 150);
             
             especificacaoIndex++;
@@ -714,6 +830,8 @@
                 // Animação de remoção
                 $container.fadeOut(300, function() {
                     $(this).remove();
+                    // Verificar duplicatas após remoção
+                    verificarMedidasDuplicadas();
                 });
             }
         });
@@ -721,6 +839,13 @@
         // Confirmação antes de salvar
         $('#form-especificacoes').on('submit', function(e) {
             const especificacoes = $('.especificacao-container').length;
+            
+            // Verificar duplicatas antes de enviar
+            if (!verificarMedidasDuplicadas()) {
+                e.preventDefault();
+                alert('⚠️ Existem medidas duplicadas! Cada medida deve ser única por produto.');
+                return false;
+            }
             
             if (especificacoes === 0) {
                 if (!confirm('Você está prestes a remover todas as especificações deste produto. Deseja continuar?')) {

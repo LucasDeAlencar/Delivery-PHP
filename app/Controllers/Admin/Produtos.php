@@ -10,10 +10,8 @@ class Produtos extends BaseController {
 
     private $produtoModel;
     private $categoriaModel;
-    
     private $extraModel;
     private $produtoExtraModel;
-    
     private $medidaModel;
     private $produtoEspecificacaoModel;
 
@@ -311,18 +309,18 @@ class Produtos extends BaseController {
             return redirect()->back()->with('erro', 'Não foi possível restaurar o produto.');
         }
     }
-    
-    public function especificacoes($id = null){
-        
+
+    public function especificacoes($id = null) {
+
         $produto = $this->buscaProdutoOu404($id);
-        
+
         $data = [
-            'titulo' => 'Gerenciar as especificações do produto '. $produto->nome,
+            'titulo' => 'Gerenciar as especificações do produto ' . $produto->nome,
             'produto' => $produto,
             'medidas' => $this->medidaModel->where('ativo', true)->findAll(),
             'produtoEspecificacoes' => $this->produtoEspecificacaoModel->buscaEspecificacoesDoProduto($produto->id),
         ];
-        
+
         return view('Admin/Produtos/especificacoes', $data);
     }
 
@@ -340,10 +338,23 @@ class Produtos extends BaseController {
         // Remove todas as especificações atuais do produto
         $this->produtoEspecificacaoModel->where('produto_id', $id)->delete();
 
+        // Validar medidas duplicadas
+        $medidasUtilizadas = [];
+        foreach ($especificacoes as $especificacao) {
+            if (!empty($especificacao['medida_id'])) {
+                $medidaId = intval($especificacao['medida_id']);
+                if (in_array($medidaId, $medidasUtilizadas)) {
+                    return redirect()->back()
+                                    ->with('erro', 'Erro: Não é possível ter duas especificações com a mesma medida. Cada medida deve ser única por produto.');
+                }
+                $medidasUtilizadas[] = $medidaId;
+            }
+        }
+
         // Adiciona as novas especificações
         $sucessos = 0;
         $erros = [];
-        
+
         foreach ($especificacoes as $especificacao) {
             if (!empty($especificacao['medida_id']) && !empty($especificacao['preco'])) {
                 // Validar se o preço é numérico e maior que 0
@@ -352,14 +363,14 @@ class Produtos extends BaseController {
                     $erros[] = 'O preço deve ser maior que zero.';
                     continue;
                 }
-                
+
                 $dados = [
                     'produto_id' => $id,
                     'medida_id' => intval($especificacao['medida_id']),
                     'preco' => $preco,
                     'customizavel' => isset($especificacao['customizavel']) ? 1 : 0
                 ];
-                
+
                 if ($this->produtoEspecificacaoModel->insert($dados)) {
                     $sucessos++;
                 } else {
@@ -367,7 +378,7 @@ class Produtos extends BaseController {
                 }
             }
         }
-        
+
         // Se houver erros, retorna com mensagem de erro
         if (!empty($erros)) {
             return redirect()->back()
