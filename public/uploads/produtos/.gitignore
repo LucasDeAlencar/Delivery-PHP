@@ -1,0 +1,7 @@
+# Ignora todos os arquivos nesta pasta
+*
+
+# Mas não ignora este arquivo .gitignore
+!.gitignore
+
+# Permite que a pasta seja versionada mas não os uploads
