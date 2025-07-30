@@ -8,8 +8,12 @@ class BairroModel extends Model{
     
     protected $table            = 'bairros';
     protected $returnType       = 'App\Entities\Bairro';
+    protected $useAutoIncrement = true; 
     protected $useSoftDeletes   = true;
     protected $allowedFields    = ['nome', 'slug', 'cidade', 'valor_entrega', 'ativo'];
+    protected bool $updateOnlyChanged = true;
+    protected array $casts = [];
+    protected array $castHandlers = [];
     
     // Dates
     protected $useTimestamps = true;
