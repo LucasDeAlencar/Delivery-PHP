@@ -206,6 +206,12 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="<?= site_url('admin/expedientes'); ?>">
+                                <i class="mdi mdi mdi-calendar-check menu-icon"></i>
+                                <span class="menu-title">Expedientes</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="<?= site_url('admin/usuarios'); ?>">
                                 <i class="mdi mdi-account-settings menu-icon"></i>
                                 <span class="menu-title">Usuarios</span>

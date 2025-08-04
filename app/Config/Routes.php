@@ -112,4 +112,8 @@ $routes->group('admin', function($routes) {
     $routes->get('bairros/show/(:num)', 'Admin\Bairros::show/$1');
     $routes->get('bairros/(:num)', 'Admin\Bairros::show/$1');
     
+    // Rotas de Expediente
+    $routes->get('expedientes', 'Admin\Expedientes::expedientes');
+    $routes->post('expedientes', 'Admin\Expedientes::expedientes');
+    
 });

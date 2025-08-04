@@ -13,6 +13,6 @@ class Home extends BaseController
             'titulo' => 'Home da área restrita',
         ];
         
-        return view('Admin/Home/index.php', $data);
+        return view('Home/index.php', $data);
     }
 }
