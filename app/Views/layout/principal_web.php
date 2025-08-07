@@ -1,1095 +1,381 @@
 <!DOCTYPE html>
-<html lang="zxx" dir="ltr">
+<html lang="pt-br">
+  <head>
+    <title><?= $this->renderSection('titulo') ?> - Restaurante</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+    <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Josefin+Sans" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Nothing+You+Could+Do" rel="stylesheet">
 
-    <!-- BEGIN head -->
+    <link rel="stylesheet" href="<?= site_url('web/src/css/open-iconic-bootstrap.min.css') ?>">
+    <link rel="stylesheet" href="<?= site_url('web/src/css/animate.css') ?>">
+    
+    <link rel="stylesheet" href="<?= site_url('web/src/css/owl.carousel.min.css') ?>">
+    <link rel="stylesheet" href="<?= site_url('web/src/css/owl.theme.default.min.css') ?>">
+    <link rel="stylesheet" href="<?= site_url('web/src/css/magnific-popup.css') ?>">
 
+    <link rel="stylesheet" href="<?= site_url('web/src/css/aos.css') ?>">
 
-    <meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
-    <head>
+    <link rel="stylesheet" href="<?= site_url('web/src/css/ionicons.min.css') ?>">
 
-        <!-- Meta tags -->
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <meta name="description" content="">
-        <meta name="author" content="">
-        <title>No kapricho | <?php echo $this->renderSection('titulo') ?></title>
+    <link rel="stylesheet" href="<?= site_url('web/src/css/bootstrap-datepicker.css') ?>">
+    <link rel="stylesheet" href="<?= site_url('web/src/css/jquery.timepicker.css') ?>">
 
-        <!-- Stylesheets -->
-        <link href="<?= site_url('web/'); ?>src/assets/css/bootstrap.min.css" type="text/css" rel="stylesheet" media="all" />
-        <link href="<?= site_url('web/'); ?>src/assets/css/bootstrap-theme.min.css" type="text/css" rel="stylesheet" media="all" />
-        <link href="<?= site_url('web/'); ?>src/assets/css/fonts.css" type="text/css" rel="stylesheet" />
-        <link href="<?= site_url('web/'); ?>src/assets/css/font-awesome.min.css" type="text/css" rel="stylesheet" />
-        <link href="<?= site_url('web/'); ?>src/assets/css/slick.css" type="text/css" rel="stylesheet" />
-        <link href="<?= site_url('web/'); ?>src/assets/css/slick-theme.css" type="text/css" rel="stylesheet" />
-        <link href="<?= site_url('web/'); ?>src/assets/css/aos.css" type="text/css" rel="stylesheet" />
-        <link href="<?= site_url('web/'); ?>src/assets/css/scrolling-nav.css" type="text/css" rel="stylesheet" />
-        <link href="<?= site_url('web/'); ?>src/assets/css/bootstrap-datepicker.css" type="text/css" rel="stylesheet" />
-        <link href="<?= site_url('web/'); ?>src/assets/css/bootstrap-datetimepicker.css" type="text/css" rel="stylesheet" />
-        <link href="<?= site_url('web/'); ?>src/assets/css/touch-sideswipe.css" type="text/css" rel="stylesheet" />
-        <link href="<?= site_url('web/'); ?>src/assets/css/jquery.fancybox.css" type="text/css" rel="stylesheet" />
-        <link href="<?= site_url('web/'); ?>src/assets/css/main.css" type="text/css" rel="stylesheet" />
-        <link href="<?= site_url('web/'); ?>src/assets/css/responsive.css" type="text/css" rel="stylesheet" />
+    
+    <link rel="stylesheet" href="<?= site_url('web/src/css/flaticon.css') ?>">
+    <link rel="stylesheet" href="<?= site_url('web/src/css/icomoon.css') ?>">
+    <link rel="stylesheet" href="<?= site_url('web/src/css/style.css') ?>">
+    
+    <!-- Estilos personalizados -->
+    <?= $this->renderSection('estilos') ?>
+  </head>
+  <body>
+  	<nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
+	    <div class="container">
+		      <a class="navbar-brand" href="<?= site_url('/') ?>"><span class="flaticon-pizza-1 mr-1"></span>No Kapricho<br><small>A melhor pizzaria da cidade</small></a>
+		      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
+		        <span class="oi oi-menu"></span> Menu
+		      </button>
+	      <div class="collapse navbar-collapse" id="ftco-nav">
+	        <ul class="navbar-nav ml-auto">
+	          <li class="nav-item active"><a href="<?= site_url('/') ?>" class="nav-link">Home</a></li>
+	          <li class="nav-item"><a href="#menu" class="nav-link">Menu</a></li>
+	          <li class="nav-item"><a href="#services" class="nav-link">Serviços</a></li>
+	          <li class="nav-item"><a href="#about" class="nav-link">Sobre</a></li>
+	          <li class="nav-item"><a href="#contact" class="nav-link">Contato</a></li>
+	          <li class="nav-item"><a href="<?= site_url('login') ?>" class="nav-link">Admin</a></li>
+	        </ul>
+	      </div>
+		  </div>
+	  </nav>
+    <!-- END nav -->
 
-        <!-- Favicon -->
-        <link rel="apple-touch-icon" sizes="180x180" href="<?= site_url('web/'); ?>src/assets/img/favicon/apple-touch-icon.png" />
-        <link rel="icon" type="image/png" sizes="256x256"  href="<?= site_url('web/'); ?>src/assets/img/favicon/android-chrome-256x256.png">
-        <link rel="icon" type="image/png" sizes="192x192"  href="<?= site_url('web/'); ?>src/assets/img/favicon/android-chrome-192x192.png">    
-        <link rel="icon" type="image/png" sizes="32x32" href="<?= site_url('web/'); ?>src/assets/img/favicon/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="<?= site_url('web/'); ?>src/assets/img/favicon/favicon-16x16.png" />
-        <link rel="icon" type="image/png" href="<?= site_url('web/'); ?>src/assets/img/favicon/favicon.ico" />
-        <link rel="manifest" href="<?= site_url('web/'); ?>src/assets/img/site.html" />
-        <link rel="mask-icon" href="<?= site_url('web/'); ?>src/assets/img/favicon/safari-pinned-tab.svg" color="#5bbad5" />
-        <meta name="msapplication-TileColor" content="#990100" />
-        <meta name="theme-color" content="#ffffff" />
-        <?= $this->renderSection('estilos') ?>
+    <!-- Hero Section -->
+    <section class="home-slider owl-carousel img" style="background-image: url(<?= site_url('web/src/images/bg_1.jpg') ?>);">
+      <div class="slider-item">
+      	<div class="overlay"></div>
+        <div class="container">
+          <div class="row slider-text align-items-center" data-scrollax-parent="true">
 
-
-    </head>
-    <!-- END head -->
-
-    <!-- BEGIN body -->
-
-    <body data-spy="scroll" data-target=".navbar" data-offset="50">
-
-        <?= $this->renderSection('conteudos') ?>
-        <!-- BEGIN  Loading Section -->  
-        <div class="loading-overlay">
-            <div class="spinner">
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
+            <div class="col-md-6 col-sm-12 ftco-animate">
+            	<span class="subheading">Delicioso</span>
+              <h1 class="mb-4">Culinária Italiana</h1>
+              <p class="mb-4 mb-md-5">Sabores autênticos que conquistam o paladar, preparados com ingredientes frescos e receitas tradicionais.</p>
+              <p><a href="#menu" class="btn btn-primary p-3 px-xl-4 py-xl-3">Fazer Pedido</a> <a href="#menu" class="btn btn-white btn-outline-white p-3 px-xl-4 py-xl-3">Ver Menu</a></p>
             </div>
+            <div class="col-md-6 ftco-animate">
+            	<img src="<?= site_url('web/src/images/bg_1.png') ?>" class="img-fluid" alt="">
+            </div>
+
+          </div>
         </div>
-        <!-- END Loading Section -->    
+      </div>
 
-        <!-- BEGIN body wrapper -->
-        <div class="body-wrapper">
+      <div class="slider-item">
+      	<div class="overlay"></div>
+        <div class="container">
+          <div class="row slider-text align-items-center" data-scrollax-parent="true">
 
-            <!-- Begin header-->
-            <header id="header">
-
-                <!-- BEGIN carousel -->
-                <div id="main-carousel" class="carousel slide" data-ride="carousel">
-                    <div class="container pos_rel">
-
-                        <!-- Indicators -->
-                        <ol class="carousel-indicators">
-                            <li data-target="#main-carousel" data-slide-to="0" class="active"></li>
-                            <li data-target="#main-carousel" data-slide-to="1"></li>
-                            <li data-target="#main-carousel" data-slide-to="2"></li>
-                            <li data-target="#main-carousel" data-slide-to="3"></li>
-                            <li data-target="#main-carousel" data-slide-to="4"></li>
-                        </ol>
-
-                        <!-- Controls -->
-                        <a class="left carousel-control" href="#main-carousel" role="button" data-slide="prev">
-                            <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        </a>
-                        <a class="right carousel-control" href="#main-carousel" role="button" data-slide="next">
-                            <i class="fa fa-angle-right" aria-hidden="true"></i>
-                        </a>
-
-                        <!-- Wrapper for slides -->
-                        <div class="carousel-inner" role="listbox">
-
-                            <!-- Carousel items   -->
-                            <div class="item active">
-                                <div class="carousel-caption">
-                                    <div class="fadeUp item_img">
-                                        <img src="<?= site_url('web/'); ?>src/assets/img/photos/pizza.png" alt="sample" /> 
-                                        <div class="item_badge">
-                                            <span class="badge_btext">20%</span>
-                                            <span class="badge_stext">OFF</span>
-                                        </div>
-                                    </div>
-                                    <div class="fadeUp fade-slow item_details">
-                                        <h4 class="item_name">Delicious Food</h4>
-                                        <p class="item_info">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-                                        <div class="item_link_box">
-                                            <a href="#reservation" class="item_link page-scroll">Make Reservation</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="item">
-                                <div class="carousel-caption">
-                                    <div class="fadeUp item_img">
-                                        <img src="<?= site_url('web/'); ?>src/assets/img/photos/tortilla.png" alt="sample" />
-                                        <div class="item_badge">
-                                            <span class="badge_btext">20%</span>
-                                            <span class="badge_stext">OFF</span>
-                                        </div>
-                                    </div>
-                                    <div class="fadeUp fade-slow item_details">
-                                        <h4 class="item_name">Delicious Food</h4>
-                                        <p class="item_info">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-                                        <div class="item_link_box">
-                                            <a href="#reservation" class="item_link page-scroll">Make Reservation</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="item">
-                                <div class="carousel-caption">
-                                    <div class="fadeUp item_img">
-                                        <img src="<?= site_url('web/'); ?>src/assets/img/photos/burger.png" alt="sample" />
-                                        <div class="item_badge">
-                                            <span class="badge_btext">20%</span>
-                                            <span class="badge_stext">OFF</span>
-                                        </div>
-                                    </div>
-                                    <div class="fadeUp fade-slow item_details">
-                                        <h4 class="item_name">Delicious Food</h4>
-                                        <p class="item_info">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-                                        <div class="item_link_box">
-                                            <a href="#reservation" class="item_link page-scroll">Make Reservation</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="item">
-                                <div class="carousel-caption">
-                                    <div class="fadeUp item_img">
-                                        <img src="<?= site_url('web/'); ?>src/assets/img/photos/pizza.png" alt="sample" />
-                                        <div class="item_badge">
-                                            <span class="badge_btext">20%</span>
-                                            <span class="badge_stext">OFF</span>
-                                        </div>
-                                    </div>
-                                    <div class="fadeUp fade-slow item_details">
-                                        <h4 class="item_name">Delicious Food</h4>
-                                        <p class="item_info">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-                                        <div class="item_link_box">
-                                            <a href="#reservation" class="item_link page-scroll">Make Reservation</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="item">
-                                <div class="carousel-caption">
-                                    <div class="fadeUp item_img">
-                                        <img src="<?= site_url('web/'); ?>src/assets/img/photos/burger.png" alt="sample" />
-                                        <div class="item_badge">
-                                            <span class="badge_btext">20%</span>
-                                            <span class="badge_stext">OFF</span>
-                                        </div>
-                                    </div>
-                                    <div class="fadeUp fade-slow item_details">
-                                        <h4 class="item_name">Delicious Food</h4>
-                                        <p class="item_info">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-                                        <div class="item_link_box">
-                                            <a href="#reservation" class="item_link page-scroll">Make Reservation</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                    <!-- /.container -->
-                </div>
-                <!-- END carousel -->
-
-                <!-- BEGIN navigation -->
-                <div class="navigation">
-
-                    <div class="navbar-container" data-spy="affix" data-offset-top="400">
-                        <div class="container">
-
-                            <div class="navbar_top hidden-xs">
-                                <div class="top_addr">
-                                    <span><i class="fa fa-map-marker" aria-hidden="true"></i> Your country, your city, 12345</span>
-                                    <span><i class="fa fa-phone" aria-hidden="true"></i> 123 456 789</span>
-                                    <span><i class="fa fa-clock-o" aria-hidden="true"></i> 11:00 - 21:00</span>
-                                    <div class="pull-right search-block">
-                                        <i class="fa fa-search" id="search" aria-hidden="true"></i>
-                                    </div>
-                                </div>
-                                <div id="navbar_search">
-                                    <form method="post">
-                                        <input type="text" name="q" class="form-control pull-left" value="" placeholder="Search anything">
-                                        <button type="submit" class="pull-right close" id="search_close"><i class="fa fa-close"></i></button>
-                                    </form>
-                                </div>
-                            </div>
-                            <!-- /.navbar_top -->
-
-                            <!-- BEGIN navbar -->
-                            <nav class="navbar">
-                                <div id="navbar_content">
-                                    <!-- Brand and toggle get grouped for better mobile display -->
-                                    <div class="navbar-header">
-                                        <a class="navbar-brand" href="#">
-                                            <img src="<?= site_url('web/'); ?>src/assets/img/logo.png" alt="logo" />
-                                        </a>
-                                        <a href="#cd-nav" class="cd-nav-trigger right_menu_icon">
-                                            <span><i class="fa fa-bars" aria-hidden="true"></i></span>
-                                        </a>
-                                    </div>
-
-                                    <!-- Collect the nav links, forms, and other content for toggling -->
-                                    <div class="collapse navbar-collapse" id="navbar">
-                                        <div class="navbar-right">
-                                            <ul class="nav navbar-nav">
-                                                <li><a class="page-scroll" href="#header">Home</a></li>
-                                                <li><a class="page-scroll" href="#about_us">About</a></li>
-                                                <li><a class="page-scroll" href="#menu">Menus</a></li>
-                                                <li><a class="page-scroll" href="#gallery">Gallery</a></li>
-                                                <li><a class="page-scroll" href="#reservation">Reservation</a></li>
-                                                <li><a class="page-scroll" href="#footer">Contact</a></li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                    <!-- /.navbar-collapse -->
-                                </div>
-                            </nav>
-                        </div>
-                        <!-- END navbar -->
-                    </div>
-                    <!-- /.navbar-container -->
-                </div>
-                <!-- END navigation -->
-
-            </header>
-            <!-- End header -->
-
-            <!-- Begin Sections-->
-
-            <!--    About Us    -->
-            <div class="container section" id="about_us">
-                <div class="col-sm-12 d-flex flex-xs-column">
-                    <div class="col-sm-6 d-flex align-items-center padd_lr0" data-aos="fade-up">
-                        <div class="content">
-                            <h1 class="section-title title_sty1">about us</h1>
-                            <p class="short">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-                        </div>
-                    </div>
-                    <div class="col-sm-6 img text-center padd_lr0" data-aos="fade-down">
-                        <div class="border_on">
-                            <img src="<?= site_url('web/'); ?>src/assets/img/photos/about-us.jpg" alt="sample" class="about_img" />
-                        </div>
-                    </div>
-                </div>
+            <div class="col-md-6 col-sm-12 order-md-last ftco-animate">
+            	<span class="subheading">Crocante</span>
+              <h1 class="mb-4">Pizza Italiana</h1>
+              <p class="mb-4 mb-md-5">Massas artesanais, molhos especiais e ingredientes selecionados para uma experiência única.</p>
+              <p><a href="#menu" class="btn btn-primary p-3 px-xl-4 py-xl-3">Fazer Pedido</a> <a href="#menu" class="btn btn-white btn-outline-white p-3 px-xl-4 py-xl-3">Ver Menu</a></p>
+            </div>
+            <div class="col-md-6 ftco-animate">
+            	<img src="<?= site_url('web/src/images/bg_2.png') ?>" class="img-fluid" alt="">
             </div>
 
-            <!--    Menus   -->
-            <div class="container section" id="menu" data-aos="fade-up">
-                <div class="title-block">
-                    <h1 class="section-title">Our Menus</h1>
-                </div>
-
-                <!--    Menus filter    -->
-                <div class="menu_filter text-center">
-                    <ul class="list-unstyled list-inline d-inline-block">
-                        <li class="item active">
-                            <a href="javascript:;" class="filter-button" data-filter="burger">Burger</a>
-                        </li>
-                        <li class="item">
-                            <a href="javascript:;" class="filter-button" data-filter="pizza">Pizza</a>
-                        </li>
-                        <li class="item">
-                            <a href="javascript:;" class="filter-button" data-filter="salad">Salad</a>
-                        </li>
-                        <li class="item">
-                            <a href="javascript:;" class="filter-button" data-filter="frices">Frices</a>
-                        </li>
-                        <li class="item">
-                            <a href="javascript:;" class="filter-button" data-filter="drinks">Drinks</a>
-                        </li>
-                    </ul>
-                </div> 
-
-                <!--    Menus items     -->
-                <div id="menu_items">
-
-                    <div class="filtr-item image filter burger active">
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <a href="<?= site_url('web/'); ?>src/assets/img/photos/food-1.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                    <div class="content">
-                                        <div class="filter_item_img">
-                                            <i class="fa fa-search-plus"></i>
-                                            <img src="<?= site_url('web/'); ?>src/assets/img/photos/food-1.jpg" alt="sample" />
-                                        </div>
-                                        <div class="info">
-                                            <div class="name">Margherita</div>
-                                            <div class="short">Classic marinara sauce, authentic pepperoni</div>
-                                            <span class="filter_item_price">$10.00</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="col-sm-6">
-                                <a href="<?= site_url('web/'); ?>src/assets/img/photos/food-2.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                    <div class="content">
-                                        <div class="filter_item_img">
-                                            <i class="fa fa-search-plus"></i>
-                                            <img src="<?= site_url('web/'); ?>src/assets/img/photos/food-2.jpg" alt="sample" />
-                                        </div>
-                                        <div class="info">
-                                            <div class="name">Greece</div>
-                                            <div class="short">Classic marinara sauce, authentic pepperoni</div>
-                                            <span class="filter_item_price">$7.00</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="col-sm-6">
-                                <a href="<?= site_url('web/'); ?>src/assets/img/photos/food-3.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                    <div class="content">
-                                        <div class="filter_item_img">
-                                            <i class="fa fa-search-plus"></i>
-                                            <img src="<?= site_url('web/'); ?>src/assets/img/photos/food-3.jpg" alt="sample" />
-                                        </div>
-                                        <div class="info">
-                                            <div class="name">Pepperoni</div>
-                                            <div class="short">Classic marinara sauce, authentic pepperoni</div>
-                                            <span class="filter_item_price">$8.50</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="col-sm-6">
-                                <a href="<?= site_url('web/'); ?>src/assets/img/photos/food-4.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                    <div class="content">
-                                        <div class="filter_item_img">
-                                            <i class="fa fa-search-plus"></i>
-                                            <img src="<?= site_url('web/'); ?>src/assets/img/photos/food-4.jpg" alt="sample" />
-                                        </div>
-                                        <div class="info">
-                                            <div class="name">Chicken lovers</div>
-                                            <div class="short">Classic marinara sauce, authentic pepperoni</div>
-                                            <span class="filter_item_price">$8.00</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="col-sm-6">
-                                <a href="<?= site_url('web/'); ?>src/assets/img/photos/food-5.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                    <div class="content">
-                                        <div class="filter_item_img">
-                                            <i class="fa fa-search-plus"></i>
-                                            <img src="<?= site_url('web/'); ?>src/assets/img/photos/food-5.jpg" alt="sample" />
-                                        </div>
-                                        <div class="info">
-                                            <div class="name">Italiano</div>
-                                            <div class="short">Classic marinara sauce, authentic pepperoni</div>
-                                            <span class="filter_item_price">$11.00</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="col-sm-6">
-                                <a href="<?= site_url('web/'); ?>src/assets/img/photos/food-6.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                    <div class="content">
-                                        <div class="filter_item_img">
-                                            <i class="fa fa-search-plus"></i>
-                                            <img src="<?= site_url('web/'); ?>src/assets/img/photos/food-6.jpg" alt="sample" />
-                                        </div>
-                                        <div class="info">
-                                            <div class="name">Pepper beef</div>
-                                            <div class="short">Classic marinara sauce, authentic pepperoni</div>
-                                            <span class="filter_item_price">$9.00</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="col-sm-6">
-                                <a href="<?= site_url('web/'); ?>src/assets/img/photos/food-7.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                    <div class="content">
-                                        <div class="filter_item_img">
-                                            <i class="fa fa-search-plus"></i>
-                                            <img src="<?= site_url('web/'); ?>src/assets/img/photos/food-7.jpg" alt="sample" />
-                                        </div>
-                                        <div class="info">
-                                            <div class="name">Hawai</div>
-                                            <div class="short">Classic marinara sauce, authentic pepperoni</div>
-                                            <span class="filter_item_price">$11.00</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="col-sm-6">
-                                <a href="<?= site_url('web/'); ?>src/assets/img/photos/food-8.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                    <div class="content">
-                                        <div class="filter_item_img">
-                                            <i class="fa fa-search-plus"></i>
-                                            <img src="<?= site_url('web/'); ?>src/assets/img/photos/food-8.jpg" alt="sample" />
-                                        </div>
-                                        <div class="info">
-                                            <div class="name">Caesar</div>
-                                            <div class="short">Classic marinara sauce, authentic pepperoni</div>
-                                            <span class="filter_item_price">$9.00</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="filtr-item image filter pizza">
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <a href="<?= site_url('web/'); ?>src/assets/img/photos/food-6.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                    <div class="content">
-                                        <div class="filter_item_img">
-                                            <i class="fa fa-search-plus"></i>
-                                            <img src="<?= site_url('web/'); ?>src/assets/img/photos/food-6.jpg" alt="sample" />
-                                        </div>
-                                        <div class="info">
-                                            <div class="name">Pepper beef</div>
-                                            <div class="short">Classic marinara sauce, authentic pepperoni</div>
-                                            <span class="filter_item_price">$9.00</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="col-sm-6">
-                                <a href="<?= site_url('web/'); ?>src/assets/img/photos/food-8.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                    <div class="content">
-                                        <div class="filter_item_img">
-                                            <i class="fa fa-search-plus"></i>
-                                            <img src="<?= site_url('web/'); ?>src/assets/img/photos/food-8.jpg" alt="sample" />
-                                        </div>
-                                        <div class="info">
-                                            <div class="name">Caesar</div>
-                                            <div class="short">Classic marinara sauce, authentic pepperoni</div>
-                                            <span class="filter_item_price">$9.00</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="col-sm-6">
-                                <a href="<?= site_url('web/'); ?>src/assets/img/photos/food-7.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                    <div class="content">
-                                        <div class="filter_item_img">
-                                            <i class="fa fa-search-plus"></i>
-                                            <img src="<?= site_url('web/'); ?>src/assets/img/photos/food-7.jpg" alt="sample" />
-                                        </div>
-                                        <div class="info">
-                                            <div class="name">Hawai</div>
-                                            <div class="short">Classic marinara sauce, authentic pepperoni</div>
-                                            <span class="filter_item_price">$11.00</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="col-sm-6">
-                                <a href="<?= site_url('web/'); ?>src/assets/img/photos/food-5.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                    <div class="content">
-                                        <div class="filter_item_img">
-                                            <i class="fa fa-search-plus"></i>
-                                            <img src="<?= site_url('web/'); ?>src/assets/img/photos/food-5.jpg" alt="sample" />
-                                        </div>
-                                        <div class="info">
-                                            <div class="name">Italiano</div>
-                                            <div class="short">Classic marinara sauce, authentic pepperoni</div>
-                                            <span class="filter_item_price">$11.00</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="filtr-item image filter salad">
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <a href="<?= site_url('web/'); ?>src/assets/img/photos/food-3.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                    <div class="content">
-                                        <div class="filter_item_img">
-                                            <i class="fa fa-search-plus"></i>
-                                            <img src="<?= site_url('web/'); ?>src/assets/img/photos/food-3.jpg" alt="sample" />
-                                        </div>
-                                        <div class="info">
-                                            <div class="name">Pepperoni</div>
-                                            <div class="short">Classic marinara sauce, authentic pepperoni</div>
-                                            <span class="filter_item_price">$8.50</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="col-sm-6">
-                                <a href="<?= site_url('web/'); ?>src/assets/img/photos/food-2.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                    <div class="content">
-                                        <div class="filter_item_img">
-                                            <i class="fa fa-search-plus"></i>
-                                            <img src="<?= site_url('web/'); ?>src/assets/img/photos/food-2.jpg" alt="sample" />
-                                        </div>
-                                        <div class="info">
-                                            <div class="name">Greece</div>
-                                            <div class="short">Classic marinara sauce, authentic pepperoni</div>
-                                            <span class="filter_item_price">$7.00</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="col-sm-6">
-                                <a href="<?= site_url('web/'); ?>src/assets/img/photos/food-4.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                    <div class="content">
-                                        <div class="filter_item_img">
-                                            <i class="fa fa-search-plus"></i>
-                                            <img src="<?= site_url('web/'); ?>src/assets/img/photos/food-4.jpg" alt="sample" />
-                                        </div>
-                                        <div class="info">
-                                            <div class="name">Chicken lovers</div>
-                                            <div class="short">Classic marinara sauce, authentic pepperoni</div>
-                                            <span class="filter_item_price">$8.00</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="col-sm-6">
-                                <a href="<?= site_url('web/'); ?>src/assets/img/photos/food-1.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                    <div class="content">
-                                        <div class="filter_item_img">
-                                            <i class="fa fa-search-plus"></i>
-                                            <img src="<?= site_url('web/'); ?>src/assets/img/photos/food-1.jpg" alt="sample" />
-                                        </div>
-                                        <div class="info">
-                                            <div class="name">Margherita</div>
-                                            <div class="short">Classic marinara sauce, authentic pepperoni</div>
-                                            <span class="filter_item_price">$10.00</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="filtr-item image filter frices">
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <a href="<?= site_url('web/'); ?>src/assets/img/photos/food-8.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                    <div class="content">
-                                        <div class="filter_item_img">
-                                            <i class="fa fa-search-plus"></i>
-                                            <img src="<?= site_url('web/'); ?>src/assets/img/photos/food-8.jpg" alt="sample" />
-                                        </div>
-                                        <div class="info">
-                                            <div class="name">Caesar</div>
-                                            <div class="short">Classic marinara sauce, authentic pepperoni</div>
-                                            <span class="filter_item_price">$9.00</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="col-sm-6">
-                                <a href="<?= site_url('web/'); ?>src/assets/img/photos/food-7.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                    <div class="content">
-                                        <div class="filter_item_img">
-                                            <i class="fa fa-search-plus"></i>
-                                            <img src="<?= site_url('web/'); ?>src/assets/img/photos/food-7.jpg" alt="sample" />
-                                        </div>
-                                        <div class="info">
-                                            <div class="name">Hawai</div>
-                                            <div class="short">Classic marinara sauce, authentic pepperoni</div>
-                                            <span class="filter_item_price">$11.00</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="col-sm-6">
-                                <a href="<?= site_url('web/'); ?>src/assets/img/photos/food-6.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                    <div class="content">
-                                        <div class="filter_item_img">
-                                            <i class="fa fa-search-plus"></i>
-                                            <img src="<?= site_url('web/'); ?>src/assets/img/photos/food-6.jpg" alt="sample" />
-                                        </div>
-                                        <div class="info">
-                                            <div class="name">Pepper beef</div>
-                                            <div class="short">Classic marinara sauce, authentic pepperoni</div>
-                                            <span class="filter_item_price">$9.00</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="col-sm-6">
-                                <a href="<?= site_url('web/'); ?>src/assets/img/photos/food-2.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                    <div class="content">
-                                        <div class="filter_item_img">
-                                            <i class="fa fa-search-plus"></i>
-                                            <img src="<?= site_url('web/'); ?>src/assets/img/photos/food-2.jpg" alt="sample" />
-                                        </div>
-                                        <div class="info">
-                                            <div class="name">Greece</div>
-                                            <div class="short">Classic marinara sauce, authentic pepperoni</div>
-                                            <span class="filter_item_price">$7.00</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="filtr-item image filter drinks">
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <a href="<?= site_url('web/'); ?>src/assets/img/photos/food-1.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                    <div class="content">
-                                        <div class="filter_item_img">
-                                            <i class="fa fa-search-plus"></i>
-                                            <img src="<?= site_url('web/'); ?>src/assets/img/photos/food-1.jpg" alt="sample" />
-                                        </div>
-                                        <div class="info">
-                                            <div class="name">Margherita</div>
-                                            <div class="short">Classic marinara sauce, authentic pepperoni</div>
-                                            <span class="filter_item_price">$10.00</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="col-sm-6">
-                                <a href="<?= site_url('web/'); ?>src/assets/img/photos/food-5.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                    <div class="content">
-                                        <div class="filter_item_img">
-                                            <i class="fa fa-search-plus"></i>
-                                            <img src="<?= site_url('web/'); ?>src/assets/img/photos/food-5.jpg" alt="sample" />
-                                        </div>
-                                        <div class="info">
-                                            <div class="name">Italiano</div>
-                                            <div class="short">Classic marinara sauce, authentic pepperoni</div>
-                                            <span class="filter_item_price">$11.00</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="col-sm-6">
-                                <a href="<?= site_url('web/'); ?>src/assets/img/photos/food-3.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                    <div class="content">
-                                        <div class="filter_item_img">
-                                            <i class="fa fa-search-plus"></i>
-                                            <img src="<?= site_url('web/'); ?>src/assets/img/photos/food-3.jpg" alt="sample" />
-                                        </div>
-                                        <div class="info">
-                                            <div class="name">Pepperoni</div>
-                                            <div class="short">Classic marinara sauce, authentic pepperoni</div>
-                                            <span class="filter_item_price">$8.50</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="col-sm-6">
-                                <a href="<?= site_url('web/'); ?>src/assets/img/photos/food-4.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                    <div class="content">
-                                        <div class="filter_item_img">
-                                            <i class="fa fa-search-plus"></i>
-                                            <img src="<?= site_url('web/'); ?>src/assets/img/photos/food-4.jpg" alt="sample" />
-                                        </div>
-                                        <div class="info">
-                                            <div class="name">Chicken lovers</div>
-                                            <div class="short">Classic marinara sauce, authentic pepperoni</div>
-                                            <span class="filter_item_price">$8.00</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="text-center">
-                        <!-- BEGIN pagination -->
-                        <ul class="pagination">
-                            <li class="active"><a href="#">1</a></li>
-                            <li><a href="#">2</a></li>
-                            <li><a href="#">3</a></li>
-                            <li><a href="#">4</a></li>
-                        </ul>
-                        <!-- END pagination -->
-                    </div>
-
-                </div>
-            </div>
-
-            <!--    Reservation    -->
-
-            <div class="fixed_layer section" id="reservation">
-                <div class="fixed_layer_padd container">
-                    <div class="row">
-                        <div class="col-md-offset-6 col-md-6" data-aos="fade-down">
-                            <div class="reserv_box">
-                                <h1 class="section-title title_sty1">online reservation</h1>
-                                <p class="short">Lorem Ipsum is simply dummy text of the printing and typesetting industry. </p>
-                                <form id="reserv_form" method="post">
-                                    <div class="row">
-                                        <div class="col-sm-6">
-                                            <div class="form-group form_pos">
-                                                <input type="text" name="name" required="" placeholder="Your name" class="form-control" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Your name'" />
-                                                <span class="form_icon"></span>
-                                            </div>
-                                        </div>
-                                        <div class="col-sm-6">
-                                            <div class="form-group form_pos">
-                                                <input type="email" name="email" required="" placeholder="Your email" class="form-control" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Your email'" />
-                                                <span class="form_icon"></span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-sm-4">
-                                            <div class="form-group form_pos">
-                                                <input type="text" name="phone" required="" placeholder="Phone" class="form-control" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Phone'" />
-                                                <span class="form_icon"></span>
-                                            </div>
-                                        </div>
-                                        <div class="col-sm-4">
-                                            <div class="form-group form_pos">
-                                                <input type="text" name="date" required="" placeholder="Date" class="form-control" id="reserv_date" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Date'" />
-                                                <span class="form_icon"></span>
-                                            </div>
-                                        </div>
-                                        <div class="col-sm-4">
-                                            <div class="form-group form_pos">
-                                                <input type="text" name="time" required="" placeholder="Time" class="form-control" id="reserv_time" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Time'" />
-                                                <span class="form_icon"></span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <textarea rows="3" name="message" placeholder="Message" class="form-control" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Message'"></textarea>
-                                    </div>
-                                    <input type="submit" name="send" value="book now" class="btn btn-block" />
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-            <!--    Gallery    -->
-            <div class="container section" id="gallery" data-aos="fade-up">
-                <div class="title-block">
-                    <h1 class="section-title">Gallery</h1>
-                </div>
-                <div id="photo_gallery" class="list1">
-                    <div class="row loadMore">
-                        <div class="col-sm-4 col-md-3 item">
-                            <a href="<?= site_url('web/'); ?>src/assets/img/photos/gallery-1.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                <div class="content">
-                                    <img src="<?= site_url('web/'); ?>src/assets/img/photos/gallery-1.jpg" alt="sample" />
-                                    <div class="zoom">
-                                        <span class="zoom_icon"><i class="fa fa-search-plus"></i></span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="col-sm-4 col-md-3 item">
-                            <a href="<?= site_url('web/'); ?>src/assets/img/photos/gallery-2.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                <div class="content">
-                                    <img src="<?= site_url('web/'); ?>src/assets/img/photos/gallery-2.jpg" alt="sample" />
-                                    <div class="zoom">
-                                        <span class="zoom_icon"><i class="fa fa-search-plus"></i></span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="col-sm-4 col-md-3 item">
-                            <a href="<?= site_url('web/'); ?>src/assets/img/photos/gallery-3.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                <div class="content">
-                                    <img src="<?= site_url('web/'); ?>src/assets/img/photos/gallery-3.jpg" alt="sample" />
-                                    <div class="zoom">
-                                        <span class="zoom_icon"><i class="fa fa-search-plus"></i></span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="col-sm-4 col-md-3 item">
-                            <a href="<?= site_url('web/'); ?>src/assets/img/photos/gallery-4.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                <div class="content">
-                                    <img src="<?= site_url('web/'); ?>src/assets/img/photos/gallery-4.jpg" alt="sample" />
-                                    <div class="zoom">
-                                        <span class="zoom_icon"><i class="fa fa-search-plus"></i></span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="col-sm-4 col-md-3 item">
-                            <a href="<?= site_url('web/'); ?>src/assets/img/photos/gallery-5.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                <div class="content">
-                                    <img src="<?= site_url('web/'); ?>src/assets/img/photos/gallery-5.jpg" alt="sample" />
-                                    <div class="zoom">
-                                        <span class="zoom_icon"><i class="fa fa-search-plus"></i></span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="col-sm-4 col-md-3 item">
-                            <a href="<?= site_url('web/'); ?>src/assets/img/photos/gallery-6.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                <div class="content">
-                                    <img src="<?= site_url('web/'); ?>src/assets/img/photos/gallery-6.jpg" alt="sample" />
-                                    <div class="zoom">
-                                        <span class="zoom_icon"><i class="fa fa-search-plus"></i></span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="col-sm-4 col-md-3 item">
-                            <a href="<?= site_url('web/'); ?>src/assets/img/photos/gallery-7.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                <div class="content">
-                                    <img src="<?= site_url('web/'); ?>src/assets/img/photos/gallery-7.jpg" alt="sample" />
-                                    <div class="zoom">
-                                        <span class="zoom_icon"><i class="fa fa-search-plus"></i></span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="col-sm-4 col-md-3 item">
-                            <a href="<?= site_url('web/'); ?>src/assets/img/photos/gallery-8.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                <div class="content">
-                                    <img src="<?= site_url('web/'); ?>src/assets/img/photos/gallery-8.jpg" alt="sample" />
-                                    <div class="zoom">
-                                        <span class="zoom_icon"><i class="fa fa-search-plus"></i></span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="col-sm-4 col-md-3 item">
-                            <a href="<?= site_url('web/'); ?>src/assets/img/photos/gallery-1.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                <div class="content">
-                                    <img src="<?= site_url('web/'); ?>src/assets/img/photos/gallery-1.jpg" alt="sample" />
-                                    <div class="zoom">
-                                        <span class="zoom_icon"><i class="fa fa-search-plus"></i></span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="col-sm-4 col-md-3 item">
-                            <a href="<?= site_url('web/'); ?>src/assets/img/photos/gallery-2.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                <div class="content">
-                                    <img src="<?= site_url('web/'); ?>src/assets/img/photos/gallery-2.jpg" alt="sample" />
-                                    <div class="zoom">
-                                        <span class="zoom_icon"><i class="fa fa-search-plus"></i></span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="col-sm-4 col-md-3 item">
-                            <a href="<?= site_url('web/'); ?>src/assets/img/photos/gallery-3.jpg" class="block fancybox" data-fancybox-group="fancybox">
-                                <div class="content">
-                                    <img src="<?= site_url('web/'); ?>src/assets/img/photos/gallery-3.jpg" alt="sample" />
-                                    <div class="zoom">
-                                        <span class="zoom_icon"><i class="fa fa-search-plus"></i></span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="col-sm-4 col-md-3 item">
-                            <a href="<?= site_url('web/'); ?>src/assets/img/photos/gallery-4.jpg" class="block fancybox" data-fancybox-group="fancybox"> 
-                                <div class="content">
-                                    <img src="<?= site_url('web/'); ?>src/assets/img/photos/gallery-4.jpg" alt="sample" />
-                                    <div class="zoom">
-                                        <span class="zoom_icon"><i class="fa fa-search-plus"></i></span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    </div> 
-                </div>
-            </div>
-
-            <!-- End Sections -->
-
-            <!--  Begin Footer  -->
-            <footer id="footer">
-
-                <!--    Contact    -->
-
-                <!--    Google map, Social links    -->
-                <div class="section" id="contact">
-                    <div id="googleMap"></div> 
-                    <div class="footer_pos">
-                        <div class="container">
-                            <div class="footer_content">
-                                <div class="row">
-                                    <div class="col-sm-6 col-md-4">
-                                        <h4 class="footer_ttl footer_ttl_padd">about us</h4>
-                                        <p class="footer_txt">Lorem Ipsum is simply dummy text of the printing and typesetting industry. It has survived not only five centuries but also the leap into electronic typesetting. </p>
-                                    </div>
-                                    <div class="col-sm-6 col-md-5">
-                                        <h4 class="footer_ttl footer_ttl_padd">working hours</h4>
-                                        <div class="footer_border">
-                                            <div class="week_row clearfix">
-                                                <div class="week_day">Monday</div>
-                                                <div class="week_time text-right">Closed</div>
-                                            </div>
-                                            <div class="week_row clearfix">
-                                                <div class="week_day">Tuesday</div>
-                                                <div class="week_time">
-                                                    <span class="week_time_start">10 am</span>
-                                                    <span class="week_time_node">-</span>
-                                                    <span class="week_time_end">12 am</span>
-                                                </div>
-                                            </div>
-                                            <div class="week_row clearfix">
-                                                <div class="week_day">Wednsday</div>
-                                                <div class="week_time">
-                                                    <span class="week_time_start">10 am</span>
-                                                    <span class="week_time_node">-</span>
-                                                    <span class="week_time_end">12 am</span>
-                                                </div>
-
-                                            </div>
-                                            <div class="week_row clearfix">
-                                                <div class="week_day">Thursday</div>
-                                                <div class="week_time">
-                                                    <span class="week_time_start">10 am</span>
-                                                    <span class="week_time_node">-</span>
-                                                    <span class="week_time_end">12 am</span>
-                                                </div>
-
-                                            </div>
-                                            <div class="week_row clearfix">
-                                                <div class="week_day">Friday</div>
-                                                <div class="week_time">
-                                                    <span class="week_time_start">10 am</span>
-                                                    <span class="week_time_node">-</span>
-                                                    <span class="week_time_end">12 am</span>
-                                                </div>
-
-                                            </div>
-                                            <div class="week_row clearfix">
-                                                <div class="week_day">Saturday</div>
-                                                <div class="week_time">
-                                                    <span class="week_time_start">7 am</span>
-                                                    <span class="week_time_node">-</span>
-                                                    <span class="week_time_end">1 am</span>
-                                                </div>
-                                            </div>
-                                            <div class="week_row clearfix">
-                                                <div class="week_day">Sunday</div>
-                                                <div class="week_time">
-                                                    <span class="week_time_start">7 am</span>
-                                                    <span class="week_time_node">-</span>
-                                                    <span class="week_time_end">1 am</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-sm-12 col-md-3">
-                                        <h4 class="footer_ttl footer_ttl_padd">contact us</h4>
-                                        <div class="footer_border">
-                                            <div class="footer_cnt">
-                                                <i class="fa fa-map-marker"></i>
-                                                <span>Your City, Your streert, 18765, 100 Tenth Avenue, New York City, NY 1001</span>
-                                            </div>
-                                            <div class="footer_cnt">
-                                                <i class="fa fa-phone"></i>
-                                                <span>(457) 570 5682; (385) 620 756</span>
-                                            </div>
-                                            <div class="footer_cnt">
-                                                <i class="fa fa-envelope"></i>
-                                                <span>info@butazzopizza.net</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="copyright">
-                            <div class="container">
-                                <div class="row">
-                                    <div class="col-md-8">
-                                        <div class="copy_text">
-                                            <a target="_blank" href="https://www.templateshub.net">Templates Hub</a>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="social-links">
-                                            <ul class="list-inline">
-                                                <li class="list-inline-item">
-                                                    <a href="javascript:;" title="">
-                                                        <i class="fa fa-facebook" aria-hidden="true"></i>
-                                                    </a>
-                                                </li>
-                                                <li class="list-inline-item">
-                                                    <a href="javascript:;" title="">
-                                                        <i class="fa fa-instagram" aria-hidden="true"></i>
-                                                    </a>
-                                                </li>
-                                                <li class="list-inline-item">
-                                                    <a href="javascript:;" title="">
-                                                        <i class="fa fa-pinterest-p" aria-hidden="true"></i>
-                                                    </a>
-                                                </li>
-                                                <li class="list-inline-item">
-                                                    <a href="javascript:;" title="">
-                                                        <i class="fa fa-linkedin" aria-hidden="true"></i>
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </footer>
-
-            <!-- End Footer -->
-
+          </div>
         </div>
-        <!-- END body-wrapper -->
+      </div>
 
+      <div class="slider-item" style="background-image: url(<?= site_url('web/src/images/bg_3.jpg') ?>);">
+      	<div class="overlay"></div>
+        <div class="container">
+          <div class="row slider-text justify-content-center align-items-center" data-scrollax-parent="true">
 
-        <!-- START mobile right burger menu -->
-
-        <nav class="cd-nav-container right_menu" id="cd-nav">
-            <div class="header__open_menu">
-                <a href="index-2.html" class="rmenu_logo" title="yagmurmebel.az">
-                    <img src="<?= site_url('web/'); ?>src/assets/img/logo.png" alt="logo" />
-                </a>
+            <div class="col-md-7 col-sm-12 text-center ftco-animate">
+            	<span class="subheading">Bem-vindo</span>
+              <h1 class="mb-4">Preparamos suas receitas favoritas</h1>
+              <p class="mb-4 mb-md-5">Cada prato é preparado com carinho e dedicação para proporcionar momentos especiais.</p>
+              <p><a href="#menu" class="btn btn-primary p-3 px-xl-4 py-xl-3">Fazer Pedido</a> <a href="#menu" class="btn btn-white btn-outline-white p-3 px-xl-4 py-xl-3">Ver Menu</a></p>
             </div>
-            <div class="right_menu_search">
-                <form method="post">
-                    <input type="text" name="q" class="form-control search_input" value="" placeholder="Search anything">
-                    <button type="submit" class="search_icon"><i class="fa fa-search"></i></button>
-                </form>
-            </div>
-            <ul class="rmenu_list">
-                <li><a class="page-scroll" href="#header">Home</a></li>
-                <li><a class="page-scroll" href="#about_us">About</a></li>
-                <li><a class="page-scroll" href="#menu">Menus</a></li>
-                <li><a class="page-scroll" href="#gallery">Gallery</a></li>
-                <li><a class="page-scroll" href="#reservation">Reservation</a></li>
-                <li><a class="page-scroll" href="#footer">Contact</a></li>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Info Section -->
+    <section class="ftco-intro">
+    	<div class="container-wrap">
+    		<div class="wrap d-md-flex">
+	    		<div class="info">
+	    			<div class="row no-gutters">
+	    				<div class="col-md-4 d-flex ftco-animate">
+	    					<div class="icon"><span class="icon-phone"></span></div>
+	    					<div class="text">
+	    						<h3>(11) 9999-9999</h3>
+	    						<p>Faça seu pedido por telefone</p>
+	    					</div>
+	    				</div>
+	    				<div class="col-md-4 d-flex ftco-animate">
+	    					<div class="icon"><span class="icon-my_location"></span></div>
+	    					<div class="text">
+	    						<h3>Rua das Flores, 123</h3>
+	    						<p>Centro - São Paulo - SP</p>
+	    					</div>
+	    				</div>
+	    				<div class="col-md-4 d-flex ftco-animate">
+	    					<div class="icon"><span class="icon-clock-o"></span></div>
+	    					<div class="text">
+	    						<h3>Aberto Segunda-Domingo</h3>
+	    						<p>18:00 - 23:00</p>
+	    					</div>
+	    				</div>
+	    			</div>
+	    		</div>
+	    		<div class="social d-md-flex pl-md-5 p-4 align-items-center">
+	    			<ul class="social-icon">
+              <li class="ftco-animate"><a href="#"><span class="icon-twitter"></span></a></li>
+              <li class="ftco-animate"><a href="#"><span class="icon-facebook"></span></a></li>
+              <li class="ftco-animate"><a href="#"><span class="icon-instagram"></span></a></li>
             </ul>
-            <div class="right_menu_addr top_addr">
-                <span><i class="fa fa-map-marker" aria-hidden="true"></i> Your country, your city, 12345</span>
-                <span><i class="fa fa-phone" aria-hidden="true"></i> 123 456 789</span>
-                <span><i class="fa fa-clock-o" aria-hidden="true"></i> 11:00 - 21:00</span>
+	    		</div>
+    		</div>
+    	</div>
+    </section>
+
+    <!-- About Section -->
+    <section class="ftco-about d-md-flex" id="about">
+    	<div class="one-half img" style="background-image: url(<?= site_url('web/src/images/about.jpg') ?>);"></div>
+    	<div class="one-half ftco-animate">
+        <div class="heading-section ftco-animate ">
+          <h2 class="mb-4">Bem-vindo ao <span class="flaticon-pizza">Nosso</span> Restaurante</h2>
+        </div>
+        <div>
+  				<p>Há mais de 20 anos servindo os melhores pratos da culinária italiana com ingredientes frescos e receitas tradicionais. Nossa paixão pela gastronomia se reflete em cada prato que preparamos, sempre buscando proporcionar uma experiência única aos nossos clientes.</p>
+  			</div>
+    	</div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="ftco-section ftco-services" id="services">
+    	<div class="overlay"></div>
+    	<div class="container">
+    		<div class="row justify-content-center mb-5 pb-3">
+          <div class="col-md-7 heading-section ftco-animate text-center">
+            <h2 class="mb-4">Nossos Serviços</h2>
+            <p>Oferecemos os melhores serviços para garantir sua satisfação e comodidade.</p>
+          </div>
+        </div>
+    		<div class="row">
+          <div class="col-md-4 ftco-animate">
+            <div class="media d-block text-center block-6 services">
+              <div class="icon d-flex justify-content-center align-items-center mb-5">
+              	<span class="flaticon-diet"></span>
+              </div>
+              <div class="media-body">
+                <h3 class="heading">Comida Saudável</h3>
+                <p>Ingredientes frescos e selecionados, preparados com técnicas que preservam os nutrientes.</p>
+              </div>
+            </div>      
+          </div>
+          <div class="col-md-4 ftco-animate">
+            <div class="media d-block text-center block-6 services">
+              <div class="icon d-flex justify-content-center align-items-center mb-5">
+              	<span class="flaticon-bicycle"></span>
+              </div>
+              <div class="media-body">
+                <h3 class="heading">Entrega Rápida</h3>
+                <p>Delivery eficiente para que você receba seu pedido quentinho e no tempo certo.</p>
+              </div>
+            </div>      
+          </div>
+          <div class="col-md-4 ftco-animate">
+            <div class="media d-block text-center block-6 services">
+              <div class="icon d-flex justify-content-center align-items-center mb-5"><span class="flaticon-pizza-1"></span></div>
+              <div class="media-body">
+                <h3 class="heading">Receitas Originais</h3>
+                <p>Pratos preparados com receitas tradicionais e o toque especial da nossa cozinha.</p>
+              </div>
+            </div>    
+          </div>
+        </div>
+    	</div>
+    </section>
+
+    <!-- Menu Section -->
+    <section class="ftco-section" id="menu">
+    	<div class="container">
+    		<div class="row justify-content-center mb-5 pb-3">
+          <div class="col-md-7 heading-section ftco-animate text-center">
+            <h2 class="mb-4">Nosso Menu</h2>
+            <p>Descubra nossos pratos especiais, preparados com ingredientes frescos e muito sabor.</p>
+          </div>
+        </div>
+        
+        <!-- Conteúdo dinâmico do menu -->
+        <?= $this->renderSection('menu_dinamico') ?>
+        
+    	</div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section class="ftco-gallery">
+    	<div class="container-wrap">
+    		<div class="row no-gutters">
+					<div class="col-md-3 ftco-animate">
+						<a href="#" class="gallery img d-flex align-items-center" style="background-image: url(<?= site_url('web/src/images/gallery-1.jpg') ?>);">
+							<div class="icon mb-4 d-flex align-items-center justify-content-center">
+    						<span class="icon-search"></span>
+    					</div>
+						</a>
+					</div>
+					<div class="col-md-3 ftco-animate">
+						<a href="#" class="gallery img d-flex align-items-center" style="background-image: url(<?= site_url('web/src/images/gallery-2.jpg') ?>);">
+							<div class="icon mb-4 d-flex align-items-center justify-content-center">
+    						<span class="icon-search"></span>
+    					</div>
+						</a>
+					</div>
+					<div class="col-md-3 ftco-animate">
+						<a href="#" class="gallery img d-flex align-items-center" style="background-image: url(<?= site_url('web/src/images/gallery-3.jpg') ?>);">
+							<div class="icon mb-4 d-flex align-items-center justify-content-center">
+    						<span class="icon-search"></span>
+    					</div>
+						</a>
+					</div>
+					<div class="col-md-3 ftco-animate">
+						<a href="#" class="gallery img d-flex align-items-center" style="background-image: url(<?= site_url('web/src/images/gallery-4.jpg') ?>);">
+							<div class="icon mb-4 d-flex align-items-center justify-content-center">
+    						<span class="icon-search"></span>
+    					</div>
+						</a>
+					</div>
+        </div>
+    	</div>
+    </section>
+
+    <!-- Contact Section -->
+		<section class="ftco-appointment" id="contact">
+			<div class="overlay"></div>
+    	<div class="container-wrap">
+    		<div class="row no-gutters d-md-flex align-items-center">
+    			<div class="col-md-6 d-flex align-self-stretch">
+    				<div id="map" style="width: 100%; height: 400px; background: #ddd; display: flex; align-items: center; justify-content: center;">
+    					<p>Mapa do Google aqui</p>
+    				</div>
+    			</div>
+	    		<div class="col-md-6 appointment ftco-animate">
+	    			<h3 class="mb-3">Entre em Contato</h3>
+	    			<form action="#" class="appointment-form">
+	    				<div class="d-md-flex">
+		    				<div class="form-group">
+		    					<input type="text" class="form-control" placeholder="Nome">
+		    				</div>
+	    				</div>
+	    				<div class="d-me-flex">
+	    					<div class="form-group">
+		    					<input type="text" class="form-control" placeholder="Telefone">
+		    				</div>
+	    				</div>
+	    				<div class="form-group">
+	              <textarea name="" id="" cols="30" rows="3" class="form-control" placeholder="Mensagem"></textarea>
+	            </div>
+	            <div class="form-group">
+	              <input type="submit" value="Enviar" class="btn btn-primary py-3 px-4">
+	            </div>
+	    			</form>
+	    		</div>    			
+    		</div>
+    	</div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="ftco-footer ftco-section img">
+    	<div class="overlay"></div>
+      <div class="container">
+        <div class="row mb-5">
+          <div class="col-lg-3 col-md-6 mb-5 mb-md-5">
+            <div class="ftco-footer-widget mb-4">
+              <h2 class="ftco-heading-2">Sobre Nós</h2>
+              <p>Restaurante especializado em culinária italiana, oferecendo pratos tradicionais com ingredientes frescos e de qualidade.</p>
+              <ul class="ftco-footer-social list-unstyled float-md-left float-lft mt-5">
+                <li class="ftco-animate"><a href="#"><span class="icon-twitter"></span></a></li>
+                <li class="ftco-animate"><a href="#"><span class="icon-facebook"></span></a></li>
+                <li class="ftco-animate"><a href="#"><span class="icon-instagram"></span></a></li>
+              </ul>
             </div>
-        </nav>
+          </div>
+          <div class="col-lg-4 col-md-6 mb-5 mb-md-5">
+            <div class="ftco-footer-widget mb-4">
+              <h2 class="ftco-heading-2">Horário de Funcionamento</h2>
+              <div class="opening-hours">
+                <h4>Dias da Semana:</h4>
+                <p class="pl-3">
+                  <span>Segunda - Domingo: 18:00 - 23:00</span>
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-2 col-md-6 mb-5 mb-md-5">
+             <div class="ftco-footer-widget mb-4 ml-md-4">
+              <h2 class="ftco-heading-2">Serviços</h2>
+              <ul class="list-unstyled">
+                <li><a href="#" class="py-2 d-block">Delivery</a></li>
+                <li><a href="#" class="py-2 d-block">Balcão</a></li>
+                <li><a href="#" class="py-2 d-block">Eventos</a></li>
+                <li><a href="#" class="py-2 d-block">Catering</a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-lg-3 col-md-6 mb-5 mb-md-5">
+            <div class="ftco-footer-widget mb-4">
+            	<h2 class="ftco-heading-2">Tem Dúvidas?</h2>
+            	<div class="block-23 mb-3">
+	              <ul>
+	                <li><span class="icon icon-map-marker"></span><span class="text">Rua das Flores, 123 - Centro, São Paulo - SP</span></li>
+	                <li><a href="#"><span class="icon icon-phone"></span><span class="text">(11) 9999-9999</span></a></li>
+	                <li><a href="#"><span class="icon icon-envelope"></span><span class="text">contato@restaurante.com</span></a></li>
+	              </ul>
+	            </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12 text-center">
+            <p>&copy; <?= date('Y') ?> Restaurante. Todos os direitos reservados.</p>
+          </div>
+        </div>
+      </div>
+    </footer>
+    
+    <!-- loader -->
+    <div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#F96D00"/></svg></div>
 
-        <div class="cd-overlay"></div>
-        <!-- /.cd-overlay -->
-
-
-        <!-- END mobile right burger menu -->
-
-        <!-- JavaScript -->
-        <script src="<?= site_url('web/'); ?>src/assets/js/jquery-2.1.1.min.js"></script>
-        <script src="<?= site_url('web/'); ?>src/assets/js/bootstrap.min.js"></script>
-        <script src="<?= site_url('web/'); ?>src/assets/js/jquery.mousewheel.min.js"></script>
-        <script src="<?= site_url('web/'); ?>src/assets/js/jquery.easing.min.js"></script>
-        <script src="<?= site_url('web/'); ?>src/assets/js/scrolling-nav.js"></script>
-        <script src="<?= site_url('web/'); ?>src/assets/js/aos.js"></script>
-        <script src="<?= site_url('web/'); ?>src/assets/js/slick.min.js"></script>
-        <script src="<?= site_url('web/'); ?>src/assets/js/jquery.touchSwipe.min.js"></script>
-        <script src="<?= site_url('web/'); ?>src/assets/js/moment.js"></script>
-        <script src="<?= site_url('web/'); ?>src/assets/js/bootstrap-datepicker.js"></script>
-        <script src="<?= site_url('web/'); ?>src/assets/js/bootstrap-datetimepicker.js"></script>
-        <script src="<?= site_url('web/'); ?>src/assets/js/jquery.fancybox.js"></script>
-        <script src="<?= site_url('web/'); ?>src/assets/js/loadMoreResults.js"></script>
-        <script src="<?= site_url('web/'); ?>src/assets/js/main.js"></script>
-        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBcg5Y2D1fpGI12T8wcbtPIsyGdw-_NV1Y&amp;callback=myMap"></script>
-        <?= $this->renderSection('scripts'); ?> 
-
-    </body>
-
-</html> 
+    <!-- Scripts -->
+    <script src="<?= site_url('web/src/js/jquery.min.js') ?>"></script>
+    <script src="<?= site_url('web/src/js/jquery-migrate-3.0.1.min.js') ?>"></script>
+    <script src="<?= site_url('web/src/js/popper.min.js') ?>"></script>
+    <script src="<?= site_url('web/src/js/bootstrap.min.js') ?>"></script>
+    <script src="<?= site_url('web/src/js/jquery.easing.1.3.js') ?>"></script>
+    <script src="<?= site_url('web/src/js/jquery.waypoints.min.js') ?>"></script>
+    <script src="<?= site_url('web/src/js/jquery.stellar.min.js') ?>"></script>
+    <script src="<?= site_url('web/src/js/owl.carousel.min.js') ?>"></script>
+    <script src="<?= site_url('web/src/js/jquery.magnific-popup.min.js') ?>"></script>
+    <script src="<?= site_url('web/src/js/aos.js') ?>"></script>
+    <script src="<?= site_url('web/src/js/jquery.animateNumber.min.js') ?>"></script>
+    <script src="<?= site_url('web/src/js/bootstrap-datepicker.js') ?>"></script>
+    <script src="<?= site_url('web/src/js/jquery.timepicker.min.js') ?>"></script>
+    <script src="<?= site_url('web/src/js/scrollax.min.js') ?>"></script>
+    <script src="<?= site_url('web/src/js/main.js') ?>"></script>
+    
+    <!-- Scripts personalizados -->
+    <?= $this->renderSection('scripts') ?>
+    
+  </body>
+</html>

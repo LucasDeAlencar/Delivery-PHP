@@ -21,19 +21,14 @@ class Login extends BaseController {
     
     public function criar() {
         
-        // Log para debug
-        log_message('info', 'Login::criar() chamado - Método: ' . $this->request->getMethod());
+        // Log para debug (removido em produção)
         
         if($this->request->getMethod() !== 'post'){
             
             $email = $this->request->getPost('email');
             $password = $this->request->getPost('password');
             
-            // Log dos dados recebidos
-            log_message('info', 'Dados recebidos - Email: ' . $email . ', Password: ' . (!empty($password) ? '[PREENCHIDA]' : '[VAZIA]'));
-            
-            // Debug adicional
-            log_message('info', 'POST data: ' . json_encode($this->request->getPost()));
+            // Logs removidos para produção
             
             // Validação básica
             if(empty($email) || empty($password)){
@@ -46,11 +41,11 @@ class Login extends BaseController {
             
             $autenticacao = service('autenticacao');
             
-            log_message('info', 'Tentando fazer login...');
+            // Log removido para produção
             
             if($autenticacao->login($email,$password)){
                 
-                log_message('info', 'Login bem-sucedido!');
+                // Log removido para produção
                 
                 $usuario = $autenticacao->pegaUsuarioLogado();
                 
@@ -62,7 +57,7 @@ class Login extends BaseController {
                 return redirect()->to(site_url('admin/home'))->with('sucesso', "Olá $usuario->nome, que bom que está de volta");
             }
             
-            log_message('info', 'Login falhou - credenciais incorretas');
+            // Log removido para produção
             return redirect()->back()->with('atencao', 'E-mail ou senha incorretos');
             
         }

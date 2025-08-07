@@ -14,6 +14,7 @@ class ProdutoModel extends Model {
         'nome',
         'slug',
         'ingredientes',
+        'preco',
         'ativo',
         'imagem',
     ];

@@ -42,14 +42,13 @@ Events::on('pre_system', static function (): void {
      * --------------------------------------------------------------------
      * If you delete, they will no longer be collected.
      */
-    if (CI_DEBUG && ! is_cli()) {
+    // Debug toolbar desabilitado para produção
+    if (CI_DEBUG && ! is_cli() && ENVIRONMENT === 'development') {
         Events::on('DBQuery', 'CodeIgniter\Debug\Toolbar\Collectors\Database::collect');
         service('toolbar')->respond();
         // Hot Reload route - for framework use on the hot reloader.
-        if (ENVIRONMENT === 'development') {
-            service('routes')->get('__hot-reload', static function (): void {
-                (new HotReloader())->run();
-            });
-        }
+        service('routes')->get('__hot-reload', static function (): void {
+            (new HotReloader())->run();
+        });
     }
 });

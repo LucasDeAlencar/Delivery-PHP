@@ -1,0 +1,257 @@
+/* Menu Dinâmico - Integração com Template */
+
+/* Filtros do Menu */
+.menu_filter {
+    margin-bottom: 50px;
+}
+
+.menu_filter ul {
+    margin: 0;
+    padding: 0;
+}
+
+.menu_filter ul li {
+    display: inline-block;
+    margin: 0 10px;
+}
+
+.menu_filter ul li a {
+    display: block;
+    padding: 12px 25px;
+    background: transparent;
+    border: 2px solid #ffc107;
+    color: #ffc107;
+    text-decoration: none;
+    border-radius: 30px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+
+.menu_filter ul li a:hover,
+.menu_filter ul li.active a {
+    background: #ffc107;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 193, 7, 0.3);
+}
+
+/* Items do Menu */
+.filtr-item {
+    margin-bottom: 30px;
+}
+
+.filtr-item .block {
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.filtr-item .block:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.filtr-item .content {
+    position: relative;
+}
+
+.filter_item_img {
+    position: relative;
+    overflow: hidden;
+    height: 250px;
+}
+
+.filter_item_img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: all 0.3s ease;
+}
+
+.filter_item_img:hover img {
+    transform: scale(1.1);
+}
+
+.filter_item_img i {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    color: #fff;
+    background: rgba(255, 193, 7, 0.9);
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    text-align: center;
+    border-radius: 50%;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.filter_item_img:hover i {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+}
+
+.filtr-item .info {
+    padding: 25px;
+}
+
+.filtr-item .info .name {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 10px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.filtr-item .info .short {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.category-badge {
+    margin-top: 10px;
+}
+
+.category-badge small {
+    background: #f8f9fa;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    color: #666;
+    border: 1px solid #e9ecef;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .menu_filter ul li {
+        display: block;
+        margin: 5px 0;
+        text-align: center;
+    }
+    
+    .menu_filter ul li a {
+        display: inline-block;
+        margin: 5px;
+    }
+    
+    .filter_item_img {
+        height: 200px;
+    }
+    
+    .filtr-item .info {
+        padding: 20px;
+    }
+    
+    .filtr-item .info .name {
+        font-size: 18px;
+    }
+}
+
+/* Animações */
+.filtr-item {
+    opacity: 1;
+    transform: translateY(0);
+    transition: all 0.5s ease;
+    display: block;
+}
+
+.filtr-item.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.filtr-item.hidden {
+    display: none !important;
+}
+
+/* Efeitos de hover melhorados */
+.filtr-item .block.hover-effect {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+}
+
+/* Estilo para quando não há produtos */
+.alert {
+    border-radius: 10px;
+    border: none;
+    padding: 30px;
+    text-align: center;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    color: #1976d2;
+}
+
+.alert h4 {
+    color: #1565c0;
+    margin-bottom: 15px;
+}
+
+/* Integração com o estilo do template */
+.ftco-section .menu_filter {
+    margin-bottom: 60px;
+}
+
+.ftco-section .filtr-item .block {
+    border: none;
+    background: #fff;
+}
+
+.ftco-section .filtr-item .info .name {
+    color: #000;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Efeito de loading */
+.menu-loading {
+    text-align: center;
+    padding: 50px;
+}
+
+.menu-loading::after {
+    content: '';
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #ffc107;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Botões de ação (se necessário) */
+.btn-menu {
+    background: #ffc107;
+    color: #fff;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+}
+
+.btn-menu:hover {
+    background: #e0a800;
+    color: #fff;
+    transform: translateY(-1px);
+}

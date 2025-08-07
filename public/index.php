@@ -32,6 +32,14 @@ if (version_compare(PHP_VERSION, $minPhpVersion, '<')) {
 // Define o timezone padrão para São Paulo
 date_default_timezone_set('America/Sao_Paulo');
 
+// Suprimir mensagens de debug em produção
+if (isset($_ENV['CI_ENVIRONMENT']) && $_ENV['CI_ENVIRONMENT'] === 'production') {
+    error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT & ~E_USER_NOTICE & ~E_USER_DEPRECATED);
+    ini_set('display_errors', '0');
+    ini_set('display_startup_errors', '0');
+    ini_set('log_errors', '1');
+}
+
 /*
  *---------------------------------------------------------------
  * SET THE CURRENT DIRECTORY
