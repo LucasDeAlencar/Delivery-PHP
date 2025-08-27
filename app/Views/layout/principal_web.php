@@ -373,6 +373,7 @@
     <script src="<?= site_url('web/src/js/jquery.timepicker.min.js') ?>"></script>
     <script src="<?= site_url('web/src/js/scrollax.min.js') ?>"></script>
     <script src="<?= site_url('web/src/js/main.js') ?>"></script>
+    <script src="<?= site_url('web/src/js/carrinho.js') ?>"></script>
     
     <!-- Scripts personalizados -->
     <?= $this->renderSection('scripts') ?>

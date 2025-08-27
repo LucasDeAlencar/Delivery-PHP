@@ -19,18 +19,6 @@
 #modalCompra #quantidade:active {
     color: #000000 !important;
 }
-
-/* Força cor preta no X de fechar */
-#modalCompra .close,
-#modalCompra .modal-header .close {
-    color: #000000 !important;
-    opacity: 0.8 !important;
-}
-#modalCompra .close:hover,
-#modalCompra .modal-header .close:hover {
-    color: #000000 !important;
-    opacity: 1 !important;
-}
 </style>
 <?php echo $this->endSection(); ?>
 

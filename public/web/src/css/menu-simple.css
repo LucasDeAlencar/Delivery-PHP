@@ -1,0 +1,306 @@
+/* Menu Dinâmico - Estilo Simples e Integrado */
+
+/* Filtros do Menu - Estilo Minimalista */
+.menu_filter {
+    margin-bottom: 40px;
+}
+
+.menu_filter ul {
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+.menu_filter ul li {
+    display: inline-block;
+    margin: 0 8px;
+}
+
+.menu_filter ul li a {
+    display: block;
+    padding: 10px 20px;
+    background: transparent;
+    border: 1px solid #dee2e6;
+    color: #6c757d;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: 400;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.menu_filter ul li a:hover,
+.menu_filter ul li.active a {
+    background: #f8f9fa;
+    color: #495057;
+    border-color: #adb5bd;
+}
+
+/* Items do Menu - Estilo Clean */
+.filtr-item {
+    margin-bottom: 30px;
+}
+
+.filtr-item .block {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.filtr-item .block:hover {
+    border-color: #adb5bd;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.filtr-item .content {
+    position: relative;
+}
+
+.filter_item_img {
+    position: relative;
+    overflow: hidden;
+    height: 200px;
+    background: #f8f9fa;
+}
+
+.filter_item_img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: all 0.3s ease;
+}
+
+.filter_item_img:hover img {
+    transform: scale(1.05);
+}
+
+/* Ícone centralizado e sutil */
+.filter_item_img i {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    font-size: 20px !important;
+    color: #fff !important;
+    background: rgba(108, 117, 125, 0.8) !important;
+    width: 50px !important;
+    height: 50px !important;
+    line-height: 50px !important;
+    text-align: center !important;
+    border-radius: 50% !important;
+    opacity: 0 !important;
+    transition: all 0.3s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 2 !important;
+}
+
+.filter_item_img:hover i {
+    opacity: 1 !important;
+    background: rgba(73, 80, 87, 0.9) !important;
+}
+
+.filtr-item .info {
+    padding: 20px;
+}
+
+.filtr-item .info .name {
+    font-size: 18px;
+    font-weight: 500;
+    color: #212529;
+    margin-bottom: 8px;
+    font-family: inherit;
+}
+
+.filtr-item .info .short {
+    color: #6c757d;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+}
+
+.category-badge {
+    margin-top: 8px;
+}
+
+.category-badge small {
+    background: #f8f9fa;
+    color: #6c757d;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    border: 1px solid #dee2e6;
+}
+
+/* Produto clicável - Estilo Discreto */
+.produto-item {
+    cursor: pointer !important;
+    user-select: none;
+    position: relative;
+}
+
+.produto-item:hover {
+    transform: translateY(-2px);
+}
+
+.produto-item .block {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.produto-item .block::before {
+    content: 'Clique para ver detalhes';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(33, 37, 41, 0.9);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 400;
+    font-size: 13px;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 10;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.produto-item:hover .block::before {
+    opacity: 1;
+}
+
+/* Preços com estilo neutro */
+.price-info {
+    background: #f8f9fa;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+    margin-top: 10px !important;
+}
+
+.price-info strong {
+    font-size: 16px;
+    color: #495057;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .menu_filter ul li {
+        display: block;
+        margin: 4px 0;
+        text-align: center;
+    }
+    
+    .menu_filter ul li a {
+        display: inline-block;
+        margin: 2px;
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+    
+    .filter_item_img {
+        height: 180px;
+    }
+    
+    .filtr-item .info {
+        padding: 16px;
+    }
+    
+    .filtr-item .info .name {
+        font-size: 16px;
+    }
+    
+    .produto-item .block::before {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+    
+    .filter_item_img i {
+        width: 40px !important;
+        height: 40px !important;
+        line-height: 40px !important;
+        font-size: 16px !important;
+    }
+}
+
+/* Animações suaves */
+.filtr-item {
+    opacity: 1;
+    transform: translateY(0);
+    transition: all 0.4s ease;
+    display: block;
+}
+
+.filtr-item.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.filtr-item.hidden {
+    display: none !important;
+}
+
+/* Estilo para quando não há produtos */
+.alert {
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+    padding: 20px;
+    text-align: center;
+    background: #f8f9fa;
+    color: #6c757d;
+}
+
+.alert h4 {
+    color: #495057;
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+/* Integração com o template */
+.ftco-section .menu_filter {
+    margin-bottom: 50px;
+}
+
+.ftco-section .filtr-item .block {
+    border: 1px solid #dee2e6;
+    background: #fff;
+}
+
+.ftco-section .filtr-item .info .name {
+    color: #212529;
+    font-family: inherit;
+}
+
+/* Garantir que o modal funcione */
+.modal {
+    z-index: 1050 !important;
+}
+
+.modal-backdrop {
+    z-index: 1040 !important;
+}
+
+/* Efeito de sucesso discreto */
+.success-animation {
+    animation: subtlePulse 0.4s ease;
+}
+
+@keyframes subtlePulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.02);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+    100% {
+        transform: scale(1);
+    }
+}

@@ -9,7 +9,10 @@ $routes->get('/', 'Home::index');
 $routes->get('login', 'Login::novo');
 $routes->post('login/criar', 'Login::criar');
 $routes->get('login/logout', 'Login::logout');
-$routes->get('login/mostraMensagemLogout', 'Login::mostraMensagemLogout');
+
+// Rotas de registro de usuários públicos
+$routes->get('registrar', 'Registrar::index');
+$routes->post('registrar/criar', 'Registrar::criar');
 
 // Rota específica removida - agora usa a rota do grupo admin
 

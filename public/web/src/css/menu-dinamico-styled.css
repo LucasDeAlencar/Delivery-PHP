@@ -1,4 +1,4 @@
-/* Menu Dinâmico - Integração com Template */
+/* Menu Dinâmico - Estilo Alinhado com o Tema da Página */
 
 /* Filtros do Menu */
 .menu_filter {
@@ -19,8 +19,8 @@
     display: block;
     padding: 12px 25px;
     background: transparent;
-    border: 2px solid #ffc107;
-    color: #ffc107;
+    border: 2px solid #78d5ef;
+    color: #78d5ef;
     text-decoration: none;
     border-radius: 30px;
     font-weight: 500;
@@ -32,10 +32,10 @@
 
 .menu_filter ul li a:hover,
 .menu_filter ul li.active a {
-    background: #ffc107;
+    background: #78d5ef;
     color: #fff;
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(255, 193, 7, 0.3);
+    box-shadow: 0 5px 15px rgba(120, 213, 239, 0.3);
 }
 
 /* Items do Menu */
@@ -79,29 +79,29 @@
 }
 
 .filter_item_img i {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 24px;
-    color: #fff;
-    background: rgba(255, 193, 7, 0.9);
-    width: 60px;
-    height: 60px;
-    line-height: 60px;
-    text-align: center;
-    border-radius: 50%;
-    opacity: 0;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    font-size: 24px !important;
+    color: #fff !important;
+    background: rgba(120, 213, 239, 0.9) !important;
+    width: 60px !important;
+    height: 60px !important;
+    line-height: 60px !important;
+    text-align: center !important;
+    border-radius: 50% !important;
+    opacity: 0 !important;
+    transition: all 0.3s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 2 !important;
 }
 
 .filter_item_img:hover i {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 1 !important;
+    transform: translate(-50%, -50%) scale(1.1) !important;
 }
 
 .filtr-item .info {
@@ -128,12 +128,63 @@
 }
 
 .category-badge small {
-    background: #f8f9fa;
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    color: #1976d2;
     padding: 5px 12px;
     border-radius: 15px;
     font-size: 12px;
-    color: #666;
-    border: 1px solid #e9ecef;
+    border: 1px solid #90caf9;
+}
+
+/* Produto clicável - Estilo Elegante */
+.produto-item {
+    cursor: pointer !important;
+    user-select: none;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.produto-item:hover {
+    transform: translateY(-3px);
+}
+
+.produto-item .block {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.produto-item .block::before {
+    content: '🛒 Clique para comprar';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #78d5ef 0%, #56caeb 100%);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 14px;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 10;
+    white-space: nowrap;
+    box-shadow: 0 5px 15px rgba(120, 213, 239, 0.4);
+    pointer-events: none;
+}
+
+.produto-item:hover .block::before {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.05);
+}
+
+/* Garantir que o ícone seja visível no hover */
+.produto-item:hover .filter_item_img i {
+    opacity: 1 !important;
+    transform: translate(-50%, -50%) scale(1.2) !important;
+    background: rgba(120, 213, 239, 1) !important;
+    box-shadow: 0 5px 15px rgba(120, 213, 239, 0.5) !important;
 }
 
 /* Responsividade */
@@ -159,6 +210,18 @@
     
     .filtr-item .info .name {
         font-size: 18px;
+    }
+    
+    .produto-item .block::before {
+        font-size: 12px;
+        padding: 8px 15px;
+    }
+    
+    .filter_item_img i {
+        width: 50px !important;
+        height: 50px !important;
+        line-height: 50px !important;
+        font-size: 20px !important;
     }
 }
 
@@ -230,7 +293,7 @@
     width: 40px;
     height: 40px;
     border: 3px solid #f3f3f3;
-    border-top: 3px solid #ffc107;
+    border-top: 3px solid #78d5ef;
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -240,9 +303,9 @@
     100% { transform: rotate(360deg); }
 }
 
-/* Botões de ação (se necessário) */
+/* Botões de ação */
 .btn-menu {
-    background: #ffc107;
+    background: #78d5ef;
     color: #fff;
     border: none;
     padding: 8px 20px;
@@ -255,7 +318,49 @@
 }
 
 .btn-menu:hover {
-    background: #e0a800;
+    background: #56caeb;
     color: #fff;
     transform: translateY(-1px);
+}
+
+/* Garantir que o modal funcione */
+.modal {
+    z-index: 1050 !important;
+}
+
+.modal-backdrop {
+    z-index: 1040 !important;
+}
+
+/* Efeito de sucesso no clique */
+.success-animation {
+    animation: successPulse 0.6s ease;
+}
+
+@keyframes successPulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(120, 213, 239, 0.5);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Preços com estilo do tema */
+.price-info {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid #78d5ef;
+    margin-top: 15px !important;
+}
+
+.price-info strong {
+    font-size: 18px;
+    color: #78d5ef;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }

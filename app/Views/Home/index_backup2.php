@@ -9,29 +9,6 @@
 <?php echo $this->section('estilos'); ?>
 <link rel="stylesheet" href="<?= site_url('web/src/css/menu-simple.css'); ?>">
 <link rel="stylesheet" href="<?= site_url('web/src/css/modal-dark.css'); ?>">
-<style>
-/* Força cor preta no campo quantidade */
-#modalCompra #quantidade,
-#modalCompra input#quantidade {
-    color: #000000 !important;
-}
-#modalCompra #quantidade:focus,
-#modalCompra #quantidade:active {
-    color: #000000 !important;
-}
-
-/* Força cor preta no X de fechar */
-#modalCompra .close,
-#modalCompra .modal-header .close {
-    color: #000000 !important;
-    opacity: 0.8 !important;
-}
-#modalCompra .close:hover,
-#modalCompra .modal-header .close:hover {
-    color: #000000 !important;
-    opacity: 1 !important;
-}
-</style>
 <?php echo $this->endSection(); ?>
 
 <!-- Seção de Conteúdo Dinâmico do Menu -->

@@ -1,0 +1,25 @@
+/* Correção específica para cor da quantidade */
+
+/* Força a cor preta no campo quantidade */
+#modalCompra #quantidade,
+#modalCompra input#quantidade,
+input[type="number"]#quantidade {
+    color: #000000 !important;
+}
+
+#modalCompra #quantidade:focus,
+#modalCompra #quantidade:active,
+#modalCompra #quantidade:hover,
+#modalCompra #quantidade:visited {
+    color: #000000 !important;
+}
+
+/* Garante que não haja herança de cor */
+.quantidade-control #quantidade {
+    color: #000000 !important;
+}
+
+/* Sobrescreve qualquer estilo do Bootstrap */
+.modal #quantidade.form-control {
+    color: #000000 !important;
+}

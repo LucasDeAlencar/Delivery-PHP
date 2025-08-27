@@ -8,30 +8,7 @@
 <!-- Seção de Estilos Personalizados -->
 <?php echo $this->section('estilos'); ?>
 <link rel="stylesheet" href="<?= site_url('web/src/css/menu-simple.css'); ?>">
-<link rel="stylesheet" href="<?= site_url('web/src/css/modal-dark.css'); ?>">
-<style>
-/* Força cor preta no campo quantidade */
-#modalCompra #quantidade,
-#modalCompra input#quantidade {
-    color: #000000 !important;
-}
-#modalCompra #quantidade:focus,
-#modalCompra #quantidade:active {
-    color: #000000 !important;
-}
-
-/* Força cor preta no X de fechar */
-#modalCompra .close,
-#modalCompra .modal-header .close {
-    color: #000000 !important;
-    opacity: 0.8 !important;
-}
-#modalCompra .close:hover,
-#modalCompra .modal-header .close:hover {
-    color: #000000 !important;
-    opacity: 1 !important;
-}
-</style>
+<link rel="stylesheet" href="<?= site_url('web/src/css/modal-simple.css'); ?>">
 <?php echo $this->endSection(); ?>
 
 <!-- Seção de Conteúdo Dinâmico do Menu -->
@@ -42,7 +19,7 @@
 <!-- Seção de Scripts Personalizados -->
 <?php echo $this->section('scripts'); ?>
 <script>
-// Script para menu com modal escuro e simétrico
+// Script para filtros dinâmicos - versão simplificada
 $(document).ready(function() {
     console.log('Inicializando menu...');
     
@@ -154,35 +131,17 @@ $(document).ready(function() {
     // Botão adicionar ao carrinho
     $('#btn-adicionar-carrinho').click(function() {
         var $btn = $(this);
-        var originalText = $btn.html();
-        
         $btn.addClass('btn-loading').prop('disabled', true);
         
         // Simular processamento
         setTimeout(function() {
-            $btn.removeClass('btn-loading').prop('disabled', false).html(originalText);
+            $btn.removeClass('btn-loading').prop('disabled', false);
             $('#modalCompra').modal('hide');
             
             // Mostrar notificação simples
-            showNotification('Produto adicionado ao carrinho!');
-        }, 1500);
+            alert('Produto adicionado ao carrinho!');
+        }, 1000);
     });
-    
-    // Função para mostrar notificação
-    function showNotification(message) {
-        var notification = $('<div class="alert alert-success position-fixed" style="top: 20px; right: 20px; z-index: 9999; min-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">' +
-            '<strong>Sucesso!</strong> ' + message +
-            '</div>');
-        
-        $('body').append(notification);
-        
-        // Remover após 3 segundos
-        setTimeout(function() {
-            notification.fadeOut(function() {
-                $(this).remove();
-            });
-        }, 3000);
-    }
     
     // Contador de caracteres para observações
     $('#observacoes').on('input', function() {
@@ -206,19 +165,6 @@ $(document).ready(function() {
             contador.addClass('text-warning');
         } else {
             contador.removeClass('text-warning');
-        }
-    });
-    
-    // Melhorar a experiência do modal
-    $('#modalCompra').on('shown.bs.modal', function() {
-        // Focar no campo de quantidade quando o modal abrir
-        $('#quantidade').focus();
-    });
-    
-    // Permitir usar Enter para adicionar ao carrinho
-    $('#modalCompra').on('keypress', function(e) {
-        if (e.which === 13 && !$('#btn-adicionar-carrinho').prop('disabled')) {
-            $('#btn-adicionar-carrinho').click();
         }
     });
     

@@ -18,66 +18,60 @@ class Login extends BaseController {
 
         return view('Login/novo', $data);
     }
-    
+
     public function criar() {
-        
-        // Log para debug (removido em produção)
-        
-        if($this->request->getMethod() !== 'post'){
-            
-            $email = $this->request->getPost('email');
-            $password = $this->request->getPost('password');
-            
-            // Logs removidos para produção
-            
-            // Validação básica
-            if(empty($email) || empty($password)){
-                return redirect()->back()->with('atencao', 'Por favor, preencha todos os campos');
-            }
-            
-            if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
-                return redirect()->back()->with('atencao', 'Por favor, digite um e-mail válido');
-            }
-            
-            $autenticacao = service('autenticacao');
-            
-            // Log removido para produção
-            
-            if($autenticacao->login($email,$password)){
-                
-                // Log removido para produção
-                
-                $usuario = $autenticacao->pegaUsuarioLogado();
-                
-                if(!$usuario->is_admin){
-                    
-                return redirect()->to(site_url('/'));
-                }
-                
-                return redirect()->to(site_url('admin/home'))->with('sucesso', "Olá $usuario->nome, que bom que está de volta");
-            }
-            
-            // Log removido para produção
-            return redirect()->back()->with('atencao', 'E-mail ou senha incorretos');
-            
+
+        // Verificar se é uma requisição POST
+        if (strtoupper($this->request->getMethod()) !== 'POST') {
+            return redirect()->back()->with('atencao', 'Método não permitido');
         }
-        
-        return redirect()->back()->with('atencao', 'Método não permitido');
-        
+
+        $email = $this->request->getPost('email');
+        $password = $this->request->getPost('password');
+
+        // Validação básica
+        if (empty($email) || empty($password)) {
+            return redirect()->back()->with('atencao', 'Por favor, preencha todos os campos');
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return redirect()->back()->with('atencao', 'Por favor, digite um e-mail válido');
+        }
+
+        $autenticacao = service('autenticacao');
+
+        if ($autenticacao->login($email, $password)) {
+
+            $usuario = $autenticacao->pegaUsuarioLogado();
+
+            // Verificar se o usuário está ativo
+            if (!$usuario->ativo) {
+                $autenticacao->logout();
+                return redirect()->back()->with('atencao', 'Sua conta está desativada. Entre em contato com o suporte.');
+            }
+
+            // Redirecionar baseado no tipo de usuário
+            if ($usuario->is_admin) {
+                return redirect()->to(site_url('admin/home'))->with('sucesso', "Olá {$usuario->nome}, que bom que está de volta!");
+            } else {
+                return redirect()->to(site_url('/'))->with('sucesso', "Bem-vindo(a), {$usuario->nome}!");
+            }
+        }
+
+        return redirect()->back()->with('atencao', 'E-mail ou senha incorretos');
     }
-    
+
     /**
-     * VAMOS ALTERAR ESSE MÉTODO
+     * Realiza o logout do usuário
      */
     public function logout() {
-        service('autenticacao')->logout();
-        
-        return redirect()->to(site_url('login/mostraMensagemLogout'));
-    }
-    
-    public function mostraMensagemLogout() {
-        
-        return redirect()->to(site_url("login"))->with('info', 'Esperamos ver você novamente');
-        
+        $autenticacao = service('autenticacao');
+        $usuario = $autenticacao->pegaUsuarioLogado();
+
+        $nomeUsuario = $usuario ? $usuario->nome : 'Usuário';
+
+        $autenticacao->logout();
+
+        return redirect()->to(site_url('login'))->with('info', "Até logo, {$nomeUsuario}! Esperamos ver você novamente.");
     }
 }

@@ -1,0 +1,507 @@
+/* Popup de Compra - Estilos Personalizados */
+
+/* Modal de Compra */
+#modalCompra .modal-dialog {
+    max-width: 900px;
+    margin: 30px auto;
+}
+
+#modalCompra .modal-content {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+#modalCompra .modal-header {
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    border: none;
+    padding: 20px 30px;
+    position: relative;
+}
+
+#modalCompra .modal-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="pizza" patternUnits="userSpaceOnUse" width="20" height="20"><circle cx="10" cy="10" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23pizza)"/></svg>');
+    opacity: 0.3;
+}
+
+#modalCompra .modal-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+    position: relative;
+    z-index: 1;
+}
+
+#modalCompra .modal-title i {
+    font-size: 28px;
+    margin-right: 10px;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-5px);
+    }
+    60% {
+        transform: translateY(-3px);
+    }
+}
+
+#modalCompra .close {
+    position: relative;
+    z-index: 1;
+    opacity: 0.8;
+    font-size: 28px;
+    font-weight: 300;
+    text-shadow: none;
+}
+
+#modalCompra .close:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Corpo do Modal */
+#modalCompra .modal-body {
+    padding: 30px;
+    background: #fff;
+}
+
+/* Imagem do Produto */
+.produto-imagem {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+#modal-produto-imagem {
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+#modal-produto-imagem:hover {
+    transform: scale(1.02);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+#modal-produto-placeholder {
+    border-radius: 10px;
+    border: 2px dashed #ddd;
+    background: linear-gradient(45deg, #f8f9fa 25%, transparent 25%), 
+                linear-gradient(-45deg, #f8f9fa 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #f8f9fa 75%), 
+                linear-gradient(-45deg, transparent 75%, #f8f9fa 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+}
+
+#modal-produto-placeholder i {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.7;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 0.7;
+    }
+}
+
+/* Detalhes do Produto */
+#modal-produto-nome {
+    color: #333;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    margin-bottom: 15px;
+    position: relative;
+}
+
+#modal-produto-nome::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background: linear-gradient(90deg, #ffc107, #ff9800);
+    border-radius: 2px;
+}
+
+#modal-produto-categoria {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    color: #1976d2;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    display: inline-block;
+    margin-bottom: 20px;
+    border: 1px solid #90caf9;
+}
+
+#modal-produto-descricao {
+    color: #666;
+    line-height: 1.6;
+    font-size: 15px;
+    margin-bottom: 25px;
+}
+
+/* Preço */
+#modal-produto-preco {
+    color: #28a745;
+    font-weight: 700;
+    font-size: 28px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    margin-bottom: 0;
+}
+
+/* Controle de Quantidade */
+.input-group {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.input-group .btn {
+    background: #ffc107;
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    font-size: 18px;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.input-group .btn:hover {
+    background: #e0a800;
+    transform: scale(1.05);
+}
+
+.input-group .btn:active {
+    transform: scale(0.95);
+}
+
+#quantidade {
+    border: none;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    background: #f8f9fa;
+    height: 45px;
+}
+
+#quantidade:focus {
+    box-shadow: none;
+    background: #fff;
+    border: 2px solid #ffc107;
+}
+
+/* Total */
+.bg-light {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+    border: 2px solid #dee2e6;
+    border-radius: 10px !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.bg-light::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 193, 7, 0.1), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+#modal-total {
+    color: #28a745;
+    font-weight: 700;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 1;
+}
+
+/* Campo de Observações */
+#observacoes {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px 15px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    resize: vertical;
+    min-height: 80px;
+}
+
+#observacoes:focus {
+    border-color: #ffc107;
+    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+}
+
+#observacoes::placeholder {
+    color: #adb5bd;
+    font-style: italic;
+}
+
+/* Footer do Modal */
+#modalCompra .modal-footer {
+    background: #f8f9fa;
+    border: none;
+    padding: 20px 30px;
+    border-radius: 0 0 15px 15px;
+}
+
+#modalCompra .modal-footer .btn {
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+#modalCompra .modal-footer .btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.5s ease;
+}
+
+#modalCompra .modal-footer .btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+#modalCompra .modal-footer .btn-secondary {
+    background: #6c757d;
+    border: none;
+    color: #fff;
+}
+
+#modalCompra .modal-footer .btn-secondary:hover {
+    background: #545b62;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+}
+
+#btn-adicionar-carrinho {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    color: #fff;
+    position: relative;
+    z-index: 1;
+}
+
+#btn-adicionar-carrinho:hover {
+    background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+}
+
+#btn-adicionar-carrinho i {
+    margin-right: 8px;
+    animation: wiggle 1s ease-in-out infinite;
+}
+
+@keyframes wiggle {
+    0%, 7% {
+        transform: rotateZ(0);
+    }
+    15% {
+        transform: rotateZ(-15deg);
+    }
+    20% {
+        transform: rotateZ(10deg);
+    }
+    25% {
+        transform: rotateZ(-10deg);
+    }
+    30% {
+        transform: rotateZ(6deg);
+    }
+    35% {
+        transform: rotateZ(-4deg);
+    }
+    40%, 100% {
+        transform: rotateZ(0);
+    }
+}
+
+/* Efeitos de Hover nos Produtos */
+.produto-item {
+    transition: all 0.3s ease;
+    cursor: pointer !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.produto-item::before {
+    content: '🛒 Clique para comprar';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 193, 7, 0.95);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 14px;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 10;
+    white-space: nowrap;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.produto-item:hover::before {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.05);
+}
+
+.produto-item:hover {
+    transform: translateY(-5px);
+    z-index: 5;
+}
+
+.produto-item:hover .block {
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    #modalCompra .modal-dialog {
+        margin: 10px;
+        max-width: none;
+    }
+    
+    #modalCompra .modal-body {
+        padding: 20px;
+    }
+    
+    #modalCompra .modal-header,
+    #modalCompra .modal-footer {
+        padding: 15px 20px;
+    }
+    
+    #modal-produto-nome {
+        font-size: 20px;
+    }
+    
+    #modal-produto-preco {
+        font-size: 24px;
+    }
+    
+    .produto-item::before {
+        font-size: 12px;
+        padding: 8px 15px;
+    }
+}
+
+/* Animação de entrada do modal */
+#modalCompra.fade .modal-dialog {
+    transform: scale(0.8) translateY(-50px);
+    transition: all 0.3s ease;
+}
+
+#modalCompra.show .modal-dialog {
+    transform: scale(1) translateY(0);
+}
+
+/* Efeito de loading no botão */
+.btn-loading {
+    position: relative;
+    color: transparent !important;
+}
+
+.btn-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #fff;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Melhorias visuais adicionais */
+.price-info {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid #ffc107;
+    margin-top: 15px !important;
+}
+
+.price-info strong {
+    font-size: 18px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Tooltip personalizado */
+[data-toggle="tooltip"] {
+    position: relative;
+}
+
+/* Efeito de sucesso */
+.success-animation {
+    animation: successPulse 0.6s ease;
+}
+
+@keyframes successPulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(40, 167, 69, 0.5);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
