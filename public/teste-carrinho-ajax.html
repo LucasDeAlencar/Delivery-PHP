@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Teste do Carrinho AJAX</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            background: #1a1a1a;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+        }
+        .card {
+            background: #2d2d2d;
+            border: 1px solid #333;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background: linear-gradient(135deg, #f8b531 0%, #fac56e 100%);
+            color: #000;
+            font-weight: bold;
+            border-radius: 10px 10px 0 0;
+        }
+        .btn-test {
+            margin: 5px;
+        }
+        .result-box {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #17a2b8; }
+        .warning { color: #ffc107; }
+        pre {
+            color: #fff;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">
+            <i class="fas fa-shopping-cart"></i> Teste do Sistema de Carrinho AJAX
+        </h1>
+
+        <!-- Teste 1: Verificar API -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-check-circle"></i> 1. Verificar API do Carrinho
+            </div>
+            <div class="card-body">
+                <p>Testa se a API está respondendo corretamente</p>
+                <button class="btn btn-primary btn-test" onclick="testarAPI()">
+                    <i class="fas fa-play"></i> Testar GET /api/carrinho
+                </button>
+                <div id="result-api" class="result-box"></div>
+            </div>
+        </div>
+
+        <!-- Teste 2: Adicionar Produto -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-plus-circle"></i> 2. Adicionar Produto ao Carrinho
+            </div>
+            <div class="card-body">
+                <p>Adiciona um produto de teste ao carrinho</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label>ID do Produto:</label>
+                        <input type="number" id="produto-id" class="form-control" value="1">
+                    </div>
+                    <div class="col-md-6">
+                        <label>Quantidade:</label>
+                        <input type="number" id="produto-qtd" class="form-control" value="2">
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <label>Observações:</label>
+                    <input type="text" id="produto-obs" class="form-control" placeholder="Ex: Sem cebola">
+                </div>
+                <button class="btn btn-success btn-test mt-3" onclick="testarAdicionar()">
+                    <i class="fas fa-cart-plus"></i> Adicionar via API
+                </button>
+                <button class="btn btn-info btn-test mt-3" onclick="testarAdicionarTradicional()">
+                    <i class="fas fa-cart-plus"></i> Adicionar via Método Tradicional
+                </button>
+                <div id="result-adicionar" class="result-box"></div>
+            </div>
+        </div>
+
+        <!-- Teste 3: Listar Itens -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-list"></i> 3. Listar Itens do Carrinho
+            </div>
+            <div class="card-body">
+                <p>Lista todos os itens do carrinho atual</p>
+                <button class="btn btn-primary btn-test" onclick="testarListar()">
+                    <i class="fas fa-sync"></i> Atualizar Lista
+                </button>
+                <div id="result-listar" class="result-box"></div>
+            </div>
+        </div>
+
+        <!-- Teste 4: Atualizar Quantidade -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-edit"></i> 4. Atualizar Quantidade
+            </div>
+            <div class="card-body">
+                <p>Atualiza a quantidade de um item específico</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label>ID do Item:</label>
+                        <input type="number" id="item-id-update" class="form-control" placeholder="Ex: 1">
+                    </div>
+                    <div class="col-md-6">
+                        <label>Nova Quantidade:</label>
+                        <input type="number" id="item-qtd-update" class="form-control" value="5">
+                    </div>
+                </div>
+                <button class="btn btn-warning btn-test mt-3" onclick="testarAtualizar()">
+                    <i class="fas fa-edit"></i> Atualizar
+                </button>
+                <div id="result-atualizar" class="result-box"></div>
+            </div>
+        </div>
+
+        <!-- Teste 5: Remover Item -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-trash"></i> 5. Remover Item
+            </div>
+            <div class="card-body">
+                <p>Remove um item específico do carrinho</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label>ID do Item:</label>
+                        <input type="number" id="item-id-delete" class="form-control" placeholder="Ex: 1">
+                    </div>
+                </div>
+                <button class="btn btn-danger btn-test mt-3" onclick="testarRemover()">
+                    <i class="fas fa-trash"></i> Remover
+                </button>
+                <div id="result-remover" class="result-box"></div>
+            </div>
+        </div>
+
+        <!-- Teste 6: Limpar Carrinho -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-broom"></i> 6. Limpar Carrinho
+            </div>
+            <div class="card-body">
+                <p>Remove todos os itens do carrinho</p>
+                <button class="btn btn-danger btn-test" onclick="testarLimpar()">
+                    <i class="fas fa-broom"></i> Limpar Tudo
+                </button>
+                <div id="result-limpar" class="result-box"></div>
+            </div>
+        </div>
+
+        <!-- Teste 7: Verificar Banco -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-database"></i> 7. Informações da Sessão
+            </div>
+            <div class="card-body">
+                <p>Informações sobre a sessão atual</p>
+                <button class="btn btn-info btn-test" onclick="mostrarSessao()">
+                    <i class="fas fa-info-circle"></i> Ver Sessão
+                </button>
+                <div id="result-sessao" class="result-box"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_URL = '/api/carrinho';
+        const TRADICIONAL_URL = '/carrinho/adicionar';
+
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'success' ? 'success' : 
+                         type === 'error' ? 'error' : 
+                         type === 'warning' ? 'warning' : 'info';
+            element.innerHTML += `<div class="${color}">[${timestamp}] ${message}</div>`;
+            element.scrollTop = element.scrollHeight;
+        }
+
+        function clearLog(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+
+        async function testarAPI() {
+            clearLog('result-api');
+            log('result-api', '🔄 Testando GET /api/carrinho...', 'info');
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                log('result-api', `Status: ${response.status} ${response.statusText}`, 
+                    response.ok ? 'success' : 'error');
+
+                const data = await response.json();
+                log('result-api', 'Resposta:', 'info');
+                log('result-api', `<pre>${JSON.stringify(data, null, 2)}</pre>`, 'info');
+
+                if (data.success) {
+                    log('result-api', `✅ API funcionando! Total de itens: ${data.data.total_itens}`, 'success');
+                }
+            } catch (error) {
+                log('result-api', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        async function testarAdicionar() {
+            clearLog('result-adicionar');
+            const produtoId = document.getElementById('produto-id').value;
+            const quantidade = document.getElementById('produto-qtd').value;
+            const observacoes = document.getElementById('produto-obs').value;
+
+            log('result-adicionar', '🔄 Adicionando produto via API...', 'info');
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        produto_id: produtoId,
+                        quantidade: parseInt(quantidade),
+                        observacoes: observacoes
+                    })
+                });
+
+                log('result-adicionar', `Status: ${response.status}`, 
+                    response.ok ? 'success' : 'error');
+
+                const data = await response.json();
+                log('result-adicionar', `<pre>${JSON.stringify(data, null, 2)}</pre>`, 'info');
+
+                if (data.success) {
+                    log('result-adicionar', `✅ Produto adicionado! Total: ${data.data.total_itens} itens`, 'success');
+                } else {
+                    log('result-adicionar', `❌ Erro: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                log('result-adicionar', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        async function testarAdicionarTradicional() {
+            clearLog('result-adicionar');
+            const produtoId = document.getElementById('produto-id').value;
+            const quantidade = document.getElementById('produto-qtd').value;
+            const observacoes = document.getElementById('produto-obs').value;
+
+            log('result-adicionar', '🔄 Adicionando produto via método tradicional...', 'info');
+            
+            try {
+                const response = await fetch(TRADICIONAL_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: new URLSearchParams({
+                        produto_id: produtoId,
+                        produto_nome: 'Produto Teste',
+                        produto_imagem: '/uploads/teste.jpg',
+                        quantidade: quantidade,
+                        preco_unitario: 35.90,
+                        preco_total: (35.90 * quantidade).toFixed(2),
+                        observacoes: observacoes
+                    })
+                });
+
+                log('result-adicionar', `Status: ${response.status}`, 
+                    response.ok ? 'success' : 'error');
+
+                const data = await response.json();
+                log('result-adicionar', `<pre>${JSON.stringify(data, null, 2)}</pre>`, 'info');
+
+                if (data.success) {
+                    log('result-adicionar', `✅ Produto adicionado! Total: ${data.total_itens} itens`, 'success');
+                } else {
+                    log('result-adicionar', `❌ Erro: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                log('result-adicionar', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        async function testarListar() {
+            clearLog('result-listar');
+            log('result-listar', '🔄 Listando itens do carrinho...', 'info');
+            
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+
+                if (data.success) {
+                    log('result-listar', `✅ Total de itens: ${data.data.total_itens}`, 'success');
+                    log('result-listar', `💰 Valor total: R$ ${data.data.valor_total.toFixed(2)}`, 'success');
+                    
+                    if (data.data.itens.length > 0) {
+                        log('result-listar', '\n📦 Itens:', 'info');
+                        data.data.itens.forEach((item, index) => {
+                            log('result-listar', `\n${index + 1}. ${item.produto_nome}`, 'info');
+                            log('result-listar', `   ID: ${item.id} | Produto ID: ${item.produto_id}`, 'info');
+                            log('result-listar', `   Quantidade: ${item.quantidade}x`, 'info');
+                            log('result-listar', `   Preço: R$ ${parseFloat(item.preco_unitario).toFixed(2)}`, 'info');
+                            log('result-listar', `   Total: R$ ${parseFloat(item.preco_total).toFixed(2)}`, 'info');
+                            if (item.observacoes) {
+                                log('result-listar', `   Obs: ${item.observacoes}`, 'warning');
+                            }
+                        });
+                    } else {
+                        log('result-listar', '📭 Carrinho vazio', 'warning');
+                    }
+                }
+            } catch (error) {
+                log('result-listar', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        async function testarAtualizar() {
+            clearLog('result-atualizar');
+            const itemId = document.getElementById('item-id-update').value;
+            const quantidade = document.getElementById('item-qtd-update').value;
+
+            if (!itemId) {
+                log('result-atualizar', '⚠️ Informe o ID do item', 'warning');
+                return;
+            }
+
+            log('result-atualizar', `🔄 Atualizando item ${itemId}...`, 'info');
+            
+            try {
+                const response = await fetch(`${API_URL}/${itemId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ quantidade: parseInt(quantidade) })
+                });
+
+                const data = await response.json();
+                log('result-atualizar', `<pre>${JSON.stringify(data, null, 2)}</pre>`, 'info');
+
+                if (data.success) {
+                    log('result-atualizar', '✅ Quantidade atualizada!', 'success');
+                }
+            } catch (error) {
+                log('result-atualizar', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        async function testarRemover() {
+            clearLog('result-remover');
+            const itemId = document.getElementById('item-id-delete').value;
+
+            if (!itemId) {
+                log('result-remover', '⚠️ Informe o ID do item', 'warning');
+                return;
+            }
+
+            log('result-remover', `🔄 Removendo item ${itemId}...`, 'info');
+            
+            try {
+                const response = await fetch(`${API_URL}/${itemId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const data = await response.json();
+                log('result-remover', `<pre>${JSON.stringify(data, null, 2)}</pre>`, 'info');
+
+                if (data.success) {
+                    log('result-remover', '✅ Item removido!', 'success');
+                }
+            } catch (error) {
+                log('result-remover', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        async function testarLimpar() {
+            clearLog('result-limpar');
+            
+            if (!confirm('Deseja realmente limpar todo o carrinho?')) {
+                return;
+            }
+
+            log('result-limpar', '🔄 Limpando carrinho...', 'info');
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const data = await response.json();
+                log('result-limpar', `<pre>${JSON.stringify(data, null, 2)}</pre>`, 'info');
+
+                if (data.success) {
+                    log('result-limpar', '✅ Carrinho limpo!', 'success');
+                }
+            } catch (error) {
+                log('result-limpar', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        function mostrarSessao() {
+            clearLog('result-sessao');
+            log('result-sessao', '📋 Informações da Sessão:', 'info');
+            log('result-sessao', `URL Base: ${window.location.origin}`, 'info');
+            log('result-sessao', `API URL: ${API_URL}`, 'info');
+            log('result-sessao', `Método Tradicional: ${TRADICIONAL_URL}`, 'info');
+            log('result-sessao', '\n💡 Dica: Use o console do navegador (F12) para ver mais detalhes', 'warning');
+        }
+
+        // Auto-carregar ao abrir a página
+        window.onload = function() {
+            console.log('🍕 Página de teste do carrinho carregada!');
+            testarAPI();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,310 @@
+/* Modal de Compra - Estilo Simples e Integrado */
+
+/* Modal de Compra */
+#modalCompra .modal-dialog {
+    max-width: 800px;
+    margin: 30px auto;
+}
+
+#modalCompra .modal-content {
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+#modalCompra .modal-header {
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    padding: 16px 24px;
+}
+
+#modalCompra .modal-title {
+    font-size: 20px;
+    font-weight: 500;
+    margin: 0;
+    color: #212529;
+}
+
+#modalCompra .modal-title i {
+    font-size: 20px;
+    margin-right: 8px;
+    color: #6c757d;
+}
+
+#modalCompra .close {
+    opacity: 0.7;
+    font-size: 24px;
+    font-weight: 300;
+    color: #6c757d;
+}
+
+#modalCompra .close:hover {
+    opacity: 1;
+    color: #495057;
+}
+
+/* Corpo do Modal */
+#modalCompra .modal-body {
+    padding: 24px;
+    background: #fff;
+}
+
+/* Imagem do Produto */
+.produto-imagem {
+    position: relative;
+    margin-bottom: 16px;
+}
+
+#modal-produto-imagem {
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+    transition: all 0.3s ease;
+}
+
+#modal-produto-placeholder {
+    border-radius: 4px;
+    border: 2px dashed #dee2e6;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 250px;
+}
+
+#modal-produto-placeholder i {
+    color: #adb5bd !important;
+    font-size: 48px !important;
+}
+
+/* Detalhes do Produto */
+#modal-produto-nome {
+    color: #212529;
+    font-weight: 500;
+    font-family: inherit;
+    margin-bottom: 12px;
+    font-size: 24px;
+}
+
+#modal-produto-categoria {
+    background: #f8f9fa;
+    color: #6c757d;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 400;
+    display: inline-block;
+    margin-bottom: 16px;
+    border: 1px solid #dee2e6;
+}
+
+#modal-produto-descricao {
+    color: #6c757d;
+    line-height: 1.5;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+/* Preço */
+#modal-produto-preco {
+    color: #495057;
+    font-weight: 600;
+    font-size: 24px;
+    margin-bottom: 0;
+}
+
+/* Controle de Quantidade */
+.input-group {
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.input-group .btn {
+    background: #f8f9fa;
+    border: none;
+    color: #495057;
+    font-weight: 500;
+    font-size: 16px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.input-group .btn:hover {
+    background: #e9ecef;
+    color: #212529;
+}
+
+.input-group .btn:active {
+    transform: scale(0.98);
+}
+
+#quantidade {
+    border: none;
+    font-size: 16px;
+    font-weight: 500;
+    color: #495057;
+    background: #fff;
+    height: 40px;
+    text-align: center;
+}
+
+#quantidade:focus {
+    box-shadow: none;
+    background: #fff;
+    outline: none;
+}
+
+/* Total */
+.bg-light {
+    background: #f8f9fa !important;
+    border: 1px solid #dee2e6;
+    border-radius: 4px !important;
+}
+
+#modal-total {
+    color: #495057;
+    font-weight: 600;
+    font-size: 20px;
+}
+
+/* Campo de Observações */
+#observacoes {
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 12px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    resize: vertical;
+    min-height: 80px;
+}
+
+#observacoes:focus {
+    border-color: #adb5bd;
+    box-shadow: 0 0 0 0.1rem rgba(173, 181, 189, 0.25);
+    outline: none;
+}
+
+#observacoes::placeholder {
+    color: #adb5bd;
+}
+
+/* Footer do Modal */
+#modalCompra .modal-footer {
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    padding: 16px 24px;
+}
+
+#modalCompra .modal-footer .btn {
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+#modalCompra .modal-footer .btn-secondary {
+    background: #6c757d;
+    border-color: #6c757d;
+    color: #fff;
+}
+
+#modalCompra .modal-footer .btn-secondary:hover {
+    background: #5a6268;
+    border-color: #545b62;
+    transform: translateY(-1px);
+}
+
+#btn-adicionar-carrinho {
+    background: #495057;
+    border-color: #495057;
+    color: #fff;
+}
+
+#btn-adicionar-carrinho:hover {
+    background: #343a40;
+    border-color: #343a40;
+    transform: translateY(-1px);
+}
+
+#btn-adicionar-carrinho i {
+    margin-right: 6px;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    #modalCompra .modal-dialog {
+        margin: 10px;
+        max-width: none;
+    }
+    
+    #modalCompra .modal-body {
+        padding: 16px;
+    }
+    
+    #modalCompra .modal-header,
+    #modalCompra .modal-footer {
+        padding: 12px 16px;
+    }
+    
+    #modal-produto-nome {
+        font-size: 20px;
+    }
+    
+    #modal-produto-preco {
+        font-size: 20px;
+    }
+}
+
+/* Animação de entrada do modal */
+#modalCompra.fade .modal-dialog {
+    transform: scale(0.95) translateY(-20px);
+    transition: all 0.3s ease;
+}
+
+#modalCompra.show .modal-dialog {
+    transform: scale(1) translateY(0);
+}
+
+/* Efeito de loading no botão */
+.btn-loading {
+    position: relative;
+    color: transparent !important;
+}
+
+.btn-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid #fff;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Contador de caracteres */
+.char-counter {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.char-counter.text-warning {
+    color: #856404 !important;
+}

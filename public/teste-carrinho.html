@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Carrinho</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Teste de Adicionar ao Carrinho</h1>
+    
+    <button id="testar">Testar Adicionar Produto</button>
+    
+    <div id="resultado" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc;">
+        <h3>Resultado:</h3>
+        <pre id="output"></pre>
+    </div>
+
+    <script>
+        $('#testar').click(function() {
+            console.log('Testando adicionar ao carrinho...');
+            
+            $.ajax({
+                url: '/carrinho/adicionar',
+                method: 'POST',
+                dataType: 'json',
+                data: {
+                    produto_id: 1,
+                    quantidade: 2,
+                    observacoes: 'Teste de adição'
+                },
+                success: function(response) {
+                    console.log('Sucesso:', response);
+                    $('#output').text(JSON.stringify(response, null, 2));
+                },
+                error: function(xhr, status, error) {
+                    console.error('Erro:', error);
+                    console.error('Status:', status);
+                    console.error('Response:', xhr.responseText);
+                    $('#output').text('ERRO:\n' + xhr.responseText);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

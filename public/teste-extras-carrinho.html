@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Sistema de Extras no Carrinho</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: #2d2d2d;
+            border: 2px solid #f8b531;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .test-title {
+            color: #f8b531;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success {
+            background: rgba(40, 167, 69, 0.2);
+            border: 1px solid #28a745;
+            color: #28a745;
+        }
+        .error {
+            background: rgba(220, 53, 69, 0.2);
+            border: 1px solid #dc3545;
+            color: #dc3545;
+        }
+        .info {
+            background: rgba(248, 181, 49, 0.2);
+            border: 1px solid #f8b531;
+            color: #f8b531;
+        }
+        button {
+            background: #f8b531;
+            color: #1a1a1a;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+        }
+        button:hover {
+            background: #ffc107;
+        }
+        pre {
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="color: #f8b531; text-align: center;">🧪 Teste do Sistema de Extras</h1>
+    
+    <div class="test-section">
+        <div class="test-title">📦 Teste 1: Adicionar Produto com Extras</div>
+        <button onclick="testeAdicionarComExtras()">Executar Teste</button>
+        <div id="resultado-teste1"></div>
+    </div>
+    
+    <div class="test-section">
+        <div class="test-title">💰 Teste 2: Cálculo de Preço com Extras</div>
+        <button onclick="testeCalculoPreco()">Executar Teste</button>
+        <div id="resultado-teste2"></div>
+    </div>
+    
+    <div class="test-section">
+        <div class="test-title">🔢 Teste 3: Múltiplas Quantidades de Extras</div>
+        <button onclick="testeMultiplosExtras()">Executar Teste</button>
+        <div id="resultado-teste3"></div>
+    </div>
+    
+    <div class="test-section">
+        <div class="test-title">📊 Teste 4: Visualizar Carrinho Atual</div>
+        <button onclick="visualizarCarrinho()">Ver Carrinho</button>
+        <button onclick="limparCarrinho()">Limpar Carrinho</button>
+        <div id="resultado-teste4"></div>
+    </div>
+
+    <script>
+        // Simular objeto Carrinho se não existir
+        if (typeof window.Carrinho === 'undefined') {
+            window.Carrinho = {
+                itens: [],
+                sessionKey: 'test_session',
+                
+                adicionar: function(produto) {
+                    console.log('➕ Adicionando:', produto);
+                    
+                    // Calcular preço total incluindo extras
+                    let precoBase = parseFloat(produto.preco);
+                    let precoComExtras = precoBase;
+                    
+                    if (produto.extras && produto.extras.length > 0) {
+                        produto.extras.forEach(extra => {
+                            const quantidade = extra.quantidade || 1;
+                            precoComExtras += (parseFloat(extra.preco) * quantidade);
+                        });
+                    }
+                    
+                    // Adicionar item
+                    this.itens.push({
+                        id: produto.id,
+                        nome: produto.nome,
+                        preco: precoBase,
+                        precoComExtras: precoComExtras,
+                        quantidade: parseInt(produto.quantidade),
+                        total: precoComExtras * parseInt(produto.quantidade),
+                        observacoes: produto.observacoes || '',
+                        extras: produto.extras || []
+                    });
+                    
+                    console.log('✅ Item adicionado:', this.itens[this.itens.length - 1]);
+                    return true;
+                },
+                
+                getValorTotal: function() {
+                    return this.itens.reduce((total, item) => total + item.total, 0);
+                },
+                
+                limpar: function() {
+                    this.itens = [];
+                }
+            };
+        }
+
+        function testeAdicionarComExtras() {
+            const resultado = document.getElementById('resultado-teste1');
+            resultado.innerHTML = '<div class="test-result info">⏳ Executando teste...</div>';
+            
+            try {
+                // Produto de teste
+                const produto = {
+                    id: 1,
+                    nome: 'Pizza Calabresa',
+                    preco: 30.00,
+                    quantidade: 1,
+                    observacoes: 'Sem cebola',
+                    extras: [
+                        { id: 5, nome: 'Bacon', preco: 3.00, quantidade: 2 },
+                        { id: 7, nome: 'Queijo Extra', preco: 3.00, quantidade: 1 }
+                    ]
+                };
+                
+                window.Carrinho.adicionar(produto);
+                
+                const ultimoItem = window.Carrinho.itens[window.Carrinho.itens.length - 1];
+                
+                let html = '<div class="test-result success">✅ Produto adicionado com sucesso!</div>';
+                html += '<pre>' + JSON.stringify(ultimoItem, null, 2) + '</pre>';
+                
+                // Verificações
+                const precoEsperado = 30.00 + (3.00 * 2) + (3.00 * 1); // 39.00
+                if (Math.abs(ultimoItem.precoComExtras - precoEsperado) < 0.01) {
+                    html += '<div class="test-result success">✅ Preço calculado corretamente: R$ ' + ultimoItem.precoComExtras.toFixed(2) + '</div>';
+                } else {
+                    html += '<div class="test-result error">❌ Preço incorreto! Esperado: R$ ' + precoEsperado.toFixed(2) + ', Obtido: R$ ' + ultimoItem.precoComExtras.toFixed(2) + '</div>';
+                }
+                
+                if (ultimoItem.extras.length === 2) {
+                    html += '<div class="test-result success">✅ Extras salvos: ' + ultimoItem.extras.length + ' extras</div>';
+                } else {
+                    html += '<div class="test-result error">❌ Extras não salvos corretamente!</div>';
+                }
+                
+                resultado.innerHTML = html;
+            } catch (error) {
+                resultado.innerHTML = '<div class="test-result error">❌ Erro: ' + error.message + '</div>';
+            }
+        }
+
+        function testeCalculoPreco() {
+            const resultado = document.getElementById('resultado-teste2');
+            resultado.innerHTML = '<div class="test-result info">⏳ Executando teste...</div>';
+            
+            try {
+                // Limpar carrinho
+                window.Carrinho.limpar();
+                
+                // Adicionar 3 produtos diferentes
+                window.Carrinho.adicionar({
+                    id: 1,
+                    nome: 'Pizza Margherita',
+                    preco: 25.00,
+                    quantidade: 2,
+                    extras: [
+                        { id: 1, nome: 'Azeitona', preco: 2.00, quantidade: 1 }
+                    ]
+                });
+                
+                window.Carrinho.adicionar({
+                    id: 2,
+                    nome: 'Pizza Calabresa',
+                    preco: 30.00,
+                    quantidade: 1,
+                    extras: [
+                        { id: 2, nome: 'Bacon', preco: 3.00, quantidade: 3 }
+                    ]
+                });
+                
+                window.Carrinho.adicionar({
+                    id: 3,
+                    nome: 'Refrigerante',
+                    preco: 5.00,
+                    quantidade: 2,
+                    extras: []
+                });
+                
+                const total = window.Carrinho.getValorTotal();
+                
+                // Cálculo esperado:
+                // Pizza 1: (25 + 2) * 2 = 54
+                // Pizza 2: (30 + 9) * 1 = 39
+                // Refri: 5 * 2 = 10
+                // Total: 103
+                const esperado = 103.00;
+                
+                let html = '<div class="test-result info">📊 Itens no carrinho: ' + window.Carrinho.itens.length + '</div>';
+                html += '<div class="test-result info">💰 Total calculado: R$ ' + total.toFixed(2) + '</div>';
+                html += '<div class="test-result info">💰 Total esperado: R$ ' + esperado.toFixed(2) + '</div>';
+                
+                if (Math.abs(total - esperado) < 0.01) {
+                    html += '<div class="test-result success">✅ Cálculo correto!</div>';
+                } else {
+                    html += '<div class="test-result error">❌ Cálculo incorreto!</div>';
+                }
+                
+                resultado.innerHTML = html;
+            } catch (error) {
+                resultado.innerHTML = '<div class="test-result error">❌ Erro: ' + error.message + '</div>';
+            }
+        }
+
+        function testeMultiplosExtras() {
+            const resultado = document.getElementById('resultado-teste3');
+            resultado.innerHTML = '<div class="test-result info">⏳ Executando teste...</div>';
+            
+            try {
+                window.Carrinho.limpar();
+                
+                // Produto com múltiplos extras em diferentes quantidades
+                window.Carrinho.adicionar({
+                    id: 1,
+                    nome: 'Pizza Especial',
+                    preco: 35.00,
+                    quantidade: 1,
+                    extras: [
+                        { id: 1, nome: 'Bacon', preco: 3.00, quantidade: 5 },
+                        { id: 2, nome: 'Queijo', preco: 2.50, quantidade: 3 },
+                        { id: 3, nome: 'Azeitona', preco: 1.50, quantidade: 2 }
+                    ]
+                });
+                
+                const item = window.Carrinho.itens[0];
+                
+                // Cálculo: 35 + (3*5) + (2.5*3) + (1.5*2) = 35 + 15 + 7.5 + 3 = 60.5
+                const esperado = 60.50;
+                
+                let html = '<div class="test-result info">🍕 Produto: ' + item.nome + '</div>';
+                html += '<div class="test-result info">📦 Extras: ' + item.extras.length + '</div>';
+                html += '<pre>' + JSON.stringify(item.extras, null, 2) + '</pre>';
+                html += '<div class="test-result info">💰 Preço com extras: R$ ' + item.precoComExtras.toFixed(2) + '</div>';
+                html += '<div class="test-result info">💰 Esperado: R$ ' + esperado.toFixed(2) + '</div>';
+                
+                if (Math.abs(item.precoComExtras - esperado) < 0.01) {
+                    html += '<div class="test-result success">✅ Múltiplos extras calculados corretamente!</div>';
+                } else {
+                    html += '<div class="test-result error">❌ Cálculo incorreto!</div>';
+                }
+                
+                resultado.innerHTML = html;
+            } catch (error) {
+                resultado.innerHTML = '<div class="test-result error">❌ Erro: ' + error.message + '</div>';
+            }
+        }
+
+        function visualizarCarrinho() {
+            const resultado = document.getElementById('resultado-teste4');
+            
+            if (window.Carrinho.itens.length === 0) {
+                resultado.innerHTML = '<div class="test-result info">🛒 Carrinho vazio</div>';
+                return;
+            }
+            
+            let html = '<div class="test-result success">🛒 Carrinho (' + window.Carrinho.itens.length + ' itens)</div>';
+            html += '<pre>' + JSON.stringify(window.Carrinho.itens, null, 2) + '</pre>';
+            html += '<div class="test-result info">💰 Total: R$ ' + window.Carrinho.getValorTotal().toFixed(2) + '</div>';
+            
+            resultado.innerHTML = html;
+        }
+
+        function limparCarrinho() {
+            window.Carrinho.limpar();
+            document.getElementById('resultado-teste4').innerHTML = '<div class="test-result success">✅ Carrinho limpo!</div>';
+        }
+
+        // Executar teste automático ao carregar
+        window.addEventListener('load', () => {
+            console.log('🧪 Página de testes carregada');
+            console.log('📦 Carrinho disponível:', typeof window.Carrinho !== 'undefined');
+        });
+    </script>
+</body>
+</html>
