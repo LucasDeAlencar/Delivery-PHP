@@ -198,4 +198,38 @@ class Login extends BaseController {
     echo "<li><a href='javascript:location.reload()'>🔄 Atualizar Esta Página</a></li>";
     echo "</ol>";
 	}
+	
+	public function buscar_cep() {
+        // Recebe o CEP via POST ou GET
+        $cep = $this->request->getVar('cep'); 
+
+        // 1. Tratamento: Remove tudo que não for número
+        $cep = preg_replace("/[^0-9]/", "", $cep);
+
+        // 2. Validação básica: CEP deve ter 8 dígitos
+        if (strlen($cep) != 8) {
+            return $this->response->setJSON(['erro' => true, 'msg' => 'Formato de CEP inválido.']);
+        }
+
+        // 3. Inicializa cURL para chamar a API ViaCEP
+        $url = "https://viacep.com.br/ws/{$cep}/json/";
+        
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Opcional, ajuda em localhost
+        $resposta = curl_exec($ch);
+        curl_close($ch);
+
+        $dados = json_decode($resposta, true);
+
+        // 4. Verifica se a API retornou erro (CEP inexistente)
+        if (isset($dados['erro'])) {
+            return $this->response->setJSON(['erro' => true, 'msg' => 'CEP não encontrado.']);
+        }
+
+        // 5. Retorna os dados para a View ou Javascript
+        // O array conterá: logradouro (rua), bairro, localidade (cidade), uf, etc.
+        return $this->response->setJSON($dados);
+    }
 }

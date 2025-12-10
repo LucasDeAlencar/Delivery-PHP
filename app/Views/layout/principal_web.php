@@ -139,7 +139,6 @@
 	          <li class="nav-item"><a href="#services" class="nav-link">Serviços</a></li>
 	          <li class="nav-item"><a href="#about" class="nav-link">Sobre</a></li>
 	          <li class="nav-item"><a href="#contact" class="nav-link">Contato</a></li>
-	          <li class="nav-item"><a href="<?= site_url('login') ?>" class="nav-link">Admin</a></li>
 	        </ul>
 	      </div>
 		  </div>
@@ -495,6 +494,7 @@
     <div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#F96D00"/></svg></div>
 
     <!-- Scripts -->
+    <script src="<?= site_url('web/src/js/auth-check.js') ?>"></script>
     <script src="<?= site_url('web/src/js/jquery.min.js') ?>"></script>
     <script src="<?= site_url('web/src/js/jquery-migrate-3.0.1.min.js') ?>"></script>
     <script src="<?= site_url('web/src/js/popper.min.js') ?>"></script>

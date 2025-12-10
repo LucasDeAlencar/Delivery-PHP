@@ -89,9 +89,9 @@
 
     <!-- Modal de Compra - Estilo Dark -->
     <div class="modal fade" id="modalCompra" tabindex="-1" role="dialog" aria-labelledby="modalCompraLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered" role="document">
-            <div class="modal-content" style="background: #1a1a1a; border: 1px solid #333; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-height: 90vh;">
-                <div class="modal-header" style="background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%); border-bottom: 1px solid #333; border-radius: 15px 15px 0 0; flex-shrink: 0;">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content" style="background: #1a1a1a; border: 1px solid #333; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                <div class="modal-header" style="background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%); border-bottom: 1px solid #333; border-radius: 15px 15px 0 0;">
                     <h5 class="modal-title text-warning" id="modalCompraLabel" style="font-family: 'Poppins', sans-serif; font-weight: 600;">
                         <i class="flaticon-pizza-1 mr-2"></i>Finalizar Compra
                     </h5>
@@ -99,7 +99,7 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body" style="background: #1a1a1a; overflow-y: auto; max-height: calc(90vh - 140px);">
+                <div class="modal-body" style="background: #1a1a1a; max-height: 70vh; overflow-y: auto;">
                     <input type="hidden" id="modal-produto-id" value="">
                     <input type="hidden" id="modal-produto-imagem-url" value="">
                     <div class="row">
@@ -133,20 +133,16 @@
                             <!-- Quantidade -->
                             <div class="mb-4">
                                 <label for="quantidade" class="font-weight-bold text-light" style="font-family: 'Poppins', sans-serif;">Quantidade:</label>
-                                <div class="input-group" style="max-width: 150px;">
-                                    <div class="input-group-prepend">
-                                        <button class="btn btn-outline-warning" type="button" id="btn-diminuir" style="border-color: #f8b531; color: #f8b531; border-right: none;">
-                                            -
-                                        </button>
-                                    </div>
+                                <div style="display: flex; max-width: 150px;">
+                                    <button class="btn btn-outline-warning" type="button" id="btn-diminuir" style="border-color: #f8b531; color: #f8b531; border-right: none;">
+                                        -
+                                    </button>
                                     <input type="number" class="form-control text-center bg-dark text-light" 
                                            id="quantidade" value="1" min="1" readonly
                                            style="border-color: #f8b531; border-left: none; border-right: none; color: #ffc135 !important;">
-                                    <div class="input-group-append">
-                                        <button class="btn btn-outline-warning" type="button" id="btn-aumentar" style="border-color: #f8b531; color: #f8b531; border-left: none;">
-                                            +
-                                        </button>
-                                    </div>
+                                    <button class="btn btn-outline-warning" type="button" id="btn-aumentar" style="border-color: #f8b531; color: #f8b531; border-left: none;">
+                                        +
+                                    </button>
                                 </div>
                             </div>
 
