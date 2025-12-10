@@ -36,6 +36,24 @@ class CarrinhoController extends BaseController {
         return (int) $total;
     }
 
+    // Método index para exibir a página do carrinho
+    public function index() {
+        // Recupera a Session ID
+        $sessionID = session_id();
+
+        // Busca os dados no banco
+        $carrinho_itens = $this->getItensCarrinho($sessionID);
+
+        // Prepara a data para a view
+        $data = [
+            'carrinho_itens' => $carrinho_itens,
+            'total_itens' => $this->contarItensCarrinho($sessionID)
+        ];
+
+        // Retorna a view principal do carrinho
+        return view('carrinho/index', $data);
+    }
+
     // NOVO MÉTODO: Retorna a lista de itens do carrinho em HTML (para ser carregada via AJAX)
     public function lista() {
         // 1. Não precisa da verificação isAJAX, pois é uma rota GET

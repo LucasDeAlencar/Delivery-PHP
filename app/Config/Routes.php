@@ -12,6 +12,7 @@ $routes->get('login/logout', 'Login::logout');
 $routes->get('teste-auth', 'Login::testarAutenticacao');
 
 // Rotas do Carrinho (apenas novas rotas implementadas)
+$routes->get('carrinho', 'CarrinhoController::index', ['as' => 'carrinho.index']);
 $routes->post('carrinho/adicionar', 'CarrinhoController::adicionar', ['as' => 'carrinho.adicionar']);
 $routes->get('carrinho/listar', 'CarrinhoController::listar', ['as' => 'carrinho.listar']);
 $routes->post('carrinho/remover/(:num)', 'CarrinhoController::remover/$1', ['as' => 'carrinho.remover']);

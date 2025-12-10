@@ -4,7 +4,10 @@
     <title><?= $this->renderSection('titulo') ?> - Restaurante</title>
     
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Josefin+Sans" rel="stylesheet">
@@ -30,6 +33,8 @@
     <link rel="stylesheet" href="<?= site_url('web/src/css/style.css') ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="<?= site_url('assets/css/carrinho-modal.css?v=' . time()) ?>">
+    <link rel="stylesheet" href="<?= site_url('assets/css/mobile-responsive.css?v=' . time()) ?>">
+    <link rel="stylesheet" href="<?= site_url('assets/css/mobile-touch.css?v=' . time()) ?>">
     
     <!-- Estilos do carrinho navbar -->
     <style>
@@ -270,58 +275,13 @@
     <section class="ftco-section ftco-services" id="services">
     	<div class="overlay"></div>
     	<div class="container">
-    		<div class="row justify-content-center mb-5 pb-3">
-          <div class="col-md-7 heading-section ftco-animate text-center">
-            <h2 class="mb-4">Nossos Serviços</h2>
-            <p>Oferecemos os melhores serviços para garantir sua satisfação e comodidade.</p>
-          </div>
-        </div>
-    		<div class="row">
-          <div class="col-md-4 ftco-animate">
-            <div class="media d-block text-center block-6 services">
-              <div class="icon d-flex justify-content-center align-items-center mb-5">
-              	<span class="flaticon-diet"></span>
-              </div>
-              <div class="media-body">
-                <h3 class="heading">Comida Saudável</h3>
-                <p>Ingredientes frescos e selecionados, preparados com técnicas que preservam os nutrientes.</p>
-              </div>
-            </div>      
-          </div>
-          <div class="col-md-4 ftco-animate">
-            <div class="media d-block text-center block-6 services">
-              <div class="icon d-flex justify-content-center align-items-center mb-5">
-              	<span class="flaticon-bicycle"></span>
-              </div>
-              <div class="media-body">
-                <h3 class="heading">Entrega Rápida</h3>
-                <p>Delivery eficiente para que você receba seu pedido quentinho e no tempo certo.</p>
-              </div>
-            </div>      
-          </div>
-          <div class="col-md-4 ftco-animate">
-            <div class="media d-block text-center block-6 services">
-              <div class="icon d-flex justify-content-center align-items-center mb-5"><span class="flaticon-pizza-1"></span></div>
-              <div class="media-body">
-                <h3 class="heading">Receitas Originais</h3>
-                <p>Pratos preparados com receitas tradicionais e o toque especial da nossa cozinha.</p>
-              </div>
-            </div>    
-          </div>
-        </div>
+    		<?= $this->include('Home/servicos') ?>
     	</div>
     </section>
 
     <!-- Menu Section -->
     <section class="ftco-section" id="menu">
     	<div class="container">
-    		<div class="row justify-content-center mb-5 pb-3">
-          <div class="col-md-7 heading-section ftco-animate text-center">
-            <h2 class="mb-4">Nosso Menu</h2>
-            <p>Descubra nossos pratos especiais, preparados com ingredientes frescos e muito sabor.</p>
-          </div>
-        </div>
-        
         <!-- Conteúdo dinâmico do menu -->
         <?= $this->renderSection('menu_dinamico') ?>
         

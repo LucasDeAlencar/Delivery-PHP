@@ -1,0 +1,697 @@
+/* ========================================
+   RESPONSIVIDADE MOBILE - LAYOUT PRINCIPAL
+   ======================================== */
+
+/* Reset e configurações base */
+* {
+    box-sizing: border-box;
+}
+
+/* Seções de títulos responsivas */
+.heading-section h2 {
+    font-size: 2.5rem;
+    line-height: 1.2;
+}
+
+.heading-section p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    opacity: 0.9;
+}
+
+@media (max-width: 768px) {
+    .heading-section h2 {
+        font-size: 2rem;
+    }
+    
+    .heading-section p {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .heading-section h2 {
+        font-size: 1.75rem;
+        margin-bottom: 15px !important;
+    }
+    
+    .heading-section p {
+        font-size: 0.95rem;
+        padding: 0 10px;
+    }
+}
+
+/* Cards de serviços responsivos */
+.services {
+    margin-bottom: 30px;
+    padding: 20px;
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+}
+
+.services:hover {
+    transform: translateY(-5px);
+}
+
+.services .icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, #f8b531 0%, #e6a429 100%);
+    border-radius: 50%;
+}
+
+.services .icon span {
+    font-size: 2rem;
+    color: #fff;
+}
+
+.services h3 {
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.services p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #666;
+}
+
+@media (max-width: 991px) {
+    .services {
+        margin-bottom: 25px;
+        padding: 15px;
+    }
+    
+    .services .icon {
+        width: 70px;
+        height: 70px;
+        margin-bottom: 15px;
+    }
+    
+    .services .icon span {
+        font-size: 1.8rem;
+    }
+    
+    .services h3 {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .services {
+        margin-bottom: 20px;
+        padding: 20px 15px;
+        text-align: center;
+    }
+    
+    .services .icon {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 15px;
+    }
+    
+    .services .icon span {
+        font-size: 1.6rem;
+    }
+    
+    .services h3 {
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+    }
+    
+    .services p {
+        font-size: 0.9rem;
+    }
+}
+
+/* Navbar responsiva */
+@media (max-width: 991px) {
+    .navbar-brand {
+        font-size: 1rem !important;
+    }
+    
+    .navbar-brand small {
+        font-size: 0.7rem !important;
+    }
+    
+    .carrinho-navbar {
+        position: fixed;
+        top: 15px;
+        right: 15px;
+        z-index: 1050;
+    }
+    
+    .navbar-toggler {
+        margin-right: 60px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .navbar-brand {
+        font-size: 0.9rem !important;
+        max-width: 200px;
+    }
+    
+    .carrinho-navbar {
+        top: 10px;
+        right: 10px;
+    }
+}
+
+/* Hero Section responsiva */
+@media (max-width: 768px) {
+    .home-slider .slider-text h1 {
+        font-size: 2rem !important;
+        line-height: 1.2 !important;
+    }
+    
+    .home-slider .slider-text p {
+        font-size: 1rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+    
+    .home-slider .slider-text .btn {
+        padding: 12px 20px !important;
+        font-size: 0.9rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .home-slider {
+        min-height: 60vh !important;
+    }
+    
+    .home-slider .slider-text {
+        padding: 20px 0 !important;
+    }
+    
+    .home-slider .slider-text h1 {
+        font-size: 1.8rem !important;
+    }
+}
+
+/* Grid de produtos responsivo */
+@media (max-width: 1200px) {
+    .filtr-item {
+        margin-bottom: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .filtr-item {
+        margin-bottom: 15px;
+    }
+    
+    .block .content {
+        padding: 15px !important;
+    }
+    
+    .block .info .name {
+        font-size: 1.1rem !important;
+        margin-bottom: 8px !important;
+    }
+    
+    .block .info .short {
+        font-size: 0.85rem !important;
+        line-height: 1.4 !important;
+    }
+    
+    .block .info .price-info {
+        margin-top: 10px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .container-fluid {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+    
+    .row {
+        margin-left: -5px !important;
+        margin-right: -5px !important;
+    }
+    
+    .col-lg-4, .col-md-6, .col-sm-12 {
+        padding-left: 5px !important;
+        padding-right: 5px !important;
+    }
+    
+    .block {
+        border-radius: 8px !important;
+        overflow: hidden;
+    }
+    
+    .block .content {
+        padding: 12px !important;
+    }
+    
+    .block .filter_item_img {
+        height: 180px !important;
+        overflow: hidden;
+    }
+    
+    .block .filter_item_img img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+    }
+    
+    .block .info .name {
+        font-size: 1rem !important;
+        font-weight: 600 !important;
+    }
+    
+    .block .info .short {
+        font-size: 0.8rem !important;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .block .info .price-info strong {
+        font-size: 1.1rem !important;
+    }
+}
+
+/* Menu de filtros responsivo */
+.menu_filter {
+    margin-bottom: 30px;
+    padding: 0 15px;
+}
+
+.menu_filter ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.menu_filter ul li {
+    margin: 0;
+}
+
+.menu_filter ul li a {
+    display: block;
+    padding: 8px 16px;
+    background: #2d2d2d;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 20px;
+    border: 1px solid #444;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.menu_filter ul li.active a,
+.menu_filter ul li a:hover {
+    background: #f8b531;
+    color: #000;
+    border-color: #f8b531;
+    transform: translateY(-2px);
+}
+
+@media (max-width: 576px) {
+    .menu_filter {
+        margin-bottom: 20px;
+        padding: 0 10px;
+    }
+    
+    .menu_filter ul {
+        gap: 5px;
+    }
+    
+    .menu_filter ul li a {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        border-radius: 15px;
+    }
+}
+
+/* Modais responsivos */
+@media (max-width: 991px) {
+    .modal-dialog {
+        margin: 10px;
+        max-width: calc(100% - 20px);
+    }
+    
+    .modal-lg {
+        max-width: calc(100% - 20px);
+    }
+}
+
+@media (max-width: 576px) {
+    .modal-dialog {
+        margin: 0;
+        max-width: 100%;
+        height: 100vh;
+    }
+    
+    .modal-content {
+        height: 100vh;
+        border-radius: 0 !important;
+        border: none !important;
+    }
+    
+    .modal-header {
+        border-radius: 0 !important;
+        padding: 12px 15px;
+        flex-shrink: 0;
+    }
+    
+    .modal-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 15px;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .modal-footer {
+        border-radius: 0 !important;
+        padding: 10px 15px;
+        flex-shrink: 0;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .modal-footer .btn {
+        flex: 1;
+        min-width: 120px;
+        margin: 0;
+    }
+    
+    /* Modal de compra específico */
+    #modalCompra .modal-body .row {
+        flex-direction: column;
+    }
+    
+    #modalCompra .col-md-5,
+    #modalCompra .col-md-7 {
+        width: 100%;
+        max-width: 100%;
+        flex: 0 0 100%;
+        margin-bottom: 15px;
+    }
+    
+    #modalCompra .produto-imagem img,
+    #modalCompra .produto-imagem .bg-dark {
+        max-height: 200px !important;
+        width: 100%;
+        object-fit: cover;
+    }
+    
+    #modalCompra h4 {
+        font-size: 1.2rem;
+    }
+    
+    #modalCompra .h3 {
+        font-size: 1.4rem;
+    }
+    
+    #modalCompra .h4 {
+        font-size: 1.1rem;
+    }
+    
+    #modalCompra .input-group {
+        max-width: 140px;
+    }
+    
+    #modalCompra textarea {
+        min-height: 80px;
+    }
+}
+
+/* Botões responsivos */
+@media (max-width: 576px) {
+    .btn {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+    }
+    
+    .btn-lg {
+        padding: 12px 20px;
+        font-size: 1rem;
+    }
+    
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+}
+
+/* Formulários responsivos */
+@media (max-width: 576px) {
+    .form-control {
+        font-size: 16px; /* Evita zoom no iOS */
+        padding: 10px 12px;
+    }
+    
+    .input-group-text {
+        padding: 10px 12px;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    label {
+        font-size: 0.9rem;
+        margin-bottom: 5px;
+    }
+}
+
+/* Alertas e notificações responsivas */
+@media (max-width: 576px) {
+    .alert {
+        margin: 10px;
+        padding: 12px;
+        font-size: 0.9rem;
+        border-radius: 8px;
+    }
+    
+    .custom-notification {
+        right: 10px !important;
+        left: 10px !important;
+        max-width: none !important;
+        min-width: auto !important;
+    }
+}
+
+/* Carrinho navbar responsivo */
+@media (max-width: 991px) {
+    .carrinho-navbar {
+        position: fixed !important;
+        top: 15px !important;
+        right: 15px !important;
+        z-index: 1050 !important;
+        background: rgba(0, 0, 0, 0.8);
+        padding: 8px;
+        border-radius: 50%;
+        backdrop-filter: blur(10px);
+    }
+    
+    .carrinho-link .fas {
+        font-size: 24px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .carrinho-navbar {
+        top: 10px !important;
+        right: 10px !important;
+        padding: 6px;
+    }
+    
+    .carrinho-link .fas {
+        font-size: 22px !important;
+    }
+    
+    .carrinho-counter {
+        width: 18px !important;
+        height: 18px !important;
+        font-size: 11px !important;
+        line-height: 18px !important;
+        top: -6px !important;
+        right: -6px !important;
+    }
+}
+
+/* Seções gerais responsivas */
+@media (max-width: 768px) {
+    .section {
+        padding: 40px 0;
+    }
+    
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+    
+    h2 {
+        font-size: 1.75rem;
+    }
+    
+    h3 {
+        font-size: 1.5rem;
+    }
+    
+    h4 {
+        font-size: 1.25rem;
+    }
+    
+    h5 {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .section {
+        padding: 30px 0;
+    }
+    
+    h1 {
+        font-size: 1.8rem;
+        line-height: 1.2;
+    }
+    
+    h2 {
+        font-size: 1.6rem;
+        line-height: 1.3;
+    }
+    
+    h3 {
+        font-size: 1.4rem;
+    }
+    
+    h4 {
+        font-size: 1.2rem;
+    }
+    
+    p {
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+}
+
+/* Otimizações de performance para mobile */
+@media (max-width: 768px) {
+    * {
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .btn, .form-control, .modal-content {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+    
+    /* Smooth scrolling */
+    html {
+        scroll-behavior: smooth;
+    }
+    
+    /* Otimizar animações para mobile */
+    .modal-content {
+        animation-duration: 0.2s;
+    }
+    
+    .btn {
+        transition-duration: 0.2s;
+    }
+}
+
+/* Landscape mode para celulares */
+@media (max-width: 896px) and (orientation: landscape) {
+    .home-slider {
+        min-height: 100vh;
+    }
+    
+    .modal-dialog {
+        margin: 5px;
+        max-width: calc(100% - 10px);
+    }
+    
+    .modal-body {
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+    }
+}
+
+/* Dispositivos muito pequenos (< 360px) */
+@media (max-width: 359px) {
+    .container-fluid {
+        padding-left: 5px !important;
+        padding-right: 5px !important;
+    }
+    
+    .navbar-brand {
+        font-size: 0.8rem !important;
+        max-width: 150px;
+    }
+    
+    .block .content {
+        padding: 8px !important;
+    }
+    
+    .block .info .name {
+        font-size: 0.9rem !important;
+    }
+    
+    .block .info .short {
+        font-size: 0.75rem !important;
+    }
+    
+    .menu_filter ul li a {
+        padding: 5px 10px;
+        font-size: 0.75rem;
+    }
+    
+    .modal-header {
+        padding: 10px 12px;
+    }
+    
+    .modal-body {
+        padding: 12px;
+    }
+    
+    .modal-footer {
+        padding: 8px 12px;
+    }
+}
+
+/* Fix para iOS Safari */
+@supports (-webkit-touch-callout: none) {
+    .modal-body {
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .form-control {
+        font-size: 16px; /* Previne zoom automático */
+    }
+}
+
+/* Dark mode otimizado para mobile */
+@media (prefers-color-scheme: dark) {
+    .block {
+        background: #1a1a1a;
+        border: 1px solid #333;
+    }
+    
+    .menu_filter ul li a {
+        background: #2d2d2d;
+        border-color: #444;
+        color: #fff;
+    }
+}

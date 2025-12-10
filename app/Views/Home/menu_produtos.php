@@ -1,5 +1,13 @@
 <?php if (!empty($categorias) || !empty($produtos)): ?>
     <div class="container-fluid">
+        <!-- Título da seção do menu -->
+        <div class="row justify-content-center mb-4 pb-2">
+            <div class="col-12 col-md-10 col-lg-8 text-center">
+                <h2 class="mb-3 mb-md-4">Nosso Menu</h2>
+                <p class="mb-0">Descubra nossos pratos especiais, preparados com ingredientes frescos e muito sabor.</p>
+            </div>
+        </div>
+        
         <div class="row">
             <div class="col-12">
                 <!-- Menu de Filtros por Categoria -->
@@ -347,6 +355,195 @@
         background: #2d2d2d !important;
     }
 
+    /* Grid de produtos otimizado */
+    .filtr-item {
+        margin-bottom: 20px;
+        transition: transform 0.3s ease;
+    }
+
+    .filtr-item:hover {
+        transform: translateY(-5px);
+    }
+
+    .block {
+        background: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .block:hover {
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        transform: translateY(-3px);
+    }
+
+    .block .content {
+        padding: 0;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .block .filter_item_img {
+        height: 250px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .block .filter_item_img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .block:hover .filter_item_img img {
+        transform: scale(1.05);
+    }
+
+    .block .info {
+        padding: 20px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .block .info .name {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #333;
+        line-height: 1.3;
+    }
+
+    .block .info .short {
+        color: #666;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin-bottom: 15px;
+        flex: 1;
+    }
+
+    .block .info .price-info {
+        margin-top: auto;
+        padding-top: 10px;
+        border-top: 1px solid #eee;
+    }
+
+    .block .info .price-info strong {
+        font-size: 1.3rem;
+        font-weight: 700;
+    }
+
+    .block .info .category-badge {
+        margin-top: 8px;
+    }
+
+    .block .info .category-badge small {
+        background: #f8f9fa;
+        color: #666;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    /* Placeholder para produtos sem imagem */
+    .no-image-placeholder {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border: 2px dashed #dee2e6;
+    }
+
+    .no-image-placeholder i {
+        color: #adb5bd;
+        font-size: 3rem;
+    }
+
+    /* ========================================
+       RESPONSIVIDADE ESPECÍFICA DOS PRODUTOS
+       ======================================== */
+
+    /* Tablets */
+    @media (max-width: 991px) {
+        .block .filter_item_img {
+            height: 220px;
+        }
+        
+        .block .info {
+            padding: 15px;
+        }
+        
+        .block .info .name {
+            font-size: 1.1rem;
+        }
+    }
+
+    /* Mobile */
+    @media (max-width: 576px) {
+        .filtr-item {
+            margin-bottom: 15px;
+        }
+        
+        .block .filter_item_img {
+            height: 180px;
+        }
+        
+        .block .info {
+            padding: 12px;
+        }
+        
+        .block .info .name {
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+        
+        .block .info .short {
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .block .info .price-info strong {
+            font-size: 1.1rem;
+        }
+        
+        .block .info .category-badge small {
+            font-size: 0.7rem;
+            padding: 3px 6px;
+        }
+    }
+
+    /* Dispositivos muito pequenos */
+    @media (max-width: 359px) {
+        .block .filter_item_img {
+            height: 160px;
+        }
+        
+        .block .info {
+            padding: 10px;
+        }
+        
+        .block .info .name {
+            font-size: 0.95rem;
+        }
+        
+        .block .info .short {
+            font-size: 0.8rem;
+        }
+        
+        .block .info .price-info strong {
+            font-size: 1rem;
+        }
+    }
+
     /* ========================================
        RESPONSIVIDADE DOS MODAIS
        ======================================== */
@@ -488,6 +685,11 @@
     }
 
     /* Menu de filtros responsivo */
+    .menu_filter {
+        margin-bottom: 30px;
+        padding: 0 15px;
+    }
+
     .menu_filter ul {
         display: flex;
         flex-wrap: wrap;
@@ -498,6 +700,11 @@
     }
 
     @media (max-width: 576px) {
+        .menu_filter {
+            margin-bottom: 20px;
+            padding: 0 10px;
+        }
+        
         .menu_filter ul {
             gap: 5px;
         }

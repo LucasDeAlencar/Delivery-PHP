@@ -1,0 +1,293 @@
+/* ========================================
+   OTIMIZAÇÕES PARA TOUCH E GESTOS MOBILE
+   ======================================== */
+
+/* Configurações base para touch */
+* {
+    -webkit-tap-highlight-color: rgba(248, 181, 49, 0.2);
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Permitir seleção em campos de texto */
+input, textarea, [contenteditable] {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+/* Botões otimizados para touch */
+.btn, button, [role="button"], .produto-item {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(248, 181, 49, 0.3);
+}
+
+/* Links e elementos clicáveis */
+a, .clickable {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(248, 181, 49, 0.2);
+}
+
+/* Produtos - área de toque otimizada */
+.produto-item {
+    position: relative;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(248, 181, 49, 0.1);
+}
+
+.produto-item::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    z-index: -1;
+    border-radius: 15px;
+    background: transparent;
+    transition: background 0.2s ease;
+}
+
+.produto-item:active::before {
+    background: rgba(248, 181, 49, 0.1);
+}
+
+/* Filtros de categoria - touch otimizado */
+.filter-button {
+    min-height: 40px;
+    padding: 8px 16px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(248, 181, 49, 0.3);
+    transition: all 0.2s ease;
+}
+
+.filter-button:active {
+    transform: scale(0.95);
+    background: rgba(248, 181, 49, 0.2);
+}
+
+/* Controles de quantidade - touch otimizado */
+#btn-aumentar, #btn-diminuir {
+    min-width: 44px;
+    min-height: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(248, 181, 49, 0.3);
+}
+
+/* Modal - gestos de swipe para fechar */
+.modal {
+    touch-action: pan-y;
+}
+
+.modal-content {
+    touch-action: pan-y;
+}
+
+.modal-body {
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+/* Carrinho - área de toque otimizada */
+.carrinho-link {
+    min-width: 50px;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(248, 181, 49, 0.3);
+}
+
+/* Formulários - otimizações para mobile */
+.form-control {
+    font-size: 16px; /* Evita zoom no iOS */
+    touch-action: manipulation;
+}
+
+.form-control:focus {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Textarea - redimensionamento otimizado */
+textarea {
+    resize: vertical;
+    touch-action: pan-y;
+}
+
+/* Scrollbars customizadas para mobile */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(248, 181, 49, 0.6);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(248, 181, 49, 0.8);
+}
+
+/* Animações otimizadas para mobile */
+@media (max-width: 768px) {
+    * {
+        animation-duration: 0.2s !important;
+        transition-duration: 0.2s !important;
+    }
+    
+    .modal-content {
+        animation-duration: 0.3s !important;
+    }
+}
+
+/* Feedback visual para touch */
+.btn:active, .produto-item:active, .filter-button:active {
+    transform: scale(0.98);
+    opacity: 0.8;
+}
+
+/* Otimizações para iOS Safari */
+@supports (-webkit-touch-callout: none) {
+    .modal-body {
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Fix para bounce scroll no iOS */
+    body {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: none;
+    }
+    
+    /* Fix para input zoom no iOS */
+    input[type="text"],
+    input[type="email"],
+    input[type="number"],
+    textarea,
+    select {
+        font-size: 16px;
+    }
+}
+
+/* Otimizações para Android */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+    .btn, .form-control {
+        -webkit-appearance: none;
+    }
+}
+
+/* Gestos de swipe para navegação */
+.swipe-container {
+    touch-action: pan-x pan-y;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Prevenção de scroll durante interações */
+.modal-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+}
+
+/* Otimizações para telas de alta densidade */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .btn, .produto-item {
+        border-width: 0.5px;
+    }
+}
+
+/* Feedback háptico simulado com CSS */
+.btn:active, .produto-item:active {
+    animation: haptic-feedback 0.1s ease;
+}
+
+@keyframes haptic-feedback {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.98); }
+    100% { transform: scale(1); }
+}
+
+/* Otimizações para modo landscape em mobile */
+@media (max-width: 896px) and (orientation: landscape) {
+    .modal-dialog {
+        margin: 5px;
+        max-width: calc(100% - 10px);
+        max-height: calc(100vh - 10px);
+    }
+    
+    .modal-body {
+        max-height: calc(100vh - 120px);
+    }
+    
+    .navbar-brand {
+        font-size: 0.9rem;
+    }
+}
+
+/* Otimizações para dispositivos com notch */
+@supports (padding: max(0px)) {
+    .navbar {
+        padding-left: max(15px, env(safe-area-inset-left));
+        padding-right: max(15px, env(safe-area-inset-right));
+    }
+    
+    .modal-content {
+        margin-left: max(0px, env(safe-area-inset-left));
+        margin-right: max(0px, env(safe-area-inset-right));
+    }
+}
+
+/* Prevenção de zoom acidental */
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="number"]:focus,
+textarea:focus {
+    font-size: 16px;
+    transform: scale(1);
+}
+
+/* Otimizações para performance em mobile */
+.produto-item, .btn, .modal-content {
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+/* Estados de loading otimizados para touch */
+.btn-loading {
+    pointer-events: none;
+    touch-action: none;
+}
+
+/* Melhor contraste para modo escuro em mobile */
+@media (prefers-color-scheme: dark) {
+    .btn {
+        border-width: 1px;
+    }
+    
+    .form-control {
+        border-width: 1px;
+    }
+}
+
+/* Otimizações para conexões lentas */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
