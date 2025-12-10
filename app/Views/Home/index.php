@@ -310,6 +310,9 @@ $(document).ready(function () {
                 totalCalculado: precoTotal
             });
             
+            // Disparar evento personalizado
+            $(document).trigger('carrinhoAtualizado');
+            
             $('#modalCompra').modal('hide');
         } else {
             console.error('❌ Objeto Carrinho não encontrado!');
@@ -327,9 +330,14 @@ $(document).ready(function () {
         const icon = type === 'success' ? 'fa-check-circle' :
                 type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
 
+        // Calcular posição abaixo da navbar
+        const navbar = $('#ftco-navbar');
+        const navbarHeight = navbar.length ? navbar.outerHeight() : 70;
+        const topPosition = navbarHeight + 10;
+
         const notification = $(`
             <div class="custom-notification alert ${alertClass} position-fixed" 
-                 style="top: 20px; right: 20px; z-index: 9999; min-width: 300px; 
+                 style="top: ${topPosition}px; right: 20px; z-index: 9999; min-width: 300px; 
                         max-width: 400px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
                         border-radius: 8px; border: none; animation: slideInRight 0.3s ease-out;">
                 <div class="d-flex align-items-center">

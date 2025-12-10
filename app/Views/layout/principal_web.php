@@ -30,6 +30,76 @@
     <link rel="stylesheet" href="<?= site_url('web/src/css/style.css') ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="<?= site_url('assets/css/carrinho-modal.css?v=' . time()) ?>">
+    
+    <!-- Estilos do carrinho navbar -->
+    <style>
+        .carrinho-navbar {
+            transition: all 0.3s ease;
+            margin-left: auto;
+        }
+        
+        .carrinho-link:hover {
+            transform: scale(1.1);
+            transition: transform 0.2s ease;
+        }
+        
+        .carrinho-icon-container {
+            cursor: pointer;
+        }
+        
+        .carrinho-counter {
+            top: -8px;
+            right: -8px;
+            background: linear-gradient(135deg, #f8b531 0%, #e6a429 100%);
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 8px rgba(248, 181, 49, 0.4);
+            animation: pulse 2s infinite;
+            text-align: center;
+            line-height: 20px;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .carrinho-counter.animate {
+            animation: bounce 0.6s ease;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 60%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            80% { transform: translateY(-5px); }
+        }
+        
+        /* Posicionamento responsivo */
+        @media (max-width: 991px) {
+            .container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            .carrinho-navbar {
+                margin-left: 0;
+                order: 3;
+            }
+            
+            .navbar-toggler {
+                order: 2;
+                margin-left: auto;
+                margin-right: 15px;
+            }
+        }
+    </style>
 
     
     <!-- CSRF token para uso em requisições AJAX -->
@@ -42,6 +112,18 @@
   	<nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
 	    <div class="container">
 		      <a class="navbar-brand" href="<?= site_url('/') ?>"><span class="flaticon-pizza-1 mr-1"></span>No Kapricho<br><small>A melhor pizzaria da cidade</small></a>
+		      
+		      <!-- Ícone do Carrinho independente -->
+		      <div class="carrinho-navbar d-flex align-items-center">
+		          <a href="#" onclick="window.Carrinho && window.Carrinho.mostrar(); return false;" 
+		             class="carrinho-link d-flex align-items-center text-decoration-none">
+		              <div class="carrinho-icon-container position-relative">
+		                  <i class="fas fa-shopping-cart text-warning" style="font-size: 28px;"></i>
+		                  <span id="carrinho-badge" class="carrinho-counter position-absolute" style="display: none;">0</span>
+		              </div>
+		          </a>
+		      </div>
+		      
 		      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
 		        <span class="oi oi-menu"></span> Menu
 		      </button>
@@ -52,12 +134,6 @@
 	          <li class="nav-item"><a href="#services" class="nav-link">Serviços</a></li>
 	          <li class="nav-item"><a href="#about" class="nav-link">Sobre</a></li>
 	          <li class="nav-item"><a href="#contact" class="nav-link">Contato</a></li>
-	          <li class="nav-item" id="carrinho-badge-container">
-	              <a href="#" class="nav-link">
-	                  <i class="fas fa-shopping-cart"></i> Carrinho
-	                  <span id="carrinho-badge" style="display: none;">0</span>
-	              </a>
-	          </li>
 	          <li class="nav-item"><a href="<?= site_url('login') ?>" class="nav-link">Admin</a></li>
 	        </ul>
 	      </div>
@@ -476,6 +552,8 @@
     <script src="<?= site_url('web/src/js/main.js') ?>"></script>
     <script src="<?= site_url('assets/js/carrinho-modal-v2.js?v=' . time()) ?>"></script>
     <script src="<?= site_url('assets/js/finalizar-pedido.js?v=' . time()) ?>"></script>
+    <script src="<?= site_url('web/src/js/carrinho-menu.js?v=' . time()) ?>"></script>
+    <script src="<?= site_url('web/src/js/carrinho-trigger.js?v=' . time()) ?>"></script>
     
     <!-- Scripts personalizados -->
     <?= $this->renderSection('scripts') ?>
