@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Simples do Carrinho</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #2d2d2d;
+            padding: 30px;
+            border-radius: 10px;
+        }
+        .btn-test {
+            background: #f8b531;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-weight: bold;
+            border-radius: 5px;
+            margin: 10px;
+        }
+        .btn-test:hover {
+            background: #fac56e;
+        }
+        #link-carrinho {
+            display: none;
+            background: #333;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        #link-carrinho.show {
+            display: block !important;
+        }
+        .carrinho-badge {
+            background: #f8b531;
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 50%;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .log-area {
+            background: #000;
+            color: #0f0;
+            padding: 20px;
+            border-radius: 5px;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="text-warning">🧪 Teste Simples do Carrinho</h1>
+        <p>Este é um teste isolado para verificar se o sistema de carrinho está funcionando.</p>
+
+        <hr>
+
+        <!-- Menu do Carrinho (simulado) -->
+        <div id="link-carrinho" style="display: none;">
+            <a href="#" class="text-warning" id="btn-abrir-carrinho">
+                <i class="fas fa-shopping-cart"></i> Carrinho
+                <span class="carrinho-badge" id="carrinho-badge">0</span>
+            </a>
+        </div>
+
+        <hr>
+
+        <h3 class="text-warning">Ações de Teste:</h3>
+        
+        <button class="btn btn-test" onclick="testarAdicionar()">
+            ➕ Adicionar Produto de Teste
+        </button>
+
+        <button class="btn btn-test" onclick="testarVerCarrinho()">
+            👁️ Ver Carrinho no Console
+        </button>
+
+        <button class="btn btn-test" onclick="testarLimpar()">
+            🗑️ Limpar Carrinho
+        </button>
+
+        <button class="btn btn-test" onclick="testarForcarAtualizacao()">
+            🔄 Forçar Atualização
+        </button>
+
+        <button class="btn btn-test" onclick="testarAbrirPopup()">
+            🪟 Abrir Popup
+        </button>
+
+        <hr>
+
+        <h3 class="text-warning">Status:</h3>
+        <div id="status" class="alert alert-info">
+            Aguardando ações...
+        </div>
+
+        <h3 class="text-warning">Console Log:</h3>
+        <div id="log-area" class="log-area">
+            Logs aparecerão aqui...<br>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/carrinho.js"></script>
+
+    <script>
+        // Interceptar console.log para mostrar na página
+        const logArea = document.getElementById('log-area');
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        const originalError = console.error;
+
+        function addLog(message, type = 'log') {
+            const color = type === 'error' ? '#f00' : type === 'warn' ? '#ff0' : '#0f0';
+            logArea.innerHTML += `<span style="color: ${color}">[${new Date().toLocaleTimeString()}] ${message}</span><br>`;
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addLog(args.join(' '), 'log');
+        };
+
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addLog('⚠️ ' + args.join(' '), 'warn');
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addLog('❌ ' + args.join(' '), 'error');
+        };
+
+        // Funções de teste
+        function testarAdicionar() {
+            console.log('🧪 TESTE: Adicionando produto...');
+            
+            const produto = {
+                produto: {
+                    id: 1,
+                    nome: 'Pizza Margherita (TESTE)',
+                    preco: 35.90,
+                    categoria: 'Pizzas',
+                    descricao: 'Produto de teste',
+                    imagem: ''
+                },
+                quantidade: 1,
+                precoUnitario: 35.90,
+                total: 35.90,
+                observacoes: 'Teste',
+                timestamp: new Date().toISOString()
+            };
+
+            if (window.carrinhoManager) {
+                console.log('✅ carrinhoManager encontrado!');
+                window.carrinhoManager.adicionarProduto(produto);
+                atualizarStatus();
+            } else {
+                console.error('❌ carrinhoManager NÃO encontrado!');
+                alert('ERRO: carrinhoManager não está disponível!');
+            }
+        }
+
+        function testarVerCarrinho() {
+            console.log('🧪 TESTE: Visualizando carrinho...');
+            
+            if (window.carrinhoManager) {
+                console.log('📊 Carrinho:', window.carrinhoManager.carrinho);
+                console.log('📦 Total de itens:', window.carrinhoManager.getTotalItens());
+                console.log('💰 Valor total:', window.carrinhoManager.getValorTotal());
+                atualizarStatus();
+            } else {
+                console.error('❌ carrinhoManager NÃO encontrado!');
+            }
+        }
+
+        function testarLimpar() {
+            console.log('🧪 TESTE: Limpando carrinho...');
+            
+            if (window.carrinhoManager) {
+                window.carrinhoManager.limparCarrinho();
+                atualizarStatus();
+            } else {
+                console.error('❌ carrinhoManager NÃO encontrado!');
+            }
+        }
+
+        function testarForcarAtualizacao() {
+            console.log('🧪 TESTE: Forçando atualização...');
+            
+            if (window.carrinhoManager) {
+                window.carrinhoManager.atualizarBadge();
+                window.carrinhoManager.atualizarVisibilidadeMenu();
+                atualizarStatus();
+            } else {
+                console.error('❌ carrinhoManager NÃO encontrado!');
+            }
+        }
+
+        function testarAbrirPopup() {
+            console.log('🧪 TESTE: Abrindo popup...');
+            
+            if (typeof $ !== 'undefined' && $('#modalCarrinhoPopup').length > 0) {
+                $('#modalCarrinhoPopup').modal('show');
+            } else {
+                console.error('❌ Modal não encontrado ou jQuery não carregado!');
+                alert('Modal do carrinho não encontrado!');
+            }
+        }
+
+        function atualizarStatus() {
+            const statusDiv = document.getElementById('status');
+            
+            if (window.carrinhoManager) {
+                const total = window.carrinhoManager.getTotalItens();
+                const valor = window.carrinhoManager.getValorTotal();
+                
+                statusDiv.innerHTML = `
+                    <strong>✅ CarrinhoManager: ATIVO</strong><br>
+                    📦 Total de itens: <strong>${total}</strong><br>
+                    💰 Valor total: <strong>R$ ${valor.toFixed(2)}</strong><br>
+                    🛒 Produtos no carrinho: <strong>${window.carrinhoManager.carrinho.length}</strong>
+                `;
+                statusDiv.className = total > 0 ? 'alert alert-success' : 'alert alert-info';
+            } else {
+                statusDiv.innerHTML = '<strong>❌ CarrinhoManager: NÃO ENCONTRADO</strong>';
+                statusDiv.className = 'alert alert-danger';
+            }
+        }
+
+        // Atualizar status ao carregar
+        window.addEventListener('load', function() {
+            console.log('🌐 Página de teste carregada!');
+            setTimeout(atualizarStatus, 1000);
+        });
+
+        // Verificar a cada 2 segundos
+        setInterval(atualizarStatus, 2000);
+    </script>
+</body>
+</html>

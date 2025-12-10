@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste API Carrinho</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #f8b531;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #f8b531;
+        }
+        button {
+            background: #f8b531;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+        }
+        button:hover {
+            background: #fac56e;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .info {
+            color: blue;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste da API do Carrinho</h1>
+        
+        <div class="test-section">
+            <h3>1. Testar GET /api/carrinho (Listar itens)</h3>
+            <button onclick="testarListar()">Executar Teste</button>
+            <div id="result-listar" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>2. Testar POST /api/carrinho (Adicionar produto)</h3>
+            <p>Produto ID: <input type="number" id="produto-id" value="1" style="width: 100px;"></p>
+            <p>Quantidade: <input type="number" id="quantidade" value="2" style="width: 100px;"></p>
+            <p>Observações: <input type="text" id="observacoes" value="Teste via HTML" style="width: 300px;"></p>
+            <button onclick="testarAdicionar()">Executar Teste</button>
+            <div id="result-adicionar" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>3. Testar DELETE /api/carrinho (Limpar carrinho)</h3>
+            <button onclick="testarLimpar()">Executar Teste</button>
+            <div id="result-limpar" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>4. Verificar window.Carrinho</h3>
+            <button onclick="verificarCarrinho()">Verificar</button>
+            <div id="result-verificar" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api/carrinho';
+        
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
+            element.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+        }
+        
+        function clearLog(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+        
+        async function testarListar() {
+            clearLog('result-listar');
+            log('result-listar', '🔄 Testando GET /api/carrinho...');
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                log('result-listar', `Status: ${response.status} ${response.statusText}`);
+                
+                const data = await response.json();
+                log('result-listar', 'Resposta:', 'info');
+                log('result-listar', JSON.stringify(data, null, 2));
+                
+                if (response.ok && data.success) {
+                    log('result-listar', `✅ Sucesso! ${data.data.total_itens} itens no carrinho`, 'success');
+                } else {
+                    log('result-listar', '❌ Erro na resposta', 'error');
+                }
+            } catch (error) {
+                log('result-listar', `❌ Erro: ${error.message}`, 'error');
+                console.error('Erro completo:', error);
+            }
+        }
+        
+        async function testarAdicionar() {
+            clearLog('result-adicionar');
+            log('result-adicionar', '🔄 Testando POST /api/carrinho...');
+            
+            const produtoId = document.getElementById('produto-id').value;
+            const quantidade = document.getElementById('quantidade').value;
+            const observacoes = document.getElementById('observacoes').value;
+            
+            const dados = {
+                produto_id: parseInt(produtoId),
+                quantidade: parseInt(quantidade),
+                observacoes: observacoes
+            };
+            
+            log('result-adicionar', 'Dados enviados:', 'info');
+            log('result-adicionar', JSON.stringify(dados, null, 2));
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify(dados)
+                });
+                
+                log('result-adicionar', `Status: ${response.status} ${response.statusText}`);
+                
+                const data = await response.json();
+                log('result-adicionar', 'Resposta:', 'info');
+                log('result-adicionar', JSON.stringify(data, null, 2));
+                
+                if (response.ok && data.success) {
+                    log('result-adicionar', '✅ Produto adicionado com sucesso!', 'success');
+                    log('result-adicionar', `Total de itens: ${data.data.total_itens}`, 'success');
+                    log('result-adicionar', `Valor total: R$ ${data.data.total.toFixed(2)}`, 'success');
+                } else {
+                    log('result-adicionar', '❌ Erro ao adicionar produto', 'error');
+                }
+            } catch (error) {
+                log('result-adicionar', `❌ Erro: ${error.message}`, 'error');
+                console.error('Erro completo:', error);
+            }
+        }
+        
+        async function testarLimpar() {
+            clearLog('result-limpar');
+            log('result-limpar', '🔄 Testando DELETE /api/carrinho...');
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                log('result-limpar', `Status: ${response.status} ${response.statusText}`);
+                
+                const data = await response.json();
+                log('result-limpar', 'Resposta:', 'info');
+                log('result-limpar', JSON.stringify(data, null, 2));
+                
+                if (response.ok && data.success) {
+                    log('result-limpar', '✅ Carrinho limpo com sucesso!', 'success');
+                } else {
+                    log('result-limpar', '❌ Erro ao limpar carrinho', 'error');
+                }
+            } catch (error) {
+                log('result-limpar', `❌ Erro: ${error.message}`, 'error');
+                console.error('Erro completo:', error);
+            }
+        }
+        
+        function verificarCarrinho() {
+            clearLog('result-verificar');
+            log('result-verificar', '🔍 Verificando window.Carrinho...');
+            
+            if (typeof window.Carrinho !== 'undefined') {
+                log('result-verificar', '✅ window.Carrinho existe!', 'success');
+                log('result-verificar', 'Propriedades:', 'info');
+                log('result-verificar', `- itens: ${window.Carrinho.itens.length} itens`);
+                log('result-verificar', `- apiUrl: ${window.Carrinho.apiUrl}`);
+                log('result-verificar', `- usarApi: ${window.Carrinho.usarApi}`);
+                log('result-verificar', '\nItens no carrinho:', 'info');
+                log('result-verificar', JSON.stringify(window.Carrinho.itens, null, 2));
+            } else {
+                log('result-verificar', '❌ window.Carrinho NÃO existe!', 'error');
+                log('result-verificar', 'Verifique se o arquivo carrinho-modal-v2.js foi carregado.');
+            }
+        }
+        
+        // Testa automaticamente ao carregar
+        window.addEventListener('load', () => {
+            console.log('🧪 Página de teste carregada');
+            console.log('API URL:', API_URL);
+        });
+    </script>
+</body>
+</html>
