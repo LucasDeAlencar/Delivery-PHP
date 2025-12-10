@@ -1,7 +1,7 @@
 <!-- Título da seção de serviços -->
 <div class="row justify-content-center mb-4 pb-2">
     <div class="col-12 col-md-10 col-lg-8 text-center">
-        <h2 class="mb-3 mb-md-4">Nossos Serviços</h2>
+        <h2 class="mb-3 mb-md-4" style="color: #000;">Nossos Serviços</h2>
         <p class="mb-0">Oferecemos os melhores serviços para garantir sua satisfação e comodidade.</p>
     </div>
 </div>
