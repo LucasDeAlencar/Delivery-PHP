@@ -207,7 +207,11 @@ $(document).ready(function () {
         }
         
         recalcularTotaisComExtras();
+        
+        // Evitar scroll ao abrir modal
+        const scrollTop = $(window).scrollTop();
         $('#modalCompra').modal('show');
+        $(window).scrollTop(scrollTop);
     });
 
     // Controles de quantidade

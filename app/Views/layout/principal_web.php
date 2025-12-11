@@ -211,14 +211,14 @@
 	    				<div class="col-md-4 d-flex ftco-animate">
 	    					<div class="icon"><span class="icon-phone"></span></div>
 	    					<div class="text">
-	    						<h3>(11) 9999-9999</h3>
+	    						<h3><?= $dadosCorporativos->numero ?? '(11) 9999-9999' ?></h3>
 	    						<p>Faça seu pedido por telefone</p>
 	    					</div>
 	    				</div>
 	    				<div class="col-md-4 d-flex ftco-animate">
 	    					<div class="icon"><span class="icon-my_location"></span></div>
 	    					<div class="text">
-	    						<h3>Rua das Flores, 123</h3>
+	    						<h3><?= $dadosCorporativos->endereco ?? 'Rua das Flores, 123' ?></h3>
 	    						<p>Centro - São Paulo - SP</p>
 	    					</div>
 	    				</div>
@@ -248,9 +248,9 @@
 	    		</div>
 	    		<div class="social d-md-flex pl-md-5 p-4 align-items-center">
 	    			<ul class="social-icon">
-              <li class="ftco-animate"><a href="#"><span class="icon-twitter"></span></a></li>
-              <li class="ftco-animate"><a href="#"><span class="icon-facebook"></span></a></li>
-              <li class="ftco-animate"><a href="#"><span class="icon-instagram"></span></a></li>
+              <li class="ftco-animate"><a href="<?= !empty($dadosCorporativos->twitter) ? 'https://twitter.com/' . ltrim($dadosCorporativos->twitter, '@') : '#' ?>" target="_blank"><span class="icon-twitter"></span></a></li>
+              <li class="ftco-animate"><a href="<?= !empty($dadosCorporativos->facebook) ? 'https://facebook.com/' . $dadosCorporativos->facebook : '#' ?>" target="_blank"><span class="icon-facebook"></span></a></li>
+              <li class="ftco-animate"><a href="<?= !empty($dadosCorporativos->instagram) ? 'https://instagram.com/' . ltrim($dadosCorporativos->instagram, '@') : '#' ?>" target="_blank"><span class="icon-instagram"></span></a></li>
             </ul>
 	    		</div>
     		</div>
@@ -329,32 +329,149 @@
     	<div class="container-wrap">
     		<div class="row no-gutters d-md-flex align-items-center">
     			<div class="col-md-6 d-flex align-self-stretch">
-    				<div id="map" style="width: 100%; height: 400px; background: #ddd; display: flex; align-items: center; justify-content: center;">
-    					<p>Mapa do Google aqui</p>
+    				<div class="contact-wrapper" style="width: 100%; height: 400px; background: url('<?= base_url('web/src/images/bg_2.jpg') ?>') center/cover; position: relative;">
+    					<div class="contact-overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center;">
+    						<div class="contact-content text-center text-white p-4">
+    							<h3 class="mb-4" style="color: #f8b531; font-family: 'Josefin Sans', sans-serif; font-size: 2rem;">Encontre-nos</h3>
+    							
+    							<div class="contact-info">
+    								<div class="info-item d-flex align-items-center mb-3">
+    									<div class="icon-box mr-3" style="width: 40px; height: 40px; background: #f8b531; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+    										<i class="fas fa-map-marker-alt text-dark"></i>
+    									</div>
+    									<div class="text-left">
+    										<small class="text-muted">Endereço</small><br>
+    										<span><?= $dadosCorporativos->endereco ?? 'Rua das Flores, 123 - Centro, SP' ?></span>
+    									</div>
+    								</div>
+    								
+    								<div class="info-item d-flex align-items-center mb-3">
+    									<div class="icon-box mr-3" style="width: 40px; height: 40px; background: #f8b531; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+    										<i class="fas fa-phone text-dark"></i>
+    									</div>
+    									<div class="text-left">
+    										<small class="text-muted">Telefone</small><br>
+    										<span><?= $dadosCorporativos->numero ?? '(11) 9999-9999' ?></span>
+    									</div>
+    								</div>
+    								
+    								<div class="info-item d-flex align-items-center mb-4">
+    									<div class="icon-box mr-3" style="width: 40px; height: 40px; background: #f8b531; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+    										<i class="fas fa-clock text-dark"></i>
+    									</div>
+    									<div class="text-left">
+    										<small class="text-muted">Horário</small><br>
+    										<span>Seg-Dom: 18h às 23h</span>
+    									</div>
+    								</div>
+    								
+    								<div class="delivery-badge" style="background: rgba(248,181,49,0.2); border: 1px solid #f8b531; border-radius: 25px; padding: 8px 16px; display: inline-block;">
+    									<i class="fas fa-motorcycle mr-2" style="color: #f8b531;"></i>
+    									<small style="color: #f8b531; font-weight: 600;">Delivery disponível</small>
+    								</div>
+    							</div>
+    						</div>
+    					</div>
     				</div>
     			</div>
 	    		<div class="col-md-6 appointment ftco-animate">
 	    			<h3 class="mb-3">Entre em Contato</h3>
-	    			<form action="#" class="appointment-form">
+	    			<form id="formContato" class="appointment-form">
 	    				<div class="d-md-flex">
 		    				<div class="form-group">
-		    					<input type="text" class="form-control" placeholder="Nome">
+		    					<input type="text" id="nomeContato" class="form-control" placeholder="Nome completo *" required>
 		    				</div>
 	    				</div>
 	    				<div class="d-me-flex">
 	    					<div class="form-group">
-		    					<input type="text" class="form-control" placeholder="Telefone">
+		    					<input type="text" id="telefoneContato" class="form-control" placeholder="Telefone (00) 00000-0000 *" required>
 		    				</div>
 	    				</div>
 	    				<div class="form-group">
-	              <textarea name="" id="" cols="30" rows="3" class="form-control" placeholder="Mensagem"></textarea>
+	              <textarea id="mensagemContato" cols="30" rows="3" class="form-control" placeholder="Como podemos ajudá-lo? Descreva sua dúvida ou pedido... *" required></textarea>
 	            </div>
 	            <div class="form-group">
-	              <input type="submit" value="Enviar" class="btn btn-primary py-3 px-4">
+	              <button type="submit" class="btn btn-primary py-3 px-4">
+	                  <i class="fab fa-whatsapp mr-2"></i>Enviar via WhatsApp
+	              </button>
 	            </div>
 	    			</form>
 	    		</div>    			
     		</div>
+    		
+    		<script>
+    		// Máscara para telefone
+    		document.getElementById('telefoneContato').addEventListener('input', function(e) {
+    		    let value = e.target.value.replace(/\D/g, '');
+    		    if (value.length <= 11) {
+    		        value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+    		        if (value.length < 14) {
+    		            value = value.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+    		        }
+    		    }
+    		    e.target.value = value;
+    		});
+    		
+    		document.getElementById('formContato').addEventListener('submit', function(e) {
+    		    e.preventDefault();
+    		    
+    		    const nome = document.getElementById('nomeContato').value.trim();
+    		    const telefone = document.getElementById('telefoneContato').value.trim();
+    		    const mensagem = document.getElementById('mensagemContato').value.trim();
+    		    
+    		    // Validações
+    		    if (!nome) {
+    		        alert('⚠️ Por favor, informe seu nome completo');
+    		        document.getElementById('nomeContato').focus();
+    		        return;
+    		    }
+    		    
+    		    if (!telefone) {
+    		        alert('⚠️ Por favor, informe seu telefone para contato');
+    		        document.getElementById('telefoneContato').focus();
+    		        return;
+    		    }
+    		    
+    		    if (telefone.replace(/\D/g, '').length < 10) {
+    		        alert('⚠️ Por favor, informe um telefone válido com DDD');
+    		        document.getElementById('telefoneContato').focus();
+    		        return;
+    		    }
+    		    
+    		    if (!mensagem) {
+    		        alert('⚠️ Por favor, descreva como podemos ajudá-lo');
+    		        document.getElementById('mensagemContato').focus();
+    		        return;
+    		    }
+    		    
+    		    // Montar mensagem sofisticada do WhatsApp
+    		    const agora = new Date();
+    		    const horario = agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'});
+    		    
+    		    let textoWhatsApp = `🍕 *No Kapricho Pizzaria* 🍕\n\n`;
+    		    textoWhatsApp += `Olá! Espero que estejam bem! 😊\n\n`;
+    		    textoWhatsApp += `📋 *Meus dados:*\n`;
+    		    textoWhatsApp += `👤 Nome: ${nome}\n`;
+    		    textoWhatsApp += `📱 Telefone: ${telefone}\n`;
+    		    textoWhatsApp += `🕐 Horário do contato: ${horario}\n\n`;
+    		    textoWhatsApp += `💬 *Minha mensagem:*\n`;
+    		    textoWhatsApp += `"${mensagem}"\n\n`;
+    		    textoWhatsApp += `Aguardo retorno! Muito obrigado(a)! 🙏`;
+    		    
+    		    // Número do WhatsApp (remover caracteres especiais)
+    		    const numeroWhatsApp = '<?= preg_replace("/[^0-9]/", "", $dadosCorporativos->numero ?? "11999999999") ?>';
+    		    
+    		    // Abrir WhatsApp
+    		    const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(textoWhatsApp)}`;
+    		    window.open(urlWhatsApp, '_blank');
+    		    
+    		    // Feedback de sucesso
+    		    alert('✅ Redirecionando para o WhatsApp! Sua mensagem foi preparada.');
+    		    
+    		    // Limpar formulário
+    		    this.reset();
+    		});
+    		</script>
     	</div>
     </section>
 
@@ -368,9 +485,9 @@
               <h2 class="ftco-heading-2">Sobre Nós</h2>
               <p>Restaurante especializado em culinária italiana, oferecendo pratos tradicionais com ingredientes frescos e de qualidade.</p>
               <ul class="ftco-footer-social list-unstyled float-md-left float-lft mt-5">
-                <li class="ftco-animate"><a href="#"><span class="icon-twitter"></span></a></li>
-                <li class="ftco-animate"><a href="#"><span class="icon-facebook"></span></a></li>
-                <li class="ftco-animate"><a href="#"><span class="icon-instagram"></span></a></li>
+                <li class="ftco-animate"><a href="<?= !empty($dadosCorporativos->twitter) ? 'https://twitter.com/' . ltrim($dadosCorporativos->twitter, '@') : '#' ?>" target="_blank"><span class="icon-twitter"></span></a></li>
+                <li class="ftco-animate"><a href="<?= !empty($dadosCorporativos->facebook) ? 'https://facebook.com/' . $dadosCorporativos->facebook : '#' ?>" target="_blank"><span class="icon-facebook"></span></a></li>
+                <li class="ftco-animate"><a href="<?= !empty($dadosCorporativos->instagram) ? 'https://instagram.com/' . ltrim($dadosCorporativos->instagram, '@') : '#' ?>" target="_blank"><span class="icon-instagram"></span></a></li>
               </ul>
             </div>
           </div>
@@ -429,9 +546,9 @@
             	<h2 class="ftco-heading-2">Tem Dúvidas?</h2>
             	<div class="block-23 mb-3">
 	              <ul>
-	                <li><span class="icon icon-map-marker"></span><span class="text">Rua das Flores, 123 - Centro, São Paulo - SP</span></li>
-	                <li><a href="#"><span class="icon icon-phone"></span><span class="text">(11) 9999-9999</span></a></li>
-	                <li><a href="#"><span class="icon icon-envelope"></span><span class="text">contato@restaurante.com</span></a></li>
+	                <li><span class="icon icon-map-marker"></span><span class="text"><?= $dadosCorporativos->endereco ?? 'Rua das Flores, 123 - Centro, São Paulo - SP' ?></span></li>
+	                <li><a href="#"><span class="icon icon-phone"></span><span class="text"><?= $dadosCorporativos->numero ?? '(11) 9999-9999' ?></span></a></li>
+	                <li><a href="#"><span class="icon icon-envelope"></span><span class="text"><?= $dadosCorporativos->email ?? 'contato@nokapricho.com' ?></span></a></li>
 	              </ul>
 	            </div>
             </div>
@@ -514,6 +631,263 @@
     <script src="<?= site_url('assets/js/finalizar-pedido.js?v=' . time()) ?>"></script>
     <script src="<?= site_url('web/src/js/carrinho-menu.js?v=' . time()) ?>"></script>
     <script src="<?= site_url('web/src/js/carrinho-trigger.js?v=' . time()) ?>"></script>
+    
+    <style>
+        /* Evitar scroll automático nos modais */
+        .modal {
+            overflow-y: auto !important;
+        }
+        .modal.fade .modal-dialog {
+            transform: translateY(0) !important;
+        }
+        .modal.show .modal-dialog {
+            transform: translateY(0) !important;
+        }
+        .modal-open {
+            padding-right: 0 !important;
+        }
+    </style>
+    
+    <!-- Indicador de cliente logado -->
+    <div id="cliente-logado" style="position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.8); color: #f8b531; padding: 10px 15px; border-radius: 25px; font-size: 14px; cursor: pointer; z-index: 1000; display: none; border: 1px solid #f8b531;">
+        <i class="fas fa-user-circle mr-2"></i>
+        <span id="email-cliente"></span>
+        <div id="menu-logout" style="position: absolute; bottom: 100%; right: 0; background: rgba(0,0,0,0.9); border: 1px solid #f8b531; border-radius: 8px; padding: 10px; margin-bottom: 5px; display: none; white-space: nowrap;">
+            <a href="#" id="btn-editar" style="color: #f8b531; text-decoration: none; font-size: 13px; display: block; margin-bottom: 8px;">
+                <i class="fas fa-edit mr-2"></i>Editar Dados
+            </a>
+            <a href="#" id="btn-logout" style="color: #ff6b6b; text-decoration: none; font-size: 13px;">
+                <i class="fas fa-sign-out-alt mr-2"></i>Sair
+            </a>
+        </div>
+    </div>
+
+    <!-- Modal de Edição de Dados -->
+    <div class="modal fade" id="modalEdicaoCliente" tabindex="-1" role="dialog" aria-labelledby="modalEdicaoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content" style="background: #1a1a1a; border: 1px solid #333;">
+                <div class="modal-header" style="border-bottom: 1px solid #333;">
+                    <h5 class="modal-title" id="modalEdicaoLabel" style="color: #f8b531;">
+                        <i class="fas fa-edit mr-2"></i>Editar Meus Dados
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: #fff;">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" style="color: #fff;">
+                    <form id="formEdicaoCliente">
+                        <div class="form-group">
+                            <label style="color: #f8b531;">Nome Completo *</label>
+                            <input type="text" id="edit-nome" class="form-control" readonly style="background: #1a1a1a; border: 1px solid #444; color: #ccc;">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label style="color: #f8b531;">Telefone *</label>
+                            <input type="tel" id="edit-telefone" class="form-control" required style="background: #2d2d2d; border: 1px solid #444; color: #fff;">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label style="color: #f8b531;">CEP *</label>
+                            <input type="text" id="edit-cep" class="form-control" required style="background: #2d2d2d; border: 1px solid #444; color: #fff;">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label style="color: #f8b531;">Cidade *</label>
+                            <input type="text" id="edit-cidade" class="form-control" readonly placeholder="Campo autopreenchido pelo CEP" style="background: #1a1a1a; border: 1px solid #444; color: #ccc;">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label style="color: #f8b531;">Bairro *</label>
+                            <input type="text" id="edit-bairro" class="form-control" readonly placeholder="Campo autopreenchido pelo CEP" style="background: #1a1a1a; border: 1px solid #444; color: #ccc;">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label style="color: #f8b531;">Logradouro *</label>
+                            <input type="text" id="edit-endereco" class="form-control" readonly placeholder="Campo autopreenchido pelo CEP" style="background: #1a1a1a; border: 1px solid #444; color: #ccc;">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label style="color: #f8b531;">Número</label>
+                            <input type="text" id="edit-numero" class="form-control" style="background: #2d2d2d; border: 1px solid #444; color: #fff;">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label style="color: #f8b531;">Complemento</label>
+                            <input type="text" id="edit-complemento" class="form-control" style="background: #2d2d2d; border: 1px solid #444; color: #fff;">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid #333;">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn" id="btnSalvarEdicao" style="background: #f8b531; color: #000;">
+                        <i class="fas fa-save mr-2"></i>Salvar Alterações
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Gerenciar cliente logado
+        document.addEventListener('DOMContentLoaded', function() {
+            const clienteLogado = document.getElementById('cliente-logado');
+            const emailCliente = document.getElementById('email-cliente');
+            const menuLogout = document.getElementById('menu-logout');
+            const btnLogout = document.getElementById('btn-logout');
+            const btnEditar = document.getElementById('btn-editar');
+            
+            // Verificar se há cliente logado
+            const emailSalvo = localStorage.getItem('cliente_email');
+            if (emailSalvo) {
+                emailCliente.textContent = emailSalvo;
+                clienteLogado.style.display = 'block';
+            }
+            
+            // Toggle menu logout
+            clienteLogado.addEventListener('click', function(e) {
+                e.stopPropagation();
+                menuLogout.style.display = menuLogout.style.display === 'block' ? 'none' : 'block';
+            });
+            
+            // Fechar menu ao clicar fora
+            document.addEventListener('click', function() {
+                menuLogout.style.display = 'none';
+            });
+            
+            // Editar dados
+            btnEditar.addEventListener('click', function(e) {
+                e.preventDefault();
+                menuLogout.style.display = 'none';
+                abrirModalEdicao();
+            });
+            
+            // Logout
+            btnLogout.addEventListener('click', function(e) {
+                e.preventDefault();
+                localStorage.removeItem('cliente_email');
+                window.location.href = '<?= site_url('login') ?>';
+            });
+            
+            // Função para abrir modal de edição
+            function abrirModalEdicao() {
+                const email = localStorage.getItem('cliente_email');
+                if (!email) return;
+                
+                // Buscar dados do cliente
+                fetch('<?= site_url('cliente/dados') ?>', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({email: email})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.sucesso) {
+                        // Preencher formulário
+                        document.getElementById('edit-nome').value = data.cliente.nome || '';
+                        document.getElementById('edit-telefone').value = data.cliente.telefone || '';
+                        document.getElementById('edit-cep').value = data.cliente.cep || '';
+                        document.getElementById('edit-cidade').value = data.cliente.Cidade || '';
+                        document.getElementById('edit-bairro').value = data.cliente.Bairro || '';
+                        document.getElementById('edit-endereco').value = data.cliente.Endereco || '';
+                        document.getElementById('edit-numero').value = data.cliente.Numero || '';
+                        document.getElementById('edit-complemento').value = data.cliente.complemento || '';
+                        
+                        $('#modalEdicaoCliente').modal('show');
+                    } else {
+                        alert('Erro ao carregar dados do cliente');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Erro ao carregar dados');
+                });
+            }
+            
+            // Salvar edição
+            document.getElementById('btnSalvarEdicao').addEventListener('click', function() {
+                const email = localStorage.getItem('cliente_email');
+                const dados = {
+                    email: email,
+                    telefone: document.getElementById('edit-telefone').value,
+                    cep: document.getElementById('edit-cep').value,
+                    cidade: document.getElementById('edit-cidade').value,
+                    bairro: document.getElementById('edit-bairro').value,
+                    endereco: document.getElementById('edit-endereco').value,
+                    numero: document.getElementById('edit-numero').value,
+                    complemento: document.getElementById('edit-complemento').value
+                };
+                
+                fetch('<?= site_url('cliente/atualizar') ?>', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify(dados)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.sucesso) {
+                        $('#modalEdicaoCliente').modal('hide');
+                        alert('Dados atualizados com sucesso!');
+                    } else {
+                        alert('Erro ao salvar: ' + (data.msg || 'Tente novamente'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Erro ao salvar dados');
+                });
+            });
+            
+            // Máscara e busca CEP no modal
+            document.getElementById('edit-telefone').addEventListener('input', function (e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length <= 11) {
+                    value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+                    if (value.length < 14) {
+                        value = value.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+                    }
+                }
+                e.target.value = value;
+            });
+
+            document.getElementById('edit-cep').addEventListener('input', function (e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length <= 8) {
+                    value = value.replace(/(\d{5})(\d{3})/, '$1-$2');
+                }
+                e.target.value = value;
+
+                if (value.replace(/\D/g, '').length === 8) {
+                    buscarCEPModal(value.replace(/\D/g, ''));
+                }
+            });
+            
+            function buscarCEPModal(cep) {
+                fetch('<?= site_url('login/buscar_cep') ?>', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({cep: cep})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.erro) {
+                        document.getElementById('edit-bairro').value = data.bairro || '';
+                        document.getElementById('edit-cidade').value = data.localidade || '';
+                        document.getElementById('edit-endereco').value = data.logradouro || '';
+                    }
+                })
+                .catch(error => console.error('Erro ao buscar CEP:', error));
+            }
+        });
+    </script>
     
     <!-- Scripts personalizados -->
     <?= $this->renderSection('scripts') ?>

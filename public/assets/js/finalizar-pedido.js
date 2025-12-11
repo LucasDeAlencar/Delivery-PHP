@@ -86,8 +86,23 @@ window.FinalizarPedido = {
         // Renderizar bairros
         this.renderizarBairros();
         
-        // Abrir modal
-        $('#modalFinalizarPedido').modal('show');
+        // Abrir modal sem scroll
+        const scrollTop = $(window).scrollTop();
+        $('#modalFinalizarPedido').modal({
+            backdrop: 'static',
+            keyboard: false,
+            show: true
+        });
+        $(window).scrollTop(scrollTop);
+        
+        // Evitar scroll para o topo
+        $('#modalFinalizarPedido').on('show.bs.modal', function() {
+            $('body').css('overflow', 'hidden');
+        });
+        
+        $('#modalFinalizarPedido').on('hidden.bs.modal', function() {
+            $('body').css('overflow', 'auto');
+        });
     },
     
     // Cria o modal HTML

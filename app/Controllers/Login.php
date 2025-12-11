@@ -20,47 +20,100 @@ class Login extends BaseController {
     }
 
     public function criar() {
-
-        // Verificar se é uma requisição POST
         if (strtoupper($this->request->getMethod()) !== 'POST') {
             return redirect()->back()->with('atencao', 'Método não permitido');
         }
 
+        $acao = $this->request->getPost('acao');
         $email = $this->request->getPost('email');
-        $password = $this->request->getPost('password');
-
-        // Validação básica
-        if (empty($email) || empty($password)) {
-            return redirect()->back()->with('atencao', 'Por favor, preencha todos os campos');
-        }
-
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            return redirect()->back()->with('atencao', 'Por favor, digite um e-mail válido');
-        }
-
-        $autenticacao = service('autenticacao');
-
-        if ($autenticacao->login($email, $password)) {
-
-            $usuario = $autenticacao->pegaUsuarioLogado();
-
-            // Verificar se o usuário está ativo
-            if (!$usuario->ativo) {
-                $autenticacao->logout();
-                return redirect()->back()->with('atencao', 'Sua conta está desativada. Entre em contato com o suporte.');
+        
+        // Se ação é login, processar login de admin
+        if ($acao === 'login') {
+            $password = $this->request->getPost('password');
+            
+            if (empty($email) || empty($password)) {
+                return redirect()->back()->with('atencao', 'Por favor, preencha todos os campos');
             }
 
-            // Redirecionar baseado no tipo de usuário
-            if ($usuario->is_admin) {
-                // Admin vai para dashboard
-                return redirect()->to(site_url('admin/home'))->with('sucesso', "Olá {$usuario->nome}, que bom que está de volta!");
-            } else {
-                // Operador vai direto para pedidos
-                return redirect()->to(site_url('admin/pedidos'))->with('sucesso', "Bem-vindo(a), {$usuario->nome}! Você foi direcionado para a área de Pedidos.");
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return redirect()->back()->with('atencao', 'Por favor, digite um e-mail válido');
+            }
+
+            $autenticacao = service('autenticacao');
+
+            if ($autenticacao->login($email, $password)) {
+                $usuario = $autenticacao->pegaUsuarioLogado();
+
+                if (!$usuario->ativo) {
+                    $autenticacao->logout();
+                    return redirect()->back()->with('atencao', 'Sua conta está desativada. Entre em contato com o suporte.');
+                }
+
+                if ($usuario->is_admin) {
+                    return redirect()->to(site_url('admin/home'))->with('sucesso', "Olá {$usuario->nome}, que bom que está de volta!");
+                } else {
+                    return redirect()->to(site_url('admin/pedidos'))->with('sucesso', "Bem-vindo(a), {$usuario->nome}! Você foi direcionado para a área de Pedidos.");
+                }
+            }
+
+            return redirect()->back()->with('atencao', 'E-mail ou senha incorretos');
+        }
+        
+        // Se ação é cadastro, processar cadastro de cliente
+        if ($acao === 'cadastro') {
+            $nome = $this->request->getPost('nome');
+            $telefone = $this->request->getPost('telefone');
+            $cep = $this->request->getPost('cep');
+            $cidade = $this->request->getPost('cidade');
+            $bairro = $this->request->getPost('bairro');
+            $endereco = $this->request->getPost('endereco');
+            $numero = $this->request->getPost('numero');
+            $complemento = $this->request->getPost('complemento');
+
+            if (empty($email) || empty($nome) || empty($telefone) || empty($cep) || empty($cidade) || empty($bairro) || empty($endereco)) {
+                return redirect()->back()->with('atencao', 'Por favor, preencha todos os campos obrigatórios');
+            }
+
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return redirect()->back()->with('atencao', 'Por favor, digite um e-mail válido');
+            }
+
+            $db = \Config\Database::connect();
+            
+            // Verificar se email já existe
+            $clienteExiste = $db->query("SELECT id FROM clientes WHERE email = ?", [$email])->getRow();
+            if ($clienteExiste) {
+                return redirect()->back()->with('atencao', 'Este e-mail já está cadastrado');
+            }
+
+            // Inserir cliente
+            $dados = [
+                'nome' => $nome,
+                'email' => $email,
+                'telefone' => $telefone,
+                'cep' => $cep,
+                'Bairro' => $bairro,
+                'Endereco' => $endereco,
+                'Numero' => (int)$numero ?: 0,
+                'Cidade' => $cidade,
+                'complemento' => $complemento ?: ''
+            ];
+
+            try {
+                $resultado = $db->table('clientes')->insert($dados);
+                if ($resultado) {
+                    return redirect()->to(site_url('/'))->with('sucesso', 'Cliente cadastrado com sucesso!');
+                } else {
+                    log_message('error', 'Falha ao inserir cliente: ' . print_r($dados, true));
+                    return redirect()->back()->with('atencao', 'Erro ao cadastrar cliente. Tente novamente.');
+                }
+            } catch (\Exception $e) {
+                log_message('error', 'Erro ao inserir cliente: ' . $e->getMessage());
+                return redirect()->back()->with('atencao', 'Erro no banco de dados: ' . $e->getMessage());
             }
         }
 
-        return redirect()->back()->with('atencao', 'E-mail ou senha incorretos');
+        return redirect()->back()->with('atencao', 'Ação inválida');
     }
 
     /**
@@ -199,6 +252,134 @@ class Login extends BaseController {
     echo "</ol>";
 	}
 	
+	
+	public function verificarEmail() {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['erro' => true, 'msg' => 'Requisição inválida']);
+        }
+
+        $json = $this->request->getJSON();
+        $email = $json->email ?? '';
+
+        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return $this->response->setJSON(['erro' => true, 'msg' => 'Email inválido']);
+        }
+
+        $db = \Config\Database::connect();
+        
+        // Primeiro verifica se é usuário (admin/operário)
+        $usuario = $db->query("SELECT email FROM usuarios WHERE email = ?", [$email])->getRow();
+        if ($usuario) {
+            return $this->response->setJSON(['tipo' => 'admin']);
+        }
+
+        // Depois verifica se é cliente
+        $cliente = $db->query("SELECT email FROM clientes WHERE email = ?", [$email])->getRow();
+        if ($cliente) {
+            return $this->response->setJSON(['tipo' => 'cliente']);
+        }
+
+        // Se não encontrou nem usuário nem cliente
+        return $this->response->setJSON(['tipo' => 'nao_encontrado']);
+    }
+    public function enviarCodigo() {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['erro' => true, 'msg' => 'Requisição inválida']);
+        }
+
+        $json = $this->request->getJSON();
+        $email = $json->email ?? '';
+
+        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return $this->response->setJSON(['erro' => true, 'msg' => 'Email inválido']);
+        }
+
+        // Gerar código de 6 caracteres
+        $codigo = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 6));
+        
+        // Salvar código na sessão com timestamp
+        session()->set('codigo_verificacao', [
+            'codigo' => $codigo,
+            'email' => $email,
+            'timestamp' => time()
+        ]);
+
+        // Tentar enviar email
+        try {
+            $emailService = service('email');
+            
+            $emailService->setFrom(env('email.SMTPUser') ?: 'noreply@nokapricho.com', 'No Kapricho Pizzaria');
+            $emailService->setTo($email);
+            $emailService->setSubject('Código de Verificação - No Kapricho');
+            
+            $mensagem = "
+                <html>
+                <head>
+                    <title>Código de Verificação</title>
+                </head>
+                <body>
+                    <h1>No Kapricho Pizzaria</h1>
+                    <p>Olá,</p>
+                    <p>Use o código abaixo para completar sua verificação:</p>
+                    <h2 style='color: #f8b531; background-color: #1a1a1a; padding: 15px; border-radius: 8px; display: inline-block; letter-spacing: 3px;'>
+                        {$codigo}
+                    </h2>
+                    <p><strong>Este código expira em 5 minutos.</strong></p>
+                    <p>Se você não solicitou este código, ignore este email.</p>
+                </body>
+                </html>
+            ";
+            
+            $emailService->setMessage($mensagem);
+
+            if ($emailService->send()) {
+                return $this->response->setJSON([
+                    'sucesso' => true, 
+                    'msg' => 'Código enviado para seu email'
+                ]);
+            } else {
+                throw new \Exception($emailService->printDebugger(['headers']));
+            }
+        } catch (\Exception $e) {
+            // Se falhar o envio, retornar código para desenvolvimento
+            log_message('error', 'Erro no envio de email: ' . $e->getMessage());
+            
+            return $this->response->setJSON([
+                'sucesso' => true, 
+                'msg' => 'Código gerado (email não configurado)',
+                'codigo_dev' => $codigo // Para desenvolvimento
+            ]);
+        }
+    }
+
+    public function verificarCodigo() {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['erro' => true, 'msg' => 'Requisição inválida']);
+        }
+
+        $json = $this->request->getJSON();
+        $codigo = $json->codigo ?? '';
+
+        $dadosVerificacao = session()->get('codigo_verificacao');
+        
+        if (!$dadosVerificacao) {
+            return $this->response->setJSON(['erro' => true, 'msg' => 'Código não encontrado']);
+        }
+
+        // Verificar se expirou (5 minutos = 300 segundos)
+        if (time() - $dadosVerificacao['timestamp'] > 300) {
+            session()->remove('codigo_verificacao');
+            return $this->response->setJSON(['erro' => true, 'msg' => 'Código expirado']);
+        }
+
+        if (strtoupper($codigo) === $dadosVerificacao['codigo']) {
+            session()->remove('codigo_verificacao');
+            return $this->response->setJSON(['sucesso' => true, 'msg' => 'Código verificado com sucesso']);
+        }
+
+        return $this->response->setJSON(['erro' => true, 'msg' => 'Código incorreto']);
+    }
+
 	public function buscar_cep() {
         // Recebe o CEP via POST ou GET
         $cep = $this->request->getVar('cep'); 

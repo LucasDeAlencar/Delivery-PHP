@@ -13,6 +13,10 @@ class Home extends BaseController {
         $categoriaModel = new CategoriaModel();
         $expedienteModel = new ExpedienteModel();
         
+        // Buscar dados corporativos
+        $db = \Config\Database::connect();
+        $dadosCorporativos = $db->table('dados_corporativos')->where('id', 1)->get()->getRow();
+        
         // Buscar categorias ativas
         $categorias = $categoriaModel->where('ativo', true)
                                    ->orderBy('nome', 'ASC')
@@ -42,7 +46,8 @@ class Home extends BaseController {
             'produtos' => $produtos,
             'expedientes' => $expedientes,
             'estaAberto' => $estaAberto,
-            'expedienteHoje' => $expedienteHoje,    
+            'expedienteHoje' => $expedienteHoje,
+            'dadosCorporativos' => $dadosCorporativos
         ];
         
         return view('Home/index', $data);

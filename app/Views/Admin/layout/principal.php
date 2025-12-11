@@ -613,6 +613,14 @@
                 <i class="fas fa-shopping-cart"></i>
                 Pedidos
             </a>
+            
+            <?php if ($isAdmin): ?>
+            <!-- Dados Corporativos - Apenas Admin -->
+            <a class="nav-link <?= strpos(current_url(), 'dados-corporativos') !== false ? 'active' : '' ?>" href="<?= site_url('admin/dados-corporativos') ?>">
+                <i class="fas fa-building"></i>
+                Dados Corporativos
+            </a>
+            <?php endif; ?>
         </nav>
         
         <div class="user-info">

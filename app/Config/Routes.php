@@ -8,6 +8,10 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('/', 'Home::index');
 $routes->get('login', 'Login::novo');
 $routes->post('login/criar', 'Login::criar');
+$routes->post('login/verificarEmail', 'Login::verificarEmail');
+$routes->post('login/enviarCodigo', 'Login::enviarCodigo');
+$routes->post('login/verificarCodigo', 'Login::verificarCodigo');
+$routes->post('login/buscar_cep', 'Login::buscar_cep');
 $routes->get('login/logout', 'Login::logout');
 $routes->get('teste-auth', 'Login::testarAutenticacao');
 
@@ -46,6 +50,10 @@ $routes->post('pedidos/criar', 'Pedidos::criar');
 // Rotas de registro de usuários públicos
 $routes->get('registrar', 'Registrar::index');
 $routes->post('registrar/criar', 'Registrar::criar');
+
+// Rotas do cliente
+$routes->post('cliente/dados', 'Cliente::dados');
+$routes->post('cliente/atualizar', 'Cliente::atualizar');
 
 // Rota específica removida - agora usa a rota do grupo admin
 // Rotas da área administrativa
@@ -136,6 +144,8 @@ $routes->group('admin', function ($routes) {
 
     // Rotas de bairros
     $routes->get('bairros', 'Admin\Bairros::index');
+    $routes->post('bairros/salvarModoCobranca', 'Admin\Bairros::salvarModoCobranca');
+    $routes->post('bairros/salvarConfiguracao', 'Admin\Bairros::salvarConfiguracao');
     $routes->get('bairros/criar', 'Admin\Bairros::criar');
     $routes->post('bairros/cadastrar', 'Admin\Bairros::cadastrar');
     $routes->get('bairros/editar/(:num)', 'Admin\Bairros::editar/$1');
@@ -165,4 +175,8 @@ $routes->group('admin', function ($routes) {
     $routes->get('pedidos/imprimir/(:num)', 'Admin\Pedidos::imprimir/$1');
     
     $routes->get('pedidos/verificar-novos/(:num)', 'Admin\Pedidos::verificarNovos/$1');
+    
+    // Rotas de Dados Corporativos
+    $routes->get('dados-corporativos', 'Admin\DadosCorporativos::index');
+    $routes->post('dados-corporativos/atualizar', 'Admin\DadosCorporativos::atualizar');
 });
