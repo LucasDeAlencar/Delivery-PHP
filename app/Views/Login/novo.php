@@ -108,6 +108,45 @@
             color: #90ee90;
             border: 1px solid #3a6a3a;
         }
+
+        /* Animação do botão reenviar */
+        .btn-reenviar {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-reenviar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(248, 181, 49, 0.3);
+        }
+
+        .btn-reenviar:active {
+            transform: translateY(0);
+        }
+
+        .btn-reenviar.loading {
+            pointer-events: none;
+        }
+
+        .btn-reenviar.loading i {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .btn-reenviar.success {
+            animation: pulse 0.6s ease-in-out;
+        }
     </style>
 </head>
 <body>
@@ -292,6 +331,9 @@
                     <h5 class="modal-title" id="modalVerificacaoLabel" style="color: #f8b531;">
                         <i class="fas fa-envelope mr-2"></i>Verificação de Email
                     </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: #f8b531; opacity: 0.8; font-size: 1.5rem;">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
                 <div class="modal-body" style="color: #fff;">
                     <p>Enviamos um código de 6 caracteres para seu email.</p>
@@ -309,6 +351,15 @@
                     
                     <div id="codigo-dev" style="background: #2d5a2d; padding: 10px; border-radius: 5px; margin-top: 10px; display: none;">
                         <small style="color: #90ee90;">Código para desenvolvimento: <strong id="codigo-dev-valor"></strong></small>
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <button type="button" class="btn btn-outline-warning btn-sm btn-reenviar" id="btnReenviarCodigo" onclick="reenviarCodigo()">
+                            <i class="fas fa-redo mr-1"></i>Reenviar código
+                        </button>
+                        <div id="timer-reenvio" style="display: none; color: #999; font-size: 0.9rem; margin-top: 5px;">
+                            Aguarde <span id="segundos-restantes">30</span>s para reenviar
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer" style="border-top: 1px solid #333;">
@@ -357,7 +408,6 @@
                     return;
                 }
 
-                const originalText = btnVerificar.innerHTML;
                 btnVerificar.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>VERIFICANDO...';
                 btnVerificar.disabled = true;
 
@@ -457,6 +507,7 @@
             // Funções de verificação por código
             let tipoVerificacao = '';
             let intervalTimer = null;
+            let originalText = '<i class="fas fa-search mr-2"></i>VERIFICAR E-MAIL'; // Texto original do botão
 
             function enviarCodigoVerificacao(email, tipo) {
                 tipoVerificacao = tipo;
@@ -518,6 +569,158 @@
                     tempoRestante--;
                 }, 1000);
             }
+
+            // Função para fechar modal de verificação
+            function fecharModalVerificacao() {
+                // Limpar todos os timers
+                if (intervalTimer) {
+                    clearInterval(intervalTimer);
+                    intervalTimer = null;
+                }
+                if (timerReenvio) {
+                    clearInterval(timerReenvio);
+                    timerReenvio = null;
+                }
+                
+                // Resetar estados
+                podeReenviar = true;
+                
+                // Resetar elementos visuais
+                document.getElementById('codigo-verificacao').value = '';
+                document.getElementById('codigo-dev').style.display = 'none';
+                document.getElementById('timer-reenvio').style.display = 'none';
+                
+                const btnReenviar = document.getElementById('btnReenviarCodigo');
+                btnReenviar.style.display = 'inline-block';
+                btnReenviar.innerHTML = '<i class="fas fa-redo mr-1"></i>Reenviar código';
+                btnReenviar.disabled = false;
+                btnReenviar.classList.remove('loading', 'success');
+                btnReenviar.style.backgroundColor = '';
+                
+                // Resetar botão principal VERIFICAR E-MAIL
+                btnVerificar.innerHTML = '<i class="fas fa-search mr-2"></i>VERIFICAR E-MAIL';
+                btnVerificar.disabled = false;
+            }
+
+            // Variáveis para controle do reenvio
+            let timerReenvio = null;
+            let podeReenviar = true;
+
+            // Função para reenviar código
+            function reenviarCodigo() {
+                if (!podeReenviar) return;
+                
+                const email = emailInput.value;
+                const btnReenviar = document.getElementById('btnReenviarCodigo');
+                const iconReenviar = btnReenviar.querySelector('i');
+                
+                // Adicionar classe loading e animação
+                btnReenviar.classList.add('loading');
+                btnReenviar.disabled = true;
+                btnReenviar.innerHTML = '<i class="fas fa-spinner mr-1"></i>Enviando...';
+                
+                podeReenviar = false;
+                
+                // Enviar novo código
+                fetch('<?= site_url('login/enviarCodigo') ?>', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.sucesso) {
+                        // Animação de sucesso
+                        btnReenviar.classList.remove('loading');
+                        btnReenviar.classList.add('success');
+                        btnReenviar.innerHTML = '<i class="fas fa-check mr-1"></i>Enviado!';
+                        
+                        // Mostrar código para desenvolvimento se disponível
+                        if (data.codigo_dev) {
+                            document.getElementById('codigo-dev-valor').textContent = data.codigo_dev;
+                            document.getElementById('codigo-dev').style.display = 'block';
+                        }
+                        
+                        // Reiniciar timer principal
+                        if (intervalTimer) {
+                            clearInterval(intervalTimer);
+                        }
+                        iniciarTimer();
+                        
+                        // Limpar campo de código
+                        document.getElementById('codigo-verificacao').value = '';
+                        document.getElementById('codigo-verificacao').focus();
+                        
+                        // Iniciar timer de reenvio após 1 segundo
+                        setTimeout(() => {
+                            btnReenviar.classList.remove('success');
+                            btnReenviar.style.display = 'none';
+                            document.getElementById('timer-reenvio').style.display = 'block';
+                            
+                            // Timer de 30 segundos
+                            let segundosRestantes = 30;
+                            const spanSegundos = document.getElementById('segundos-restantes');
+                            
+                            timerReenvio = setInterval(() => {
+                                spanSegundos.textContent = segundosRestantes;
+                                segundosRestantes--;
+                                
+                                if (segundosRestantes < 0) {
+                                    clearInterval(timerReenvio);
+                                    document.getElementById('timer-reenvio').style.display = 'none';
+                                    btnReenviar.style.display = 'inline-block';
+                                    btnReenviar.innerHTML = '<i class="fas fa-redo mr-1"></i>Reenviar código';
+                                    btnReenviar.disabled = false;
+                                    podeReenviar = true;
+                                }
+                            }, 1000);
+                        }, 1000);
+                        
+                    } else {
+                        // Erro no envio
+                        btnReenviar.classList.remove('loading');
+                        btnReenviar.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i>Erro';
+                        btnReenviar.style.backgroundColor = '#dc3545';
+                        
+                        setTimeout(() => {
+                            btnReenviar.innerHTML = '<i class="fas fa-redo mr-1"></i>Reenviar código';
+                            btnReenviar.style.backgroundColor = '';
+                            btnReenviar.disabled = false;
+                            podeReenviar = true;
+                        }, 2000);
+                        
+                        alert('Erro ao reenviar código: ' + data.msg);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    
+                    // Erro de conexão
+                    btnReenviar.classList.remove('loading');
+                    btnReenviar.innerHTML = '<i class="fas fa-wifi mr-1"></i>Sem conexão';
+                    btnReenviar.style.backgroundColor = '#dc3545';
+                    
+                    setTimeout(() => {
+                        btnReenviar.innerHTML = '<i class="fas fa-redo mr-1"></i>Reenviar código';
+                        btnReenviar.style.backgroundColor = '';
+                        btnReenviar.disabled = false;
+                        podeReenviar = true;
+                    }, 2000);
+                    
+                    alert('Erro de conexão. Tente novamente.');
+                });
+            }
+
+            // Event listener para quando o modal for fechado (X, ESC, backdrop)
+            $('#modalVerificacao').on('hidden.bs.modal', function () {
+                fecharModalVerificacao();
+            });
 
             // Verificar código
             document.getElementById('btnVerificarCodigo').addEventListener('click', function() {

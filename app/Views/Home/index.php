@@ -1,4 +1,4 @@
-<?php echo $this->extend('layout/principal_web'); ?>
+t<?php echo $this->extend('layout/principal_web'); ?>
 
 <!-- Seção do Título -->
 <?php echo $this->section('titulo'); ?>

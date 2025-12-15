@@ -42,10 +42,23 @@ $routes->group('api', function ($routes) {
     
     // Extras de Produtos
     $routes->get('produto-extras/(:num)', 'ProdutoExtrasApi::getExtrasProduto/$1');
+    
+    // Taxa de Entrega
+    $routes->post('taxa-entrega', 'TaxaEntregaApi::calcular');
+    
+    // Configuração de Entrega
+    $routes->post('configuracao-entrega', 'EntregaApi::configuracaoEntrega');
+    $routes->post('carrinho-cliente', 'EntregaApi::carrinhoCliente');
 });
 
 // Rotas de Pedidos (público)
 $routes->post('pedidos/criar', 'Pedidos::criar');
+
+// Rota de contato
+$routes->post('contato/enviar', 'Contato::enviar');
+
+// Rota de teste de email
+$routes->get('teste-email', 'EmailController::enviarEmail');
 
 // Rotas de registro de usuários públicos
 $routes->get('registrar', 'Registrar::index');

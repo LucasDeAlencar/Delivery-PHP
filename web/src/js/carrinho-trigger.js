@@ -50,8 +50,8 @@ $(document).ready(function() {
     
     // Atualizar badge do carrinho na navbar
     function atualizarBadgeNavbar() {
-        if (window.Carrinho) {
-            const quantidade = window.Carrinho.obterQuantidadeTotal();
+        if (window.Carrinho && window.Carrinho.itens) {
+            const quantidade = window.Carrinho.itens.reduce((total, item) => total + item.quantidade, 0);
             const badge = $('#carrinho-badge');
             
             if (quantidade > 0) {

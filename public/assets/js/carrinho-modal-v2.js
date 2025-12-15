@@ -552,25 +552,39 @@ window.Carrinho = {
         const icone = icones[tipo] || icones.success;
         const cor = cores[tipo] || cores.success;
         
+        // Posicionar abaixo da seção do menu
+        const menuSection = $('#menu');
+        let topPosition = 120; // Fallback
+        
+        if (menuSection.length) {
+            const menuOffset = menuSection.offset();
+            const menuHeight = menuSection.outerHeight();
+            topPosition = menuOffset.top + menuHeight + 20;
+        }
+        
+        // Remover notificações anteriores
+        $('.notificacao-carrinho').remove();
+        
         const notificacao = $(`
             <div class="notificacao-carrinho" style="
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: #2d2d2d;
+                position: absolute;
+                top: ${topPosition}px;
+                left: 50%;
+                transform: translateX(-50%) translateY(-20px);
+                background: #1a1a1a;
                 color: white;
-                padding: 15px 20px;
-                border-radius: 10px;
-                border-left: 4px solid ${cor};
-                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+                padding: 15px 25px;
+                border-radius: 8px;
+                border: 2px solid ${cor};
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
                 z-index: 10000;
-                max-width: 300px;
-                transform: translateX(400px);
-                transition: all 0.3s ease;
+                min-width: 280px;
+                opacity: 0;
+                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
                 font-family: 'Poppins', sans-serif;
             ">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 20px;">${icone}</span>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <span style="font-size: 18px; color: ${cor};">${icone}</span>
                     <div style="font-size: 14px; font-weight: 500;">${mensagem}</div>
                 </div>
             </div>
@@ -578,13 +592,21 @@ window.Carrinho = {
         
         $('body').append(notificacao);
         
-        setTimeout(() => {
-            notificacao.css('transform', 'translateX(0)');
-        }, 100);
+        // Animar entrada
+        requestAnimationFrame(() => {
+            notificacao.css({
+                'opacity': '1',
+                'transform': 'translateX(-50%) translateY(0)'
+            });
+        });
         
+        // Auto remover após 3 segundos
         setTimeout(() => {
-            notificacao.css('transform', 'translateX(400px)');
-            setTimeout(() => notificacao.remove(), 300);
+            notificacao.css({
+                'opacity': '0',
+                'transform': 'translateX(-50%) translateY(-20px)'
+            });
+            setTimeout(() => notificacao.remove(), 400);
         }, 3000);
     }
 };

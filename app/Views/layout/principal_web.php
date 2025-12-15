@@ -35,6 +35,7 @@
     <link rel="stylesheet" href="<?= site_url('assets/css/carrinho-modal.css?v=' . time()) ?>">
     <link rel="stylesheet" href="<?= site_url('assets/css/mobile-responsive.css?v=' . time()) ?>">
     <link rel="stylesheet" href="<?= site_url('assets/css/mobile-touch.css?v=' . time()) ?>">
+    <link rel="stylesheet" href="<?= site_url('assets/css/about-center.css?v=' . time()) ?>">
     
     <!-- Estilos do carrinho navbar -->
     <style>
@@ -104,6 +105,62 @@
                 margin-right: 15px;
             }
         }
+        
+        /* Melhor espaçamento para telas pequenas */
+        @media (max-width: 768px) {
+            .navbar-brand {
+                font-size: 14px;
+                margin-right: 5px;
+                flex: 1;
+                max-width: 60%;
+            }
+            
+            .navbar-brand small {
+                font-size: 9px;
+                display: block;
+            }
+            
+            .carrinho-navbar {
+                margin-left: 5px;
+                margin-right: 5px;
+            }
+            
+            .carrinho-link i {
+                font-size: 24px;
+            }
+            
+            .navbar-toggler {
+                padding: 2px 6px;
+                margin-right: 5px;
+            }
+            
+            .container {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .navbar-brand {
+                font-size: 12px;
+                max-width: 50%;
+            }
+            
+            .navbar-brand small {
+                font-size: 8px;
+            }
+            
+            .carrinho-link i {
+                font-size: 20px;
+            }
+            
+            .carrinho-counter {
+                font-size: 10px;
+                min-width: 16px;
+                height: 16px;
+                line-height: 16px;
+            }
+        }
     </style>
 
     
@@ -120,7 +177,7 @@
 		      
 		      <!-- Ícone do Carrinho independente -->
 		      <div class="carrinho-navbar d-flex align-items-center">
-		          <a href="#" onclick="window.Carrinho && window.Carrinho.mostrar(); return false;" 
+		          <a href="#" onclick="window.CarrinhoMenu && window.CarrinhoMenu.mostrar(); return false;" 
 		             class="carrinho-link d-flex align-items-center text-decoration-none">
 		              <div class="carrinho-icon-container position-relative">
 		                  <i class="fas fa-shopping-cart text-warning" style="font-size: 28px;"></i>
@@ -156,7 +213,7 @@
             	<span class="subheading">Delicioso</span>
               <h1 class="mb-4">Culinária Italiana</h1>
               <p class="mb-4 mb-md-5">Sabores autênticos que conquistam o paladar, preparados com ingredientes frescos e receitas tradicionais.</p>
-              <p><a href="#menu" class="btn btn-primary p-3 px-xl-4 py-xl-3">Fazer Pedido</a> <a href="#menu" class="btn btn-white btn-outline-white p-3 px-xl-4 py-xl-3">Ver Menu</a></p>
+              <p><a href="#menu" class="btn btn-primary p-3 px-xl-4 py-xl-3">Fazer Pedido</a> <a href="#about" class="btn btn-white btn-outline-white p-3 px-xl-4 py-xl-3">Ver Home</a></p>
             </div>
             <div class="col-md-6 ftco-animate">
             	<img src="<?= site_url('web/src/images/bg_1.png') ?>" class="img-fluid" alt="">
@@ -175,7 +232,7 @@
             	<span class="subheading">Crocante</span>
               <h1 class="mb-4">Pizza Italiana</h1>
               <p class="mb-4 mb-md-5">Massas artesanais, molhos especiais e ingredientes selecionados para uma experiência única.</p>
-              <p><a href="#menu" class="btn btn-primary p-3 px-xl-4 py-xl-3">Fazer Pedido</a> <a href="#menu" class="btn btn-white btn-outline-white p-3 px-xl-4 py-xl-3">Ver Menu</a></p>
+              <p><a href="#menu" class="btn btn-primary p-3 px-xl-4 py-xl-3">Fazer Pedido</a> <a href="#about" class="btn btn-white btn-outline-white p-3 px-xl-4 py-xl-3">Ver Home</a></p>
             </div>
             <div class="col-md-6 ftco-animate">
             	<img src="<?= site_url('web/src/images/bg_2.png') ?>" class="img-fluid" alt="">
@@ -194,7 +251,7 @@
             	<span class="subheading">Bem-vindo</span>
               <h1 class="mb-4">Preparamos suas receitas favoritas</h1>
               <p class="mb-4 mb-md-5">Cada prato é preparado com carinho e dedicação para proporcionar momentos especiais.</p>
-              <p><a href="#menu" class="btn btn-primary p-3 px-xl-4 py-xl-3">Fazer Pedido</a> <a href="#menu" class="btn btn-white btn-outline-white p-3 px-xl-4 py-xl-3">Ver Menu</a></p>
+              <p><a href="#menu" class="btn btn-primary p-3 px-xl-4 py-xl-3">Fazer Pedido</a> <a href="#about" class="btn btn-white btn-outline-white p-3 px-xl-4 py-xl-3">Ver Home</a></p>
             </div>
 
           </div>
@@ -248,7 +305,7 @@
 	    		</div>
 	    		<div class="social d-md-flex pl-md-5 p-4 align-items-center">
 	    			<ul class="social-icon">
-              <li class="ftco-animate"><a href="<?= !empty($dadosCorporativos->twitter) ? 'https://twitter.com/' . ltrim($dadosCorporativos->twitter, '@') : '#' ?>" target="_blank"><span class="icon-twitter"></span></a></li>
+              <li class="ftco-animate"><a href="<?= !empty($dadosCorporativos->whatsapp) ? 'https://wa.me/55' . preg_replace('/\D/', '', $dadosCorporativos->whatsapp) . '?text=Olá! Gostaria de fazer um pedido.' : '#' ?>" target="_blank"><span class="icon-whatsapp"></span></a></li>
               <li class="ftco-animate"><a href="<?= !empty($dadosCorporativos->facebook) ? 'https://facebook.com/' . $dadosCorporativos->facebook : '#' ?>" target="_blank"><span class="icon-facebook"></span></a></li>
               <li class="ftco-animate"><a href="<?= !empty($dadosCorporativos->instagram) ? 'https://instagram.com/' . ltrim($dadosCorporativos->instagram, '@') : '#' ?>" target="_blank"><span class="icon-instagram"></span></a></li>
             </ul>
@@ -291,28 +348,14 @@
     <section class="ftco-gallery">
     	<div class="container-wrap">
     		<div class="row no-gutters">
-					<div class="col-md-3 ftco-animate">
-						<a href="#" class="gallery img d-flex align-items-center" style="background-image: url(<?= site_url('web/src/images/gallery-1.jpg') ?>);">
-							<div class="icon mb-4 d-flex align-items-center justify-content-center">
-    						<span class="icon-search"></span>
-    					</div>
-						</a>
-					</div>
-					<div class="col-md-3 ftco-animate">
+					<div class="col-md-6 ftco-animate">
 						<a href="#" class="gallery img d-flex align-items-center" style="background-image: url(<?= site_url('web/src/images/gallery-2.jpg') ?>);">
 							<div class="icon mb-4 d-flex align-items-center justify-content-center">
     						<span class="icon-search"></span>
     					</div>
 						</a>
 					</div>
-					<div class="col-md-3 ftco-animate">
-						<a href="#" class="gallery img d-flex align-items-center" style="background-image: url(<?= site_url('web/src/images/gallery-3.jpg') ?>);">
-							<div class="icon mb-4 d-flex align-items-center justify-content-center">
-    						<span class="icon-search"></span>
-    					</div>
-						</a>
-					</div>
-					<div class="col-md-3 ftco-animate">
+					<div class="col-md-6 ftco-animate">
 						<a href="#" class="gallery img d-flex align-items-center" style="background-image: url(<?= site_url('web/src/images/gallery-4.jpg') ?>);">
 							<div class="icon mb-4 d-flex align-items-center justify-content-center">
     						<span class="icon-search"></span>
@@ -327,50 +370,22 @@
 		<section class="ftco-appointment" id="contact">
 			<div class="overlay"></div>
     	<div class="container-wrap">
-    		<div class="row no-gutters d-md-flex align-items-center">
+    		<div class="row no-gutters d-md-flex align-items-start">
     			<div class="col-md-6 d-flex align-self-stretch">
-    				<div class="contact-wrapper" style="width: 100%; height: 400px; background: url('<?= base_url('web/src/images/bg_2.jpg') ?>') center/cover; position: relative;">
-    					<div class="contact-overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center;">
-    						<div class="contact-content text-center text-white p-4">
-    							<h3 class="mb-4" style="color: #f8b531; font-family: 'Josefin Sans', sans-serif; font-size: 2rem;">Encontre-nos</h3>
-    							
-    							<div class="contact-info">
-    								<div class="info-item d-flex align-items-center mb-3">
-    									<div class="icon-box mr-3" style="width: 40px; height: 40px; background: #f8b531; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-    										<i class="fas fa-map-marker-alt text-dark"></i>
-    									</div>
-    									<div class="text-left">
-    										<small class="text-muted">Endereço</small><br>
-    										<span><?= $dadosCorporativos->endereco ?? 'Rua das Flores, 123 - Centro, SP' ?></span>
-    									</div>
-    								</div>
-    								
-    								<div class="info-item d-flex align-items-center mb-3">
-    									<div class="icon-box mr-3" style="width: 40px; height: 40px; background: #f8b531; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-    										<i class="fas fa-phone text-dark"></i>
-    									</div>
-    									<div class="text-left">
-    										<small class="text-muted">Telefone</small><br>
-    										<span><?= $dadosCorporativos->numero ?? '(11) 9999-9999' ?></span>
-    									</div>
-    								</div>
-    								
-    								<div class="info-item d-flex align-items-center mb-4">
-    									<div class="icon-box mr-3" style="width: 40px; height: 40px; background: #f8b531; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-    										<i class="fas fa-clock text-dark"></i>
-    									</div>
-    									<div class="text-left">
-    										<small class="text-muted">Horário</small><br>
-    										<span>Seg-Dom: 18h às 23h</span>
-    									</div>
-    								</div>
-    								
-    								<div class="delivery-badge" style="background: rgba(248,181,49,0.2); border: 1px solid #f8b531; border-radius: 25px; padding: 8px 16px; display: inline-block;">
-    									<i class="fas fa-motorcycle mr-2" style="color: #f8b531;"></i>
-    									<small style="color: #f8b531; font-weight: 600;">Delivery disponível</small>
-    								</div>
-    							</div>
-    						</div>
+    				<div class="map-wrapper" style="width: 100%; height: 450px; position: relative; border-radius: 10px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.3);">
+    					<div class="map-overlay align-self-stretch " style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(45deg, rgba(248,181,49,0.1), rgba(0,0,0,0.1)); pointer-events: none; z-index: 1;"></div>
+    					<iframe 
+    						src="https://www.google.com/maps?q=<?= urlencode(($dadosCorporativos->endereco ?? 'Rua das S, 123 - Centro') . ', ' . ($dadosCorporativos->cep ?? '30000-000')) ?>&output=embed"
+    						width="100%" 
+    						height="100%" 
+    						style="border:0; filter: contrast(1.1) saturate(0.8) brightness(0.9);" 
+    						allowfullscreen="" 
+    						loading="lazy" 
+    						referrerpolicy="no-referrer-when-downgrade">
+    					</iframe>
+    					<div class="map-badge" style="position: absolute; bottom: 15px; left: 15px; background: rgba(248,181,49,0.95); color: #1a1a1a; padding: 8px 15px; border-radius: 20px; font-size: 12px; font-weight: 600; z-index: 2; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+    						<i class="fas fa-map-marker-alt mr-1"></i>
+    						Nossa Localização
     					</div>
     				</div>
     			</div>
@@ -384,6 +399,11 @@
 	    				</div>
 	    				<div class="d-me-flex">
 	    					<div class="form-group">
+		    					<input type="email" id="emailContato" class="form-control" placeholder="Seu email *" required>
+		    				</div>
+	    				</div>
+	    				<div class="d-me-flex">
+	    					<div class="form-group">
 		    					<input type="text" id="telefoneContato" class="form-control" placeholder="Telefone (00) 00000-0000 *" required>
 		    				</div>
 	    				</div>
@@ -392,7 +412,7 @@
 	            </div>
 	            <div class="form-group">
 	              <button type="submit" class="btn btn-primary py-3 px-4">
-	                  <i class="fab fa-whatsapp mr-2"></i>Enviar via WhatsApp
+	                  <i class="fas fa-envelope mr-2"></i>Enviar por Email
 	              </button>
 	            </div>
 	    			</form>
@@ -416,60 +436,51 @@
     		    e.preventDefault();
     		    
     		    const nome = document.getElementById('nomeContato').value.trim();
+    		    const email = document.getElementById('emailContato').value.trim();
     		    const telefone = document.getElementById('telefoneContato').value.trim();
     		    const mensagem = document.getElementById('mensagemContato').value.trim();
     		    
     		    // Validações
     		    if (!nome) {
     		        alert('⚠️ Por favor, informe seu nome completo');
-    		        document.getElementById('nomeContato').focus();
+    		        return;
+    		    }
+    		    
+    		    if (!email) {
+    		        alert('⚠️ Por favor, informe seu email');
     		        return;
     		    }
     		    
     		    if (!telefone) {
-    		        alert('⚠️ Por favor, informe seu telefone para contato');
-    		        document.getElementById('telefoneContato').focus();
-    		        return;
-    		    }
-    		    
-    		    if (telefone.replace(/\D/g, '').length < 10) {
-    		        alert('⚠️ Por favor, informe um telefone válido com DDD');
-    		        document.getElementById('telefoneContato').focus();
+    		        alert('⚠️ Por favor, informe seu telefone');
     		        return;
     		    }
     		    
     		    if (!mensagem) {
-    		        alert('⚠️ Por favor, descreva como podemos ajudá-lo');
-    		        document.getElementById('mensagemContato').focus();
+    		        alert('⚠️ Por favor, descreva sua mensagem');
     		        return;
     		    }
     		    
-    		    // Montar mensagem sofisticada do WhatsApp
-    		    const agora = new Date();
-    		    const horario = agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'});
-    		    
-    		    let textoWhatsApp = `🍕 *No Kapricho Pizzaria* 🍕\n\n`;
-    		    textoWhatsApp += `Olá! Espero que estejam bem! 😊\n\n`;
-    		    textoWhatsApp += `📋 *Meus dados:*\n`;
-    		    textoWhatsApp += `👤 Nome: ${nome}\n`;
-    		    textoWhatsApp += `📱 Telefone: ${telefone}\n`;
-    		    textoWhatsApp += `🕐 Horário do contato: ${horario}\n\n`;
-    		    textoWhatsApp += `💬 *Minha mensagem:*\n`;
-    		    textoWhatsApp += `"${mensagem}"\n\n`;
-    		    textoWhatsApp += `Aguardo retorno! Muito obrigado(a)! 🙏`;
-    		    
-    		    // Número do WhatsApp (remover caracteres especiais)
-    		    const numeroWhatsApp = '<?= preg_replace("/[^0-9]/", "", $dadosCorporativos->numero ?? "11999999999") ?>';
-    		    
-    		    // Abrir WhatsApp
-    		    const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(textoWhatsApp)}`;
-    		    window.open(urlWhatsApp, '_blank');
-    		    
-    		    // Feedback de sucesso
-    		    alert('✅ Redirecionando para o WhatsApp! Sua mensagem foi preparada.');
-    		    
-    		    // Limpar formulário
-    		    this.reset();
+    		    // Enviar por email
+    		    fetch('<?= site_url('contato/enviar') ?>', {
+    		        method: 'POST',
+    		        headers: {
+    		            'Content-Type': 'application/x-www-form-urlencoded',
+    		        },
+    		        body: `nome=${encodeURIComponent(nome)}&email=${encodeURIComponent(email)}&telefone=${encodeURIComponent(telefone)}&mensagem=${encodeURIComponent(mensagem)}`
+    		    })
+    		    .then(response => response.json())
+    		    .then(data => {
+    		        if (data.success) {
+    		            alert('✅ ' + data.message);
+    		            this.reset();
+    		        } else {
+    		            alert('❌ ' + data.message);
+    		        }
+    		    })
+    		    .catch(error => {
+    		        alert('❌ Erro ao enviar mensagem. Tente novamente.');
+    		    });
     		});
     		</script>
     	</div>
@@ -485,7 +496,7 @@
               <h2 class="ftco-heading-2">Sobre Nós</h2>
               <p>Restaurante especializado em culinária italiana, oferecendo pratos tradicionais com ingredientes frescos e de qualidade.</p>
               <ul class="ftco-footer-social list-unstyled float-md-left float-lft mt-5">
-                <li class="ftco-animate"><a href="<?= !empty($dadosCorporativos->twitter) ? 'https://twitter.com/' . ltrim($dadosCorporativos->twitter, '@') : '#' ?>" target="_blank"><span class="icon-twitter"></span></a></li>
+                <li class="ftco-animate"><a href="<?= !empty($dadosCorporativos->whatsapp) ? 'https://wa.me/55' . preg_replace('/\D/', '', $dadosCorporativos->whatsapp) . '?text=Olá! Gostaria de fazer um pedido.' : '#' ?>" target="_blank"><span class="icon-whatsapp"></span></a></li>
                 <li class="ftco-animate"><a href="<?= !empty($dadosCorporativos->facebook) ? 'https://facebook.com/' . $dadosCorporativos->facebook : '#' ?>" target="_blank"><span class="icon-facebook"></span></a></li>
                 <li class="ftco-animate"><a href="<?= !empty($dadosCorporativos->instagram) ? 'https://instagram.com/' . ltrim($dadosCorporativos->instagram, '@') : '#' ?>" target="_blank"><span class="icon-instagram"></span></a></li>
               </ul>
@@ -632,6 +643,18 @@
     <script src="<?= site_url('web/src/js/carrinho-menu.js?v=' . time()) ?>"></script>
     <script src="<?= site_url('web/src/js/carrinho-trigger.js?v=' . time()) ?>"></script>
     
+    <script>
+        // Inicializar CarrinhoMenu quando a página carregar
+        $(document).ready(function() {
+            if (typeof CarrinhoMenu !== 'undefined') {
+                CarrinhoMenu.init();
+                console.log('CarrinhoMenu inicializado com sucesso');
+            } else {
+                console.error('CarrinhoMenu não encontrado');
+            }
+        });
+    </script>
+    
     <style>
         /* Evitar scroll automático nos modais */
         .modal {
@@ -764,8 +787,13 @@
             // Logout
             btnLogout.addEventListener('click', function(e) {
                 e.preventDefault();
+                
+                // Limpar dados do localStorage
                 localStorage.removeItem('cliente_email');
-                window.location.href = '<?= site_url('login') ?>';
+                localStorage.removeItem('carrinho');
+                
+                // Atualizar a página (F5)
+                window.location.reload();
             });
             
             // Função para abrir modal de edição

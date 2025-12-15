@@ -39,12 +39,35 @@
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
+                                <label for="cep">CEP</label>
+                                <input type="text" 
+                                       id="cep" 
+                                       class="form-control" 
+                                       placeholder="00000-000"
+                                       value="<?= esc($dados->cep ?? '') ?>">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
                                 <label for="numero">Telefone</label>
                                 <input type="text" 
                                        id="numero" 
                                        class="form-control" 
                                        placeholder="(00) 00000-0000"
                                        value="<?= esc($dados->numero ?? '') ?>">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="whatsapp">WhatsApp</label>
+                                <input type="text" 
+                                       id="whatsapp" 
+                                       class="form-control" 
+                                       placeholder="(00) 00000-0000"
+                                       value="<?= esc($dados->whatsapp ?? '') ?>">
                             </div>
                         </div>
                     </div>
@@ -78,21 +101,6 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="twitter">Twitter</label>
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text">@</span>
-                                    </div>
-                                    <input type="text" 
-                                           id="twitter" 
-                                           class="form-control" 
-                                           placeholder="nokapricho"
-                                           value="<?= esc($dados->twitter ?? '') ?>">
-                                </div>
-                            </div>
-                        </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="facebook">Facebook</label>
@@ -134,14 +142,36 @@ $(document).ready(function() {
         $(this).val(value);
     });
 
+    // Máscara para WhatsApp
+    $('#whatsapp').on('input', function() {
+        let value = $(this).val().replace(/\D/g, '');
+        if (value.length <= 11) {
+            value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+            if (value.length < 14) {
+                value = value.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+            }
+        }
+        $(this).val(value);
+    });
+
+    // Máscara para CEP
+    $('#cep').on('input', function() {
+        let value = $(this).val().replace(/\D/g, '');
+        if (value.length <= 8) {
+            value = value.replace(/(\d{5})(\d{3})/, '$1-$2');
+        }
+        $(this).val(value);
+    });
+
     // Salvar dados
     $('#btnSalvar').click(function() {
         const dados = {
             endereco: $('#endereco').val(),
+            cep: $('#cep').val().replace(/\D/g, ''),
             numero: $('#numero').val(),
+            whatsapp: $('#whatsapp').val().replace(/\D/g, ''),
             email: $('#email').val(),
             instagram: $('#instagram').val(),
-            twitter: $('#twitter').val(),
             facebook: $('#facebook').val()
         };
 

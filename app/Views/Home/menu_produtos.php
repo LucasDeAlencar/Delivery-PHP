@@ -3,11 +3,11 @@
         <!-- Título da seção do menu -->
         <div class="row justify-content-center mb-4 pb-2">
             <div class="col-12 col-md-10 col-lg-8 text-center">
-                <h2 class="mb-3 mb-md-4">Nosso Menu</h2>
+                <h2 class="mb-3 mb-md-4">Nossos Produtos</h2>
                 <p class="mb-0">Descubra nossos pratos especiais, preparados com ingredientes frescos e muito sabor.</p>
             </div>
         </div>
-        
+
         <div class="row">
             <div class="col-12">
                 <!-- Menu de Filtros por Categoria -->
@@ -469,11 +469,11 @@
         .block .filter_item_img {
             height: 220px;
         }
-        
+
         .block .info {
             padding: 15px;
         }
-        
+
         .block .info .name {
             font-size: 1.1rem;
         }
@@ -484,20 +484,20 @@
         .filtr-item {
             margin-bottom: 15px;
         }
-        
+
         .block .filter_item_img {
             height: 180px;
         }
-        
+
         .block .info {
             padding: 12px;
         }
-        
+
         .block .info .name {
             font-size: 1rem;
             margin-bottom: 8px;
         }
-        
+
         .block .info .short {
             font-size: 0.85rem;
             margin-bottom: 12px;
@@ -506,11 +506,11 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
-        
+
         .block .info .price-info strong {
             font-size: 1.1rem;
         }
-        
+
         .block .info .category-badge small {
             font-size: 0.7rem;
             padding: 3px 6px;
@@ -522,19 +522,19 @@
         .block .filter_item_img {
             height: 160px;
         }
-        
+
         .block .info {
             padding: 10px;
         }
-        
+
         .block .info .name {
             font-size: 0.95rem;
         }
-        
+
         .block .info .short {
             font-size: 0.8rem;
         }
-        
+
         .block .info .price-info strong {
             font-size: 1rem;
         }
@@ -700,7 +700,7 @@
             margin-bottom: 20px;
             padding: 0 10px;
         }
-        
+
         .menu_filter ul {
             gap: 5px;
         }

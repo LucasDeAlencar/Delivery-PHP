@@ -121,6 +121,10 @@
                                         <div class="invalid-feedback">
                                             Por favor, informe o nome do bairro.
                                         </div>
+                                        <small class="form-text text-warning">
+                                            <i class="fas fa-exclamation-triangle mr-1"></i>
+                                            <strong>Importante:</strong> Digite o nome do bairro exatamente como consta nos Correios
+                                        </small>
                                     </div>
 
                                     <div class="form-group">

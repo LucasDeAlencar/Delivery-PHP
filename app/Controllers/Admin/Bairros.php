@@ -18,21 +18,8 @@ class Bairros extends BaseController {
     public function index() {
         $db = \Config\Database::connect();
         
-        // Buscar configuração de entrega
-        $config = $db->table('configuracao_entrega')->where('id', 1)->get()->getRow();
-        
-        // Buscar modo de cobrança das configurações do sistema
-        $modoCobranca = $db->table('configuracoes_sistema')
-                          ->where('chave', 'modo_cobranca_entrega')
-                          ->get()
-                          ->getRow();
-        
-        // Adicionar modo de cobrança ao objeto de configuração
-        if ($config && $modoCobranca) {
-            $config->modo_cobranca = $modoCobranca->valor;
-        } elseif ($config) {
-            $config->modo_cobranca = 'bairro'; // Padrão
-        }
+        // Configuração simplificada - apenas bairros
+        $config = (object)['modo_cobranca' => 'bairro'];
         
         $data = [
             'titulo'  => "Listando os bairros atendidos",
@@ -84,15 +71,6 @@ class Bairros extends BaseController {
         // Converter valor de entrega do formato brasileiro para decimal
         if (isset($dadosLimpos['valor_entrega'])) {
             $dadosLimpos['valor_entrega'] = $this->converterValorParaDecimal($dadosLimpos['valor_entrega']);
-        }
-
-        // Verificar se é um bairro válido do Brasil
-        if (isset($dadosLimpos['nome'])) {
-            if (!$this->verificarBairroValido($dadosLimpos['nome'])) {
-                return redirect()->back()
-                               ->withInput()
-                               ->with('atencao', 'Nome não corresponde a um bairro válido do Brasil');
-            }
         }
 
         // Verificar duplicação de bairro
@@ -245,49 +223,6 @@ class Bairros extends BaseController {
                 return $this->response->setJSON(['sucesso' => true]);
             } else {
                 return $this->response->setJSON(['erro' => true, 'msg' => 'Erro ao salvar']);
-            }
-        } catch (\Exception $e) {
-            return $this->response->setJSON(['erro' => true, 'msg' => 'Erro no banco de dados']);
-        }
-    }
-
-    public function salvarConfiguracao() {
-        if (!$this->request->isAJAX()) {
-            return $this->response->setJSON(['erro' => true, 'msg' => 'Requisição inválida']);
-        }
-
-        $json = $this->request->getJSON();
-        
-        $dados = [
-            'taxa_por_km' => $json->taxa_por_km ?? null,
-            'taxa_minima' => $json->taxa_minima ?? null,
-            'distancia_maxima' => $json->distancia_maxima ?? null,
-            'cep_loja' => $json->cep_loja ?? null,
-            'updated_at' => date('Y-m-d H:i:s')
-        ];
-
-        $modoCobranca = $json->modo_cobranca ?? 'bairro';
-
-        $db = \Config\Database::connect();
-        
-        try {
-            // Salvar configurações específicas de KM
-            $resultado1 = $db->table('configuracao_entrega')
-                            ->where('id', 1)
-                            ->update($dados);
-
-            // Salvar modo de cobrança nas configurações do sistema
-            $resultado2 = $db->table('configuracoes_sistema')
-                            ->where('chave', 'modo_cobranca_entrega')
-                            ->update([
-                                'valor' => $modoCobranca,
-                                'updated_at' => date('Y-m-d H:i:s')
-                            ]);
-
-            if ($resultado1 !== false && $resultado2 !== false) {
-                return $this->response->setJSON(['sucesso' => true, 'msg' => 'Configuração salva com sucesso']);
-            } else {
-                return $this->response->setJSON(['erro' => true, 'msg' => 'Erro ao salvar configuração']);
             }
         } catch (\Exception $e) {
             return $this->response->setJSON(['erro' => true, 'msg' => 'Erro no banco de dados']);

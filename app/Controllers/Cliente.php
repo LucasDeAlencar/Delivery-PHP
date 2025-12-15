@@ -47,7 +47,7 @@ class Cliente extends BaseController
 
         $dados = [
             'telefone' => $json->telefone ?? '',
-            'cep' => $json->cep ?? '',
+            'cep' => preg_replace("/[^0-9]/", "", $json->cep ?? ''),
             'Cidade' => $json->cidade ?? '',
             'Bairro' => $json->bairro ?? '',
             'Endereco' => $json->endereco ?? '',

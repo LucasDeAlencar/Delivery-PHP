@@ -12,49 +12,14 @@
 <?php echo $this->section('conteudos'); ?>
 
 <div class="row">
-    <!-- Card de Seleção do Modo -->
-    <div class="col-lg-12 grid-margin stretch-card">
-        <div class="card">
-            <div class="card-body">
-                <h4 class="card-title">Modo de Cobrança de Entrega</h4>
-                <p class="card-description">Selecione como deseja cobrar as taxas de entrega</p>
-                
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-check form-check-primary">
-                            <label class="form-check-label">
-                                <input type="radio" name="modo_cobranca" value="bairro" id="radio-bairro" <?= ($configuracao->modo_cobranca ?? 'bairro') === 'bairro' ? 'checked' : '' ?> class="form-check-input">
-                                <i class="fas fa-map-marker-alt mr-2"></i>
-                                Cobrança por Bairro
-                                <i class="input-helper"></i>
-                            </label>
-                            <small class="form-text text-muted">Taxa fixa definida para cada bairro específico</small>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-check form-check-primary">
-                            <label class="form-check-label">
-                                <input type="radio" name="modo_cobranca" value="km" id="radio-km" <?= ($configuracao->modo_cobranca ?? 'bairro') === 'km' ? 'checked' : '' ?> class="form-check-input">
-                                <i class="fas fa-route mr-2"></i>
-                                Cobrança por Quilometragem
-                                <i class="input-helper"></i>
-                            </label>
-                            <small class="form-text text-muted">Taxa calculada automaticamente pela distância</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Card de Bairros -->
-    <div class="col-lg-12 grid-margin stretch-card mb-4" id="card-bairros" style="<?= ($configuracao->modo_cobranca ?? 'bairro') === 'bairro' ? '' : 'display: none;' ?>">
+    <div class="col-lg-12 grid-margin stretch-card">
         <div class="card">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div>
                         <h4 class="card-title mb-1">Bairros Atendidos</h4>
-                        <p class="card-description mb-0">Gerencie os bairros e suas respectivas taxas</p>
+                        <p class="card-description mb-0">Gerencie os bairros e suas respectivas taxas de entrega</p>
                     </div>
                     <a href="<?= site_url("admin/bairros/criar") ?>" class="btn btn-success">
                         <i class="fas fa-plus"></i> Cadastrar Bairro
@@ -80,7 +45,7 @@
                                         <td><?= esc($bairro->cidade) ?></td>
                                         <td>
                                             <span class="text-success font-weight-bold">
-                                                R$ <?= number_format($bairro->taxa_entrega, 2, ',', '.') ?>
+                                                R$ <?= number_format($bairro->valor_entrega, 2, ',', '.') ?>
                                             </span>
                                         </td>
                                         <td>
@@ -152,20 +117,6 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>CEP da Loja</label>
-                            <input type="text" id="cep_loja" class="form-control" placeholder="00000-000" value="<?= $configuracao->cep_loja ?? '' ?>">
-                            <small class="form-text text-muted">CEP do restaurante para cálculo da distância</small>
-                        </div>
-                    </div>
-                </div>
-                
-                <button class="btn btn-success" id="btnSalvarConfig">
-                    <i class="fas fa-save"></i> Salvar Configurações
-                </button>
-                
-                <div class="alert alert-info mt-4">
-                    <i class="fas fa-info-circle"></i>
-                    <strong>Como funciona:</strong> O sistema calculará automaticamente a distância entre o restaurante e o endereço do cliente, aplicando a taxa por quilômetro configurada.
                 </div>
             </div>
         </div>
@@ -179,60 +130,9 @@
 
 <script>
 $(document).ready(function() {
-    // Alternar entre cards ao mudar radio button
-    $('input[name="modo_cobranca"]').on('change', function() {
-        const selectedValue = $(this).val();
-        
-        if (selectedValue === 'bairro') {
-            $('#card-bairros').show();
-            $('#card-km').hide();
-        } else if (selectedValue === 'km') {
-            $('#card-bairros').hide();
-            $('#card-km').show();
-        }
-        
-        // Salvar modo de cobrança automaticamente
-        salvarModoCobranca(selectedValue);
-    });
-    
-    function salvarModoCobranca(modo) {
-        $.ajax({
-            url: '<?= site_url('admin/bairros/salvarModoCobranca') ?>',
-            method: 'POST',
-            dataType: 'json',
-            contentType: 'application/json',
-            data: JSON.stringify({modo_cobranca: modo}),
-            success: function(response) {
-                if (!response.sucesso) {
-                    console.error('Erro ao salvar modo de cobrança:', response.msg);
-                }
-            },
-            error: function() {
-                console.error('Erro ao salvar modo de cobrança');
-            }
-        });
-    }
-    
-    // Salvar configurações KM
-    $('#btnSalvarConfig').click(function() {
-        const cepLoja = $('#cep_loja').val();
-        
-        // Validar CEP se estiver preenchido
-        if (cepLoja && cepLoja.replace(/\D/g, '').length === 8) {
-            // Verificar se CEP é válido
-            fetch('<?= site_url('login/buscar_cep') ?>', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({cep: cepLoja.replace(/\D/g, '')})
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.erro) {
-                    alert('CEP inválido: ' + (data.msg || 'CEP não encontrado'));
-                    return;
+    // Código JavaScript simplificado - apenas para bairros
+    console.log('Página de bairros carregada');
+});
                 }
                 // CEP válido, salvar configurações
                 salvarConfiguracoes();

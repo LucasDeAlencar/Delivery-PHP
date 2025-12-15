@@ -232,7 +232,7 @@ window.FinalizarPedido = {
                                     </div>
                                     
                                     <!-- Dinheiro (aparece apenas se dinheiro) -->
-                                    <div id="dinheiro-container" class="mb-3" style="display: none;">
+                                    <div id="dinheiro-container" class="mb-33" style="display: none;">
                                         <label class="text-light">Valor em Dinheiro *</label>
                                         <input type="number" class="form-control bg-dark text-light" 
                                                id="valor_dinheiro" name="valor_dinheiro"
@@ -320,7 +320,7 @@ window.FinalizarPedido = {
                     <strong class="text-warning" style="font-size: 1.3rem;">R$ ${total.toFixed(2).replace('.', ',')}</strong>
                 </div>
             </div>
-        </div>`;
+        `;
         
         $('#resumo-pedido').html(html);
     },

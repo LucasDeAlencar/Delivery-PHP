@@ -124,6 +124,17 @@ class Pedidos extends BaseController
                 }
             }
 
+            // Enviar email de confirmação se email fornecido
+            if (!empty($dados->email_cliente)) {
+                $this->enviarEmailConfirmacao([
+                    'id_pedido' => $codigo,
+                    'nome_cliente' => $dados->nome_cliente,
+                    'email_cliente' => $dados->email_cliente,
+                    'total' => $valorTotal,
+                    'forma_pagamento' => $dados->forma_pagamento
+                ]);
+            }
+
             // Retornar sucesso
             return $this->response->setJSON([
                 'success' => true,
@@ -166,5 +177,18 @@ class Pedidos extends BaseController
         }
 
         return 'PED-' . $data . '-' . str_pad($numero, 4, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Envia email de confirmação do pedido
+     */
+    private function enviarEmailConfirmacao($dadosPedido)
+    {
+        try {
+            return enviarEmailPedido($dadosPedido);
+        } catch (\Exception $e) {
+            log_message('error', 'Erro ao enviar email de confirmação: ' . $e->getMessage());
+            return false;
+        }
     }
 }

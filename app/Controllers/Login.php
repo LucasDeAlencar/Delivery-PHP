@@ -64,6 +64,9 @@ class Login extends BaseController {
             $nome = $this->request->getPost('nome');
             $telefone = $this->request->getPost('telefone');
             $cep = $this->request->getPost('cep');
+            
+            // Remover hífen e outros caracteres não numéricos do CEP
+            $cep = preg_replace("/[^0-9]/", "", $cep);
             $cidade = $this->request->getPost('cidade');
             $bairro = $this->request->getPost('bairro');
             $endereco = $this->request->getPost('endereco');
@@ -313,19 +316,75 @@ class Login extends BaseController {
             $emailService->setSubject('Código de Verificação - No Kapricho');
             
             $mensagem = "
+                <!DOCTYPE html>
                 <html>
                 <head>
+                    <meta charset='UTF-8'>
+                    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
                     <title>Código de Verificação</title>
+                    <style>
+                        body { font-family: 'Poppins', sans-serif; margin: 0; padding: 0; background-color: #0d0d0d; color: #fff; }
+                        .container { max-width: 600px; margin: 0 auto; background: #1a1a1a; border: 2px solid #f8b531; border-radius: 15px; overflow: hidden; }
+                        .header { background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%); color: #f8b531; padding: 30px 20px; text-align: center; border-bottom: 1px solid #333; }
+                        .header h1 { margin: 0; font-size: 28px; font-weight: 600; color: #f8b531; }
+                        .content { padding: 40px 30px; text-align: center; background: #1a1a1a; }
+                        .code-box { background: #2d2d2d; border: 2px dashed #f8b531; border-radius: 12px; padding: 30px; margin: 30px 0; }
+                        .code { font-size: 36px; font-weight: bold; color: #f8b531; letter-spacing: 8px; font-family: 'Courier New', monospace; text-shadow: 0 0 10px rgba(248, 181, 49, 0.3); }
+                        .info { background: rgba(248, 181, 49, 0.1); border: 1px solid #f8b531; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: left; }
+                        .footer { background: #0d0d0d; color: #666; padding: 20px; text-align: center; font-size: 12px; border-top: 1px solid #333; }
+                        .warning { color: #ff6b6b; font-weight: bold; }
+                        .brand { color: #f8b531; font-weight: 600; }
+                        .text-light { color: #ccc; }
+                        .highlight { color: #f8b531; font-weight: bold; }
+                    </style>
                 </head>
                 <body>
-                    <h1>No Kapricho Pizzaria</h1>
-                    <p>Olá,</p>
-                    <p>Use o código abaixo para completar sua verificação:</p>
-                    <h2 style='color: #f8b531; background-color: #1a1a1a; padding: 15px; border-radius: 8px; display: inline-block; letter-spacing: 3px;'>
-                        {$codigo}
-                    </h2>
-                    <p><strong>Este código expira em 5 minutos.</strong></p>
-                    <p>Se você não solicitou este código, ignore este email.</p>
+                    <div class='container'>
+                        <div class='header'>
+                            <h1>🍕 <span class='brand'>No Kapricho Pizzaria</span></h1>
+                            <p style='margin: 10px 0 0 0; opacity: 0.9; color: #ccc;'>Verificação de Acesso</p>
+                        </div>
+                        
+                        <div class='content'>
+                            <h2 style='color: #f8b531; margin-bottom: 20px; font-weight: 600;'>Código de Verificação</h2>
+                            <p class='text-light' style='font-size: 16px; line-height: 1.6; margin-bottom: 30px;'>
+                                Para continuar com seu acesso, utilize o código abaixo:
+                            </p>
+                            
+                            <div class='code-box'>
+                                <div style='margin-bottom: 15px;'>
+                                    <svg width='64' height='64' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
+                                        <path d='M6 10V8C6 5.79086 7.79086 4 10 4H14C16.2091 4 18 5.79086 18 8V10' stroke='#f8b531' stroke-width='2' stroke-linecap='round'/>
+                                        <rect x='4' y='10' width='16' height='10' rx='2' fill='#f8b531' fill-opacity='0.2' stroke='#f8b531' stroke-width='2'/>
+                                        <circle cx='12' cy='15' r='2' fill='#f8b531'/>
+                                        <path d='M12 17V18' stroke='#f8b531' stroke-width='2' stroke-linecap='round'/>
+                                    </svg>
+                                </div>
+                                <div class='code'>{$codigo}</div>
+                                <p style='margin: 15px 0 0 0; color: #999; font-size: 14px;'>Digite este código na tela de verificação</p>
+                            </div>
+                            
+                            <div class='info'>
+                                <p style='margin: 0; color: #f8b531;'><strong>⚡ Informações importantes:</strong></p>
+                                <ul style='margin: 15px 0 0 0; color: #ccc; line-height: 1.8;'>
+                                    <li>Este código é válido por <span class='highlight'>5 minutos</span></li>
+                                    <li>Use <span class='highlight'>apenas uma vez</span></li>
+                                    <li>Não compartilhe com terceiros</li>
+                                </ul>
+                            </div>
+                            
+                            <div style='margin-top: 30px; padding: 15px; background: rgba(255, 107, 107, 0.1); border: 1px solid #ff6b6b; border-radius: 8px;'>
+                                <p class='warning' style='margin: 0;'>
+                                    ⚠️ Se você não solicitou este código, ignore este email
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class='footer'>
+                            <p style='margin: 0 0 5px 0;'>© 2024 No Kapricho Pizzaria - Sistema de Delivery</p>
+                            <p style='margin: 0; opacity: 0.7;'>Este é um email automático, não responda esta mensagem</p>
+                        </div>
+                    </div>
                 </body>
                 </html>
             ";

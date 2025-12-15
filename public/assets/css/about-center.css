@@ -1,0 +1,17 @@
+#about .one-half:not(.img) {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+#about .heading-section {
+    text-align: center;
+}
+
+#about .one-half.img {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}

@@ -29,10 +29,11 @@ class DadosCorporativos extends BaseController
         
         $dados = [
             'endereco' => $json->endereco ?? '',
+            'cep' => $json->cep ?? '',
             'numero' => $json->numero ?? '',
+            'whatsapp' => $json->whatsapp ?? '',
             'email' => $json->email ?? '',
             'instagram' => $json->instagram ?? '',
-            'twitter' => $json->twitter ?? '',
             'facebook' => $json->facebook ?? '',
             'updated_at' => date('Y-m-d H:i:s')
         ];
