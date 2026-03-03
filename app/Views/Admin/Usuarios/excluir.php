@@ -29,13 +29,15 @@
         margin: 0 10px;
     }
     
-    .user-detail {
-        margin-bottom: 0.5rem;
-    }
-    
     .user-detail strong {
         display: inline-block;
         width: 120px;
+        color: #212529;
+    }
+    
+    .user-detail {
+        margin-bottom: 0.5rem;
+        color: #212529;
     }
 </style>
 <?php echo $this->endSection(); ?>
@@ -70,7 +72,7 @@
                 <!-- Informações do Usuário -->
                 <div class="card user-info-card mb-4">
                     <div class="card-body">
-                        <h6 class="card-title text-left mb-3">
+                        <h6 class="card-title text-left mb-3" style="color: #212529;">
                             <i class="mdi mdi-account"></i> Dados do Usuário
                         </h6>
                         
@@ -96,18 +98,18 @@
                             <div class="user-detail">
                                 <strong>Status:</strong> 
                                 <?php if ($usuario->ativo): ?>
-                                    <span class="badge badge-success">Ativo</span>
+                                    <span class="badge badge-success" style="color: #212529;">Ativo</span>
                                 <?php else: ?>
-                                    <span class="badge badge-secondary">Inativo</span>
+                                    <span class="badge badge-secondary" style="color: #212529;">Inativo</span>
                                 <?php endif; ?>
                             </div>
                             
                             <div class="user-detail">
                                 <strong>Tipo:</strong> 
                                 <?php if ($usuario->is_admin): ?>
-                                    <span class="badge badge-warning">Administrador</span>
+                                    <span class="badge badge-warning" style="color: #212529;">Administrador</span>
                                 <?php else: ?>
-                                    <span class="badge badge-info">Usuário Comum</span>
+                                    <span class="badge badge-info" style="color: #212529;">Usuário Comum</span>
                                 <?php endif; ?>
                             </div>
                             

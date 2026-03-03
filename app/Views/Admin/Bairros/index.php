@@ -5,7 +5,159 @@
 
 <!-- Área de Estilos -->
 <?php echo $this->section('estilos'); ?>
+<style>
+    /* Coluna de ações com largura fixa */
+    .table th:last-child,
+    .table td:last-child {
+        width: 140px;
+        text-align: center;
+    }
 
+    /* Estilo para preço */
+    .preco-produto {
+        font-weight: 600;
+        color: #28a745;
+    }
+    
+    /* Responsividade para tabela de bairros - Nome, Preço e Ações */
+    @media (max-width: 768px) {
+        /* Ocultar apenas Cidade e Situação */
+        .table th:nth-child(2), /* Cidade */
+        .table td:nth-child(2),
+        .table th:nth-child(4) /* Situação */,
+        .table td:nth-child(4) {
+            display: none !important;
+        }
+        
+        /* FORÇAR exibição do Nome, Taxa de entrega e Ações */
+        .table th:nth-child(1), /* Nome */
+        .table td:nth-child(1),
+        .table th:nth-child(3), /* Taxa de entrega */
+        .table td:nth-child(3),
+        .table th:nth-child(5), /* Ações */
+        .table td:nth-child(5) {
+            display: table-cell !important;
+        }
+        
+        .table th,
+        .table td {
+            padding: 6px 2px;
+            font-size: 0.8rem;
+        }
+        
+        .btn-sm {
+            padding: 3px 4px;
+            font-size: 0.7rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .table th,
+        .table td {
+            padding: 4px 1px;
+            font-size: 0.75rem;
+        }
+        
+        .btn-sm {
+            padding: 2px 3px;
+            font-size: 0.65rem;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .table th:nth-child(4), /* Categoria */
+        .table td:nth-child(4) {
+            display: none;
+        }
+        
+        .table th:last-child,
+        .table td:last-child {
+            width: auto;
+        }
+        
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .btn-group .btn {
+            width: 100%;
+            padding: 6px 10px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .table th:nth-child(1), /* ID */
+        .table td:nth-child(1),
+        .table th:nth-child(2), /* Imagem */
+        .table td:nth-child(2) {
+            display: none;
+        }
+        
+        .table th,
+        .table td {
+            padding: 8px 6px;
+            font-size: 0.85rem;
+        }
+        
+        .preco-produto {
+            font-size: 0.9rem;
+        }
+        
+        .badge {
+            font-size: 0.7rem;
+            padding: 4px 6px;
+        }
+        
+        /* Paginação */
+        .pagination .page-item {
+            margin: 0 5px;
+        }
+        
+        .pagination .page-link {
+            padding: 0.375rem 0.75rem;
+            line-height: 1.25;
+            white-space: nowrap;
+            text-align: center;
+            min-width: 40px;
+        }
+        
+        /* Filtros */
+        .input-group .btn {
+            border-left: 0;
+        }
+        
+        .form-select, .form-control {
+            border-color: #ddd;
+        }
+        
+        .form-select:focus, .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+    }
+    
+    /* Header responsivo */
+    @media (max-width: 576px) {
+        .d-flex.justify-content-between {
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .d-flex.justify-content-between .btn {
+            width: 100%;
+        }
+        
+        .card-title {
+            font-size: 1.1rem;
+        }
+        
+        .card-description {
+            font-size: 0.85rem;
+        }
+    }
+</style>
 <?php echo $this->endSection(); ?>
 
 <!-- Área de Conteúdos -->
@@ -26,8 +178,8 @@
                     </a>
                 </div>
 
-                <div class="table-responsive">
-                    <table class="table table-hover">
+                <div class="table-responsive pt-3" style="max-height: 600px; overflow-y: auto; overflow-x: auto;">
+                    <table class="table table-hover" style="min-width: 600px;">
                         <thead>
                             <tr>
                                 <th>Nome</th>
@@ -40,7 +192,7 @@
                         <tbody>
                             <?php if (!empty($bairros)): ?>
                                 <?php foreach ($bairros as $bairro): ?>
-                                    <tr>
+                                    <tr class="produto-row <?= $bairro->deletado_em ? 'table-secondary' : '' ?>" data-id="<?= $bairro->id ?>" <?= $bairro->deletado_em ? 'style="opacity: 0.6;"' : '' ?>>
                                         <td><?= esc($bairro->nome) ?></td>
                                         <td><?= esc($bairro->cidade) ?></td>
                                         <td>
@@ -49,22 +201,37 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <?php if ($bairro->ativo): ?>
+                                            <?php if ($bairro->deletado_em): ?>
+                                                <span class="badge badge-secondary">Excluído</span>
+                                            <?php elseif ($bairro->ativo): ?>
                                                 <span class="badge badge-success">Ativo</span>
                                             <?php else: ?>
                                                 <span class="badge badge-danger">Inativo</span>
                                             <?php endif; ?>
                                         </td>
                                         <td>
-                                            <a href="<?= site_url("admin/bairros/$bairro->id") ?>" class="btn btn-outline-primary btn-sm">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <a href="<?= site_url("admin/bairros/editar/$bairro->id") ?>" class="btn btn-outline-warning btn-sm">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <a href="<?= site_url("admin/bairros/excluir/$bairro->id") ?>" class="btn btn-outline-danger btn-sm">
-                                                <i class="fas fa-trash"></i>
-                                            </a>
+                                            <?php if ($bairro->deletado_em): ?>
+                                                <form action="<?= site_url("admin/bairros/desfazer-exclusao/$bairro->id") ?>" method="post" style="display: inline;">
+                                                    <button type="submit" class="btn btn-outline-success btn-sm" title="Restaurar">
+                                                        <i class="fas fa-undo"></i>
+                                                    </button>
+                                                </form>
+                                                <form action="<?= site_url("admin/bairros/deletar-definitivamente/$bairro->id") ?>" method="post" style="display: inline;" onsubmit="return confirm('ATENÇÃO! Esta ação é IRREVERSÍVEL!\n\nTem certeza que deseja apagar este bairro DEFINITIVAMENTE?');">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Apagar Definitivamente">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </form>
+                                            <?php else: ?>
+                                                <a href="<?= site_url("admin/bairros/$bairro->id") ?>" class="btn btn-outline-primary btn-sm">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="<?= site_url("admin/bairros/editar/$bairro->id") ?>" class="btn btn-outline-warning btn-sm">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="<?= site_url("admin/bairros/excluir/$bairro->id") ?>" class="btn btn-outline-danger btn-sm">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            <?php endif; ?>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -79,6 +246,18 @@
                         </tbody>
                     </table>
                 </div>
+                
+                <!-- Paginação -->
+                <?php if ($pager->getPageCount() > 1): ?>
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <div class="text-muted small">
+                            Página <?= $pager->getCurrentPage() ?> de <?= $pager->getPageCount() ?>
+                        </div>
+                        <nav aria-label="Navegação da página">
+                            <?= $pager->links('default', 'bootstrap_pagination') ?>
+                        </nav>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -117,6 +296,19 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
+                            <label>CEP da Loja</label>
+                            <input type="text" id="cep_loja" class="form-control" placeholder="Ex: 12345-678" value="<?= $configuracao->cep_loja ?? '' ?>">
+                            <small class="form-text text-muted">CEP de origem para cálculo de distância</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-12">
+                        <button type="button" class="btn btn-primary" id="salvar-configuracoes">
+                            <i class="fas fa-save mr-2"></i>Salvar Configurações
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

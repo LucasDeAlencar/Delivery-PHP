@@ -147,6 +147,35 @@
                     </div>
                 <?php endif; ?>
 
+                <!-- Configurações de Extras -->
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Configurações de Extras</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Extras Obrigatórios:</strong> 
+                                            <span class="badge badge-info"><?= esc($produto->obrigatorio_extras ?? 0) ?></span>
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Máximo de Extras:</strong> 
+                                            <?php if (!empty($produto->max_extras)): ?>
+                                                <span class="badge badge-warning"><?= esc($produto->max_extras) ?></span>
+                                            <?php else: ?>
+                                                <span class="badge badge-secondary">Ilimitado</span>
+                                            <?php endif; ?>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Botões de Ação -->
                 <div class="row mt-3">
                     <div class="col-12">

@@ -1,0 +1,3 @@
+# Bloquear acesso à pasta de testes
+Order Deny,Allow
+Deny from all

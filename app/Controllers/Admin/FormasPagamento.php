@@ -32,21 +32,52 @@ class FormasPagamento extends BaseController
      */
     public function atualizar()
     {
-        if ($this->request->getMethod() === 'post') {
+        if ($this->request->getMethod() === 'get') {
             return redirect()->to('admin/formas-pagamento');
         }
 
         try {
             $formasPagamento = $this->formaPagamentoModel->findAll();
             $atualizados = 0;
+            $chavePix = $this->request->getPost('chave_pix');
+
+            $uploadPath = ROOTPATH . 'public/uploads/qrcode_pix/';
+            if (!is_dir($uploadPath)) {
+                mkdir($uploadPath, 0755, true);
+            }
 
             foreach ($formasPagamento as $forma) {
                 // Verifica se o checkbox foi marcado
                 $ativo = $this->request->getPost('forma_' . $forma->id) ? 1 : 0;
+                $dadosUpdate = ['ativo' => $ativo];
+
+                // Se for PIX, atualizar também a chave
+                if ($forma->slug === 'pix' && $chavePix) {
+                    $dadosUpdate['codigo'] = $chavePix;
+                }
+
+                // Se for PIX, processar upload do QR Code
+                if ($forma->slug === 'pix') {
+                    $qrCodeFile = $this->request->getFile('qrcode_pix');
+                    if ($qrCodeFile && $qrCodeFile->isValid() && !$qrCodeFile->hasMoved()) {
+                        // Remover imagem anterior se existir
+                        if (!empty($forma->qrcode_image)) {
+                            $oldFile = $uploadPath . $forma->qrcode_image;
+                            if (file_exists($oldFile)) {
+                                unlink($oldFile);
+                            }
+                        }
+
+                        // Gerar novo nome aleatório
+                        $newName = $qrCodeFile->getRandomName();
+                        $qrCodeFile->move($uploadPath, $newName);
+                        $dadosUpdate['qrcode_image'] = $newName;
+                    }
+                }
 
                 // Atualiza apenas se mudou
-                if ($forma->ativo != $ativo) {
-                    $this->formaPagamentoModel->update($forma->id, ['ativo' => $ativo]);
+                if ($forma->ativo != $ativo || ($forma->slug === 'pix' && $forma->codigo !== $chavePix) || isset($dadosUpdate['qrcode_image'])) {
+                    $this->formaPagamentoModel->update($forma->id, $dadosUpdate);
                     $atualizados++;
                 }
             }

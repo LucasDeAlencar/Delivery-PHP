@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste Taxa Entrega Cliente</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Teste Taxa de Entrega por Cliente</h1>
+    
+    <div>
+        <label>Email do Cliente:</label>
+        <input type="email" id="email" value="lucas130333@gmail.com" style="width: 300px;">
+        <button onclick="testarTaxa()">Calcular Taxa</button>
+    </div>
+    
+    <div id="resultado" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc;"></div>
+
+    <script>
+    function testarTaxa() {
+        const email = $('#email').val();
+        
+        $.ajax({
+            url: '/taxa-entrega-email',
+            method: 'POST',
+            data: { email: email },
+            success: function(response) {
+                $('#resultado').html(`
+                    <h3>Resultado:</h3>
+                    <p><strong>Sucesso:</strong> ${response.success}</p>
+                    <p><strong>Pode Entregar:</strong> ${response.pode_entregar}</p>
+                    <p><strong>Taxa:</strong> R$ ${response.taxa_entrega}</p>
+                    <p><strong>Mensagem:</strong> ${response.message}</p>
+                    ${response.cliente ? `
+                        <p><strong>Cliente:</strong> ${response.cliente.nome}</p>
+                        <p><strong>Bairro:</strong> ${response.cliente.bairro}</p>
+                        <p><strong>Cidade:</strong> ${response.cliente.cidade}</p>
+                    ` : ''}
+                    <pre>${JSON.stringify(response, null, 2)}</pre>
+                `);
+            },
+            error: function(xhr) {
+                $('#resultado').html(`
+                    <h3>Erro:</h3>
+                    <p>Status: ${xhr.status}</p>
+                    <p>Resposta: ${xhr.responseText}</p>
+                `);
+            }
+        });
+    }
+    </script>
+</body>
+</html>

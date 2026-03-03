@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste - Carrinho Home com Bairro Universal</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        .info { color: blue; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        .caso-real { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🛒 Teste - Carrinho Home com Bairro Universal</h1>
+        
+        <div class="caso-real">
+            <h3>📋 Situação:</h3>
+            <p><strong>Cliente:</strong> bimdasbalas@gmail.com (Centro, Belo Horizonte)</p>
+            <p><strong>Problema:</strong> Carrinho da home não estava usando bairro universal (*)</p>
+            <p><strong>Correção:</strong> Aplicada lógica do "*" em TaxaEntregaController</p>
+        </div>
+        
+        <div class="section">
+            <h3>1. Testar API Taxa Entrega (Carrinho Simples)</h3>
+            <p>Esta é a API que o carrinho-simples.js usa:</p>
+            <button onclick="testarTaxaEntregaEmail()">Testar /taxa-entrega-email</button>
+            <div id="resultado-taxa-email"></div>
+        </div>
+        
+        <div class="section">
+            <h3>2. Testar API Verificar Entrega (Outros Carrinhos)</h3>
+            <p>Esta é a API que carrinho-popup.js e carrinho-trigger.js usam:</p>
+            <button onclick="testarVerificarEntrega()">Testar /api/verificar-entrega</button>
+            <div id="resultado-verificar"></div>
+        </div>
+        
+        <div class="section">
+            <h3>3. Comparar Resultados</h3>
+            <button onclick="compararResultados()">Comparar Ambas APIs</button>
+            <div id="resultado-comparacao"></div>
+        </div>
+    </div>
+
+    <script>
+        async function testarTaxaEntregaEmail() {
+            const resultado = document.getElementById('resultado-taxa-email');
+            resultado.innerHTML = '<p class="info">🔄 Testando...</p>';
+            
+            try {
+                const response = await fetch('/taxa-entrega-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'email=bimdasbalas@gmail.com'
+                });
+                
+                const data = await response.json();
+                
+                let html = '<h4>Resultado /taxa-entrega-email:</h4>';
+                html += `<p><strong>Sucesso:</strong> ${data.success ? '✅' : '❌'}</p>`;
+                html += `<p><strong>Pode entregar:</strong> ${data.pode_entregar ? '✅' : '❌'}</p>`;
+                html += `<p><strong>Taxa:</strong> R$ ${data.taxa_entrega.toFixed(2).replace('.', ',')}</p>`;
+                html += `<p><strong>Mensagem:</strong> ${data.message}</p>`;
+                
+                if (data.cliente) {
+                    html += `<p><strong>Cliente:</strong> ${data.cliente.bairro}, ${data.cliente.cidade}</p>`;
+                }
+                
+                const classe = data.success && data.pode_entregar ? 'success' : 'error';
+                resultado.innerHTML = `<div class="${classe}">${html}</div>`;
+                
+            } catch (error) {
+                resultado.innerHTML = `<p class="error">❌ Erro: ${error.message}</p>`;
+            }
+        }
+        
+        async function testarVerificarEntrega() {
+            const resultado = document.getElementById('resultado-verificar');
+            resultado.innerHTML = '<p class="info">🔄 Testando...</p>';
+            
+            try {
+                const response = await fetch('/api/verificar-entrega', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: 'bimdasbalas@gmail.com' })
+                });
+                
+                const data = await response.json();
+                
+                let html = '<h4>Resultado /api/verificar-entrega:</h4>';
+                html += `<p><strong>Disponível:</strong> ${data.disponivel ? '✅' : '❌'}</p>`;
+                html += `<p><strong>Valor:</strong> R$ ${data.valor_entrega ? data.valor_entrega.toFixed(2).replace('.', ',') : '0,00'}</p>`;
+                html += `<p><strong>Mensagem:</strong> ${data.mensagem || 'Entrega disponível'}</p>`;
+                
+                const classe = data.disponivel ? 'success' : 'error';
+                resultado.innerHTML = `<div class="${classe}">${html}</div>`;
+                
+            } catch (error) {
+                resultado.innerHTML = `<p class="error">❌ Erro: ${error.message}</p>`;
+            }
+        }
+        
+        async function compararResultados() {
+            const resultado = document.getElementById('resultado-comparacao');
+            resultado.innerHTML = '<p class="info">🔄 Comparando...</p>';
+            
+            try {
+                // Testar ambas APIs
+                const [resp1, resp2] = await Promise.all([
+                    fetch('/taxa-entrega-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: 'email=bimdasbalas@gmail.com'
+                    }),
+                    fetch('/api/verificar-entrega', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: 'bimdasbalas@gmail.com' })
+                    })
+                ]);
+                
+                const data1 = await resp1.json();
+                const data2 = await resp2.json();
+                
+                let html = '<h4>Comparação:</h4>';
+                html += '<table border="1" style="width: 100%; border-collapse: collapse;">';
+                html += '<tr><th>API</th><th>Funciona</th><th>Taxa</th><th>Status</th></tr>';
+                
+                html += `<tr>
+                    <td>/taxa-entrega-email</td>
+                    <td>${data1.success && data1.pode_entregar ? '✅' : '❌'}</td>
+                    <td>R$ ${data1.taxa_entrega.toFixed(2).replace('.', ',')}</td>
+                    <td>${data1.message}</td>
+                </tr>`;
+                
+                html += `<tr>
+                    <td>/api/verificar-entrega</td>
+                    <td>${data2.disponivel ? '✅' : '❌'}</td>
+                    <td>R$ ${data2.valor_entrega ? data2.valor_entrega.toFixed(2).replace('.', ',') : '0,00'}</td>
+                    <td>${data2.mensagem || 'OK'}</td>
+                </tr>`;
+                
+                html += '</table>';
+                
+                // Verificar se ambas funcionam
+                const ambas = (data1.success && data1.pode_entregar) && data2.disponivel;
+                const valores = data1.taxa_entrega === data2.valor_entrega;
+                
+                if (ambas && valores) {
+                    html += '<p class="success">✅ <strong>PERFEITO!</strong> Ambas APIs funcionam e retornam o mesmo valor!</p>';
+                } else if (ambas) {
+                    html += '<p class="warning">⚠️ Ambas funcionam, mas valores diferentes</p>';
+                } else {
+                    html += '<p class="error">❌ Pelo menos uma API não está funcionando</p>';
+                }
+                
+                resultado.innerHTML = html;
+                
+            } catch (error) {
+                resultado.innerHTML = `<p class="error">❌ Erro: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

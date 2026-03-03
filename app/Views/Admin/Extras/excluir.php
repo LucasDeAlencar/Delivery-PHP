@@ -12,6 +12,9 @@
         max-width: 600px;
         margin: 0 auto;
     }
+    .card-body{
+        color: #000;
+    }
     
     .user-info-card {
         background-color: #f8f9fa;

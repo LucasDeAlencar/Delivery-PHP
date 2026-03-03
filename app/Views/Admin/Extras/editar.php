@@ -119,24 +119,6 @@
                                         <small class="text-muted">O slug será gerado automaticamente baseado no nome.</small>
                                     </div>
 
-                                    <div class="form-group mb-4">
-                                        <label for="slug" class="mb-2">Slug</label>
-                                        <input class="form-control" 
-                                               id="slug" 
-                                               name="slug" 
-                                               value="<?php echo old('slug', esc($extra->slug)); ?>" 
-                                               placeholder="slug-da-extra"
-                                               readonly>
-                                        <div class="invalid-feedback">
-                                            Por favor, informe um slug válido.
-                                        </div>
-                                        <small class="text-muted">Gerado automaticamente. Clique em "Editar Manualmente" para personalizar.</small>
-                                        <br>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="toggle-slug-edit">
-                                            <i class="mdi mdi-pencil"></i> Editar Manualmente
-                                        </button>
-                                    </div>
-
                                     <div class="form-group">
                                         <label for="preco">Preço</label>
                                         <div class="input-group">

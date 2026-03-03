@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste Filtros Simples</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .filtr-item { 
+            border: 1px solid #ccc; 
+            margin: 10px; 
+            padding: 20px; 
+            display: block;
+        }
+        .menu_filter ul { list-style: none; display: flex; gap: 10px; }
+        .menu_filter a { 
+            padding: 10px 15px; 
+            background: #f0f0f0; 
+            text-decoration: none; 
+            color: #333;
+            border-radius: 5px;
+        }
+        .menu_filter .active a { background: #007bff; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Teste Filtros</h1>
+    
+    <div class="menu_filter">
+        <ul>
+            <li class="active">
+                <a href="#" class="filter-button" data-filter="all">Todos</a>
+            </li>
+            <li>
+                <a href="#" class="filter-button" data-filter="categoria1">Categoria 1</a>
+            </li>
+            <li>
+                <a href="#" class="filter-button" data-filter="categoria2">Categoria 2</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="produtos">
+        <div class="filtr-item filter all filter-categoria1">Produto 1 - Categoria 1</div>
+        <div class="filtr-item filter all filter-categoria1">Produto 2 - Categoria 1</div>
+        <div class="filtr-item filter all filter-categoria2">Produto 3 - Categoria 2</div>
+        <div class="filtr-item filter all filter-categoria2">Produto 4 - Categoria 2</div>
+    </div>
+
+    <script>
+    $(document).ready(function() {
+        console.log('Teste iniciado');
+        console.log('Botões encontrados:', $('.filter-button').length);
+        console.log('Produtos encontrados:', $('.filtr-item').length);
+        
+        // Listar classes dos produtos
+        $('.filtr-item').each(function(index) {
+            console.log('Produto ' + index + ':', $(this).attr('class'));
+        });
+        
+        // Filtros
+        $(document).on('click', '.filter-button', function (e) {
+            e.preventDefault();
+            console.log('Filtro clicado');
+            
+            $('.menu_filter ul li').removeClass('active');
+            $(this).parent().addClass('active');
+            
+            var filterValue = $(this).data('filter');
+            console.log('Valor do filtro:', filterValue);
+            
+            $('.filtr-item').hide();
+            
+            if (filterValue === 'all') {
+                console.log('Mostrando todos');
+                $('.filtr-item').show();
+            } else {
+                var selector = '.filtr-item.filter-' + filterValue;
+                console.log('Seletor:', selector);
+                var elements = $(selector);
+                console.log('Elementos encontrados:', elements.length);
+                elements.show();
+            }
+        });
+    });
+    </script>
+</body>
+</html>

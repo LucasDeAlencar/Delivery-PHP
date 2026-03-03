@@ -98,7 +98,7 @@
     <!-- Navbar igual ao da home -->
     <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
 	    <div class="container">
-		      <a class="navbar-brand" href="<?= base_url('/') ?>"><span class="flaticon-pizza-1 mr-1"></span>No Kapricho<br><small>A melhor pizzaria da cidade</small></a>
+		      <a class="navbar-brand" href="<?= base_url('/') ?>"><span class="fas fa-hamburger mr-1"></span>Delicias MV<br><small>Os melhores salgados da cidade</small></a>
 		      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
 		        <span class="oi oi-menu"></span> Menu
 		      </button>
@@ -123,7 +123,7 @@
                     <div class="login-container">
                         <div class="login-header">
                             <div class="brand">
-                                <span class="flaticon-pizza-1"></span> No Kapricho
+                                <span class="fas fa-hamburger"></span> Bim das Balas
                                 <small>Área Administrativa</small>
                             </div>
                             <p class="text-muted mt-3">Faça login para acessar o painel</p>
@@ -133,7 +133,7 @@
                         <?= $this->renderSection('conteudo') ?>
                         
                         <div class="login-footer">
-                            <p>&copy; <?= date('Y') ?> No Kapricho. Todos os direitos reservados.</p>
+                            <p>&copy; <?= date('Y') ?> Bim das Balas. Todos os direitos reservados.</p>
                         </div>
                     </div>
                 </div>

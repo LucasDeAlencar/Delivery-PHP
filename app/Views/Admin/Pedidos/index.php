@@ -169,6 +169,11 @@
     @media (max-width: 768px) {
         .card-estatistica h3 { font-size: 1.5rem; }
         .filtro-status { font-size: 0.65rem; padding: 4px 8px; }
+        .suporte-header { flex-direction: column !important; gap: 10px !important; }
+        .suporte-actions { width: 100%; }
+        .suporte-actions button { flex: 1; min-width: 80px; }
+        .suporte-info-header { flex-direction: column !important; align-items: flex-start !important; }
+        .suporte-info-header button { width: 100%; }
     }
 </style>
 <?php echo $this->endSection(); ?>
@@ -268,7 +273,236 @@
             </div>
         </div>
     </div>
+    <div class="col-6 col-lg mb-2">
+        <div class="card card-estatistica" style="border-left-color: #ff9800; cursor: pointer;" onclick="toggleSuportes()">
+            <div class="card-body py-2">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">Suporte</h6>
+                        <h3 id="stat-suporte" style="color: #ff9800 !important;"><?= $total_suportes ?? 0 ?></h3>
+                    </div>
+                    <div class="icon-circle" style="background: #ff9800;">
+                        <i class="fas fa-headset text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- Seção de Suporte (oculta por padrão) -->
+<?php if (!empty($suportes_pendentes)): ?>
+<?php 
+// Agrupar suportes por código de pedido
+$suportesAgrupados = [];
+foreach ($suportes_pendentes as $suporte) {
+    $codigo = $suporte['codigo_pedido'];
+    if (!isset($suportesAgrupados[$codigo])) {
+        $suportesAgrupados[$codigo] = [
+            'cliente_nome' => $suporte['cliente_nome'],
+            'cliente_telefone' => $suporte['cliente_telefone'],
+            'pedido_id' => $suporte['pedido_id'],
+            'mensagens' => []
+        ];
+    }
+    $suportesAgrupados[$codigo]['mensagens'][] = $suporte;
+}
+?>
+<div class="row mb-3" id="secao-suporte" style="display: none;">
+    <div class="col-12">
+        <div class="card" style="background: #2d2d2d; border: 1px solid #ff9800;">
+            <div class="card-header" style="background: #ff9800; color: white;">
+                <h5 class="mb-0"><i class="fas fa-headset"></i> Solicitações de Suporte Pendentes</h5>
+            </div>
+            <div class="card-body">
+                <?php foreach ($suportesAgrupados as $codigo => $grupo): ?>
+                <div class="suporte-grupo" style="border-bottom: 1px solid #444; padding: 15px 0;">
+                    <div class="suporte-header" style="display: flex; justify-content: space-between; align-items: start; gap: 15px;">
+                        <div style="flex: 1; min-width: 0;">
+                            <p style="margin: 0; color: #f8b531; cursor: pointer; word-wrap: break-word;" onclick="toggleSuporte('<?= $codigo ?>')">
+                                <i class="fas fa-chevron-down" id="icon-<?= $codigo ?>"></i>
+                                <strong>Pedido:</strong> <?= esc($codigo) ?> | 
+                                <strong>Cliente:</strong> <?= esc($grupo['cliente_nome']) ?> 
+                                <span style="background: #ff9800; color: #000; padding: 2px 8px; border-radius: 10px; font-size: 12px; margin-left: 10px;"><?= count($grupo['mensagens']) ?> mensagem(ns)</span>
+                            </p>
+                            <p style="margin: 5px 0 0 0; color: #ccc; word-wrap: break-word;"><strong>Telefone:</strong> <?= esc($grupo['cliente_telefone']) ?: 'Não informado' ?></p>
+                            
+                            <div id="detalhes-<?= $codigo ?>" style="display: none; margin-top: 15px;">
+                                <div style="background: #3a3a3a; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                                    <div class="suporte-info-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
+                                        <h6 style="color: #f8b531; margin: 0;">Mensagens:</h6>
+                                        <button class="btn btn-warning btn-sm" onclick="carregarInfoPedido('<?= $codigo ?>', <?= $grupo['pedido_id'] ?>)" id="btn-info-<?= $codigo ?>">
+                                            <i class="fas fa-info-circle"></i> <span class="d-none d-sm-inline">Ver Informações do Cliente</span><span class="d-inline d-sm-none">Info</span>
+                                        </button>
+                                    </div>
+                                    
+                                    <div id="info-cliente-<?= $codigo ?>" style="display: none; background: #2a2a2a; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                                        <div id="conteudo-info-<?= $codigo ?>"></div>
+                                    </div>
+                                    
+                                    <?php foreach ($grupo['mensagens'] as $msg): ?>
+                                    <div style="background: #2a2a2a; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                                        <p style="margin: 0 0 5px 0; color: #fff; word-wrap: break-word;"><strong>Mensagem:</strong> <?= esc($msg['razao']) ?></p>
+                                        <small style="color: #999;"><?= date('d/m/Y H:i', strtotime($msg['criado_em'])) ?></small>
+                                        <div style="margin-top: 8px; display: flex; gap: 5px; flex-wrap: wrap;">
+                                            <button class="btn btn-success btn-sm" onclick="abrirWhatsApp('<?= preg_replace('/[^0-9]/', '', $msg['cliente_telefone']) ?>', '<?= addslashes($msg['cliente_nome']) ?>', '<?= $msg['codigo_pedido'] ?>')" title="Contato via WhatsApp">
+                                                <i class="fab fa-whatsapp"></i> <span class="d-none d-sm-inline">WhatsApp</span>
+                                            </button>
+                                            <button class="btn btn-primary btn-sm" onclick="resolverSuporte(<?= $msg['id'] ?>)" title="Marcar como resolvido">
+                                                <i class="fas fa-check"></i> <span class="d-none d-sm-inline">Resolvido</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="suporte-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button class="btn btn-info btn-sm" onclick="toggleSuporte('<?= $codigo ?>')" title="Ver Mensagens">
+                                <i class="fas fa-eye"></i> <span class="d-none d-sm-inline">Ver Mensagens</span>
+                            </button>
+                            <button class="btn btn-success btn-sm" onclick="abrirWhatsApp('<?= preg_replace('/[^0-9]/', '', $grupo['cliente_telefone']) ?>', '<?= addslashes($grupo['cliente_nome']) ?>', '<?= $codigo ?>')" title="Contato via WhatsApp">
+                                <i class="fab fa-whatsapp"></i> <span class="d-none d-sm-inline">Contato</span>
+                            </button>
+                            <button class="btn btn-primary btn-sm" onclick="resolverTodosSuporte('<?= $codigo ?>')" title="Marcar todos como resolvido">
+                                <i class="fas fa-check-double"></i> <span class="d-none d-sm-inline">Resolver Todos</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleSuporte(codigo) {
+    const detalhes = document.getElementById('detalhes-' + codigo);
+    const icon = document.getElementById('icon-' + codigo);
+    
+    if (detalhes.style.display === 'none') {
+        detalhes.style.display = 'block';
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
+    } else {
+        detalhes.style.display = 'none';
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+    }
+}
+
+function carregarInfoPedido(codigo, pedidoId) {
+    const btn = document.getElementById('btn-info-' + codigo);
+    const infoDiv = document.getElementById('info-cliente-' + codigo);
+    const conteudoDiv = document.getElementById('conteudo-info-' + codigo);
+    
+    if (infoDiv.style.display === 'none') {
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Carregando...';
+        
+        fetch('/suporte/info-pedido/' + pedidoId)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const p = data.pedido;
+                    const itens = data.itens || [];
+                    
+                    let htmlItens = '';
+                    if (itens.length > 0) {
+                        htmlItens = '<div style="margin-top: 15px;"><h6 style="color: #f8b531; margin-bottom: 10px;">Itens do Pedido:</h6>';
+                        itens.forEach(item => {
+                            const precoUnitario = parseFloat(item.preco_unitario) || 0;
+                            const quantidade = parseInt(item.quantidade) || 1;
+                            const precoItem = precoUnitario * quantidade;
+                            let htmlExtras = '';
+                            if (item.extras && item.extras.length > 0) {
+                                item.extras.forEach(extra => {
+                                    const precoExtra = parseFloat(extra.extra_preco) || 0;
+                                    htmlExtras += `<div style="color: #aaa; font-size: 12px; margin-left: 10px;">+ ${extra.quantidade}x ${extra.extra_nome} (R$ ${precoExtra.toFixed(2).replace('.', ',')})</div>`;
+                                });
+                            }
+                            htmlItens += `
+                                <div style="background: #222; padding: 8px; border-radius: 5px; margin-bottom: 8px; font-size: 13px;">
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span>${quantidade}x ${item.produto_nome || item.nome_produto || 'Produto'}</span>
+                                        <span style="color: #f8b531;">R$ ${precoItem.toFixed(2).replace('.', ',')}</span>
+                                    </div>
+                                    ${precoUnitario > 0 ? `<div style="color: #666; font-size: 11px;">(R$ ${precoUnitario.toFixed(2).replace('.', ',')} cada)</div>` : ''}
+                                    ${htmlExtras ? `<div style="margin-top: 5px;">${htmlExtras}</div>` : ''}
+                                    ${item.observacoes ? `<div style="color: #888; font-style: italic; font-size: 12px;">Obs: ${item.observacoes}</div>` : ''}
+                                </div>
+                            `;
+                        });
+                        htmlItens += '</div>';
+                    }
+                    
+                    const valorTotal = parseFloat(p.valor_total) || 0;
+                    conteudoDiv.innerHTML = `
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div><strong>Nome:</strong> ${p.nome_cliente || 'Não informado'}</div>
+                            <div><strong>Telefone:</strong> ${p.telefone_cliente || 'Não informado'}</div>
+                            <div><strong>Endereço:</strong> ${p.endereco_entrega || 'Não informado'}</div>
+                            <div><strong>Bairro:</strong> ${p.bairro_nome || 'Não informado'}</div>
+                            <div><strong>Status:</strong> <span class="badge bg-${getStatusColor(p.status)}">${p.status}</span></div>
+                            <div><strong>Data:</strong> ${new Date(p.criado_em).toLocaleString('pt-BR')}</div>
+                            <div><strong>Valor Total:</strong> R$ ${valorTotal.toFixed(2).replace('.', ',')}</div>
+                            <div><strong>Pagamento:</strong> ${p.forma_pagamento || 'Não informado'}</div>
+                        </div>
+                        ${htmlItens}
+                        <div style="margin-top: 15px;">
+                            <button class="btn btn-sm btn-primary" onclick="window.location.href='/admin/pedidos/${pedidoId}'">
+                                <i class="fas fa-external-link-alt"></i> Ver Pedido Completo
+                            </button>
+                        </div>
+                    `;
+                    infoDiv.style.display = 'block';
+                    btn.innerHTML = '<i class="fas fa-info-circle"></i> Ocultar Informações';
+                } else {
+                    alert('Erro ao carregar informações: ' + data.message);
+                    btn.innerHTML = '<i class="fas fa-info-circle"></i> Ver Informações do Cliente';
+                }
+            })
+            .catch(err => {
+                alert('Erro ao carregar informações');
+                btn.innerHTML = '<i class="fas fa-info-circle"></i> Ver Informações do Cliente';
+            });
+    } else {
+        infoDiv.style.display = 'none';
+        btn.innerHTML = '<i class="fas fa-info-circle"></i> Ver Informações do Cliente';
+    }
+}
+
+function getStatusColor(status) {
+    const colors = {
+        'pendente': 'warning',
+        'confirmado': 'info',
+        'preparando': 'primary',
+        'saiu_entrega': 'info',
+        'entregue': 'success',
+        'cancelado': 'danger'
+    };
+    return colors[status] || 'secondary';
+}
+
+function resolverTodosSuporte(codigo) {
+    if (confirm('Marcar todas as mensagens deste pedido como resolvidas?')) {
+        fetch('/suporte/resolver-todos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ codigo_pedido: codigo })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Erro: ' + data.message);
+            }
+        });
+    }
+}
+</script>
+<?php endif; ?>
 
 <!-- Lista de Pedidos -->
 <div class="row">
@@ -447,6 +681,7 @@
 let ultimoPedidoId = <?= !empty($pedidos) ? $pedidos[0]->id : 0 ?>;
 const INTERVALO = 10000;
 const TEMPO_NOVO = 5 * 60 * 1000;
+let suporteAberto = false;
 
 
 
@@ -455,6 +690,7 @@ $(document).ready(function() {
     setInterval(function() {
         $('#icone-sync').addClass('fa-spin');
         verificarNovosPedidos();
+        verificarNovosSuportes();
         setTimeout(() => $('#icone-sync').removeClass('fa-spin'), 1000);
     }, INTERVALO);
     
@@ -603,5 +839,79 @@ function mostrarNotificacao(msg, tipo) {
     $('body').append(notif);
     setTimeout(() => notif.fadeOut(300, function() { $(this).remove(); }), 3000);
 }
+
+// Funções de Suporte
+function toggleSuportes() {
+    const secao = $('#secao-suporte');
+    secao.slideToggle();
+    suporteAberto = secao.is(':visible');
+}
+
+function verificarNovosSuportes() {
+    $.get('/suporte/listar', function(response) {
+        if (response.success) {
+            const pendentes = response.suportes.filter(s => s.status === 'pendente').length;
+            $('#stat-suporte').text(pendentes);
+            
+            if (pendentes > totalSuportesAnterior) {
+                mostrarNotificacao(`${pendentes - totalSuportesAnterior} nova(s) solicitação(ões) de suporte!`, 'warning');
+                tocarSom();
+                setTimeout(() => location.reload(), 2000);
+            }
+            totalSuportesAnterior = pendentes;
+        }
+    });
+}
+
+function abrirWhatsApp(telefone, nome, codigoPedido) {
+    if (!telefone || telefone === '') {
+        alert('Telefone não cadastrado para este cliente.');
+        return;
+    }
+    
+    const mensagem = encodeURIComponent(`Olá ${nome}, sobre seu pedido ${codigoPedido}...`);
+    const url = `https://wa.me/55${telefone}?text=${mensagem}`;
+    window.open(url, '_blank');
+}
+
+function resolverSuporte(id) {
+    if (!confirm('Marcar este suporte como resolvido e remover da lista?')) return;
+    
+    $.ajax({
+        url: '/suporte/deletar/' + id,
+        method: 'POST',
+        success: function(response) {
+            if (response.success) {
+                mostrarNotificacao('Suporte resolvido e removido!', 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                mostrarNotificacao('Erro ao resolver suporte', 'danger');
+            }
+        },
+        error: function() {
+            mostrarNotificacao('Erro ao resolver suporte', 'danger');
+        }
+    });
+}
+
+// Verificar novos suportes
+let totalSuportesAnterior = <?= $total_suportes ?? 0 ?>;
+
+// Salvar estado da aba de suporte antes de recarregar
+window.addEventListener('beforeunload', function() {
+    if (suporteAberto) {
+        sessionStorage.setItem('suporteAberto', 'true');
+    } else {
+        sessionStorage.removeItem('suporteAberto');
+    }
+});
+
+// Restaurar estado da aba de suporte após recarregar
+$(document).ready(function() {
+    if (sessionStorage.getItem('suporteAberto') === 'true') {
+        $('#secao-suporte').show();
+        suporteAberto = true;
+    }
+});
 </script>
 <?php echo $this->endSection(); ?>

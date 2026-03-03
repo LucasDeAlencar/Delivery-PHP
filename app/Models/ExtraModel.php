@@ -74,4 +74,74 @@ class ExtraModel extends Model {
                 ->get()
                 ->getResult();
     }
+
+    /**
+     * Busca extras com filtros de pesquisa
+     */
+    public function buscarComFiltros($search = null, $ativo = null) {
+        $builder = $this->withDeleted(true);
+        
+        if ($search) {
+            $builder->groupStart()
+                   ->like('nome', $search)
+                   ->orLike('descricao', $search)
+                   ->groupEnd();
+        }
+        
+        if ($ativo !== null) {
+            $builder->where('ativo', $ativo);
+        }
+        
+        return $builder->orderBy('nome', 'ASC')->findAll();
+    }
+
+    /**
+     * Associa todos os produtos de uma categoria aos extras selecionados
+     */
+    public function associarPorCategoria($extraId, $categoriaId) {
+        try {
+            // Conexão direta com PDO usando configurações do .env
+            $pdo = new PDO("mysql:host=localhost;dbname=food;charset=utf8", 'root', 'Legnu.131807');
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            
+            // Busca todos os produtos ativos da categoria
+            $stmt = $pdo->prepare("SELECT id FROM produtos WHERE categoria_id = ? AND ativo = 1");
+            $stmt->execute([$categoriaId]);
+            $produtos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            if (empty($produtos)) {
+                log_message('info', "Nenhum produto ativo encontrado para categoria ID: {$categoriaId}");
+                return 0;
+            }
+            
+            $sucessos = 0;
+            
+            foreach ($produtos as $produto) {
+                // Verifica se a associação já existe
+                $stmt = $pdo->prepare("SELECT COUNT(*) FROM produtos_extras WHERE produto_id = ? AND extra_id = ?");
+                $stmt->execute([$produto['id'], $extraId]);
+                $existe = $stmt->fetchColumn();
+                
+                if ($existe == 0) {
+                    // Insere a associação produto -> extra
+                    $stmt = $pdo->prepare("INSERT INTO produtos_extras (produto_id, extra_id) VALUES (?, ?)");
+                    $resultado = $stmt->execute([$produto['id'], $extraId]);
+                    
+                    if ($resultado) {
+                        $sucessos++;
+                        log_message('info', "Associação criada: Produto {$produto['id']} -> Extra {$extraId}");
+                    } else {
+                        log_message('error', "Falha ao criar associação: Produto {$produto['id']} -> Extra {$extraId}");
+                    }
+                }
+            }
+            
+            log_message('info', "Associação por categoria concluída. Total de sucessos: {$sucessos}");
+            return $sucessos;
+            
+        } catch (Exception $e) {
+            log_message('error', "Erro na associação por categoria: " . $e->getMessage());
+            return 0;
+        }
+    }
 }

@@ -131,6 +131,19 @@
                                                             <i class="fas fa-undo"></i>
                                                         </button>
                                                     </form>
+
+                                                    <!-- Botão Apagar Definitivamente -->
+                                                    <form action="<?= site_url("admin/usuarios/deletar-definitivamente/$usuario->id") ?>" 
+                                                          method="post" 
+                                                          style="display: inline;" 
+                                                          onsubmit="return confirm('Tem certeza que deseja APAGAR DEFINITIVAMENTE o usuário <?= esc($usuario->nome) ?>?\n\nEsta ação não pode ser desfeita!')">
+                                                        <?= csrf_field() ?>
+                                                        <button type="submit" 
+                                                                class="btn btn-dark btn-sm" 
+                                                                title="Apagar Definitivamente">
+                                                            <i class="fas fa-times-circle"></i>
+                                                        </button>
+                                                    </form>
                                                 <?php endif; ?>
                                             </div>
                                         </td>
@@ -169,6 +182,15 @@
         $('form[action*="desfazer-exclusao"]').on('submit', function(e) {
             var usuarioNome = $(this).closest('tr').find('td:nth-child(2)').text();
             if (!confirm('Tem certeza que deseja restaurar o usuário "' + usuarioNome + '"?')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // Adiciona confirmação para apagar definitivamente
+        $('form[action*="deletar-definitivamente"]').on('submit', function(e) {
+            var usuarioNome = $(this).closest('tr').find('td:nth-child(2)').text();
+            if (!confirm('Tem certeza que deseja APAGAR DEFINITIVAMENTE o usuário "' + usuarioNome + '"?\n\nEsta ação não pode ser desfeita!')) {
                 e.preventDefault();
                 return false;
             }

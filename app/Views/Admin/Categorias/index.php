@@ -48,6 +48,7 @@
                             <tr>
                                 <th>#</th>
                                 <th>Nome</th>
+                                <th>Ordem</th>
                                 <th>Data de criação</th>
                                 <th>Ativo</th>
                                 <th>Situação</th>
@@ -60,6 +61,14 @@
                                     <tr class="categoria-row" data-id="<?= $categoria->id ?>">
                                         <td><?= esc($categoria->id) ?></td>
                                         <td><?= esc($categoria->nome) ?></td>
+                                        <td>
+                                            <input type="number" 
+                                                   class="form-control form-control-sm ordem-input" 
+                                                   value="<?= esc($categoria->ordem ?? 0) ?>" 
+                                                   data-id="<?= $categoria->id ?>"
+                                                   min="0" 
+                                                   style="width: 80px;">
+                                        </td>
                                         <td><?= esc($categoria->criado_em) ?></td>
                                         <td>
                                             <?php if ($categoria->ativo && $categoria->deletado_em == null): ?>
@@ -105,11 +114,21 @@
                                                           method="post" 
                                                           style="display: inline;" 
                                                           onsubmit="return confirm('Tem certeza que deseja restaurar a categoria <?= esc($categoria->nome) ?>?')">
-                                                        <?= csrf_field() ?>
                                                         <button type="submit" 
-                                                                class="btn btn-warning btn-sm" 
+                                                                class="btn btn-success btn-sm" 
                                                                 title="Restaurar">
                                                             <i class="fas fa-undo"></i>
+                                                        </button>
+                                                    </form>
+                                                    <!-- Botão Apagar Definitivamente -->
+                                                    <form action="<?= site_url("admin/categorias/deletar-definitivamente/$categoria->id") ?>" 
+                                                          method="post" 
+                                                          style="display: inline;" 
+                                                          onsubmit="return confirm('ATENÇÃO! Esta ação é IRREVERSÍVEL!\n\nTem certeza que deseja apagar esta categoria DEFINITIVAMENTE?');">
+                                                        <button type="submit" 
+                                                                class="btn btn-danger btn-sm" 
+                                                                title="Apagar Definitivamente">
+                                                            <i class="fas fa-trash-alt"></i>
                                                         </button>
                                                     </form>
                                                 <?php endif; ?>
@@ -154,6 +173,40 @@
                 e.preventDefault();
                 return false;
             }
+        });
+
+        // Edição inline da ordem
+        $('.ordem-input').on('change', function() {
+            var input = $(this);
+            var categoriaId = input.data('id');
+            var novaOrdem = input.val();
+            
+            console.log('Atualizando categoria ID:', categoriaId, 'para ordem:', novaOrdem);
+            
+            $.ajax({
+                url: '<?= site_url('admin/categorias/atualizarOrdem') ?>',
+                method: 'POST',
+                data: {
+                    id: categoriaId,
+                    ordem: novaOrdem,
+                    '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
+                },
+                success: function(response) {
+                    console.log('Response:', response);
+                    if (response.sucesso) {
+                        // Recarrega a página para mostrar nova ordenação
+                        location.reload();
+                    } else {
+                        alert('Erro: ' + (response.msg || 'Erro desconhecido'));
+                        input.focus();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.log('AJAX Error:', xhr.responseText);
+                    alert('Erro AJAX: ' + error);
+                    input.focus();
+                }
+            });
         });
     });
 </script>

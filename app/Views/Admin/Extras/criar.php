@@ -119,19 +119,6 @@
                                     </div>
 
                                     <div class="form-group">
-                                        <label for="slug" class="required-field">Slug</label>
-                                        <input class="form-control" 
-                                               id="slug" 
-                                               name="slug" 
-                                               value="<?php echo old('slug', esc($extra->slug ?? '')); ?>" 
-                                               placeholder="Digite o slug"
-                                               required>
-                                        <div class="invalid-feedback">
-                                            Por favor, informe um slug válido.
-                                        </div>
-                                    </div>
-
-                                    <div class="form-group">
                                         <label for="preco">Preço</label>
                                         <div class="input-group">
                                             <div class="input-group-prepend">

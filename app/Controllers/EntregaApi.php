@@ -6,104 +6,84 @@ use CodeIgniter\RESTful\ResourceController;
 
 class EntregaApi extends ResourceController
 {
+    protected $modelName = 'App\Models\BairroModel';
     protected $format = 'json';
 
-    public function configuracaoEntrega()
+    public function verificarEntrega()
     {
-        $json = $this->request->getJSON();
-        $email = $json->email ?? '';
-
-        if (empty($email)) {
-            return $this->respond(['sucesso' => false, 'msg' => 'Email não informado']);
-        }
-
-        $db = \Config\Database::connect();
-
         try {
-            // Buscar cliente diretamente pelo email
-            $cliente = $db->query("SELECT * FROM clientes WHERE email = ?", [$email])->getRow();
+            $json = $this->request->getJSON();
+            $email = $json->email ?? null;
             
-            if (!$cliente) {
-                return $this->respond(['sucesso' => false, 'msg' => 'Cliente não encontrado']);
+            log_message('info', "EntregaApi::verificarEntrega - Email recebido: " . ($email ?? 'NULL'));
+            
+            if (!$email) {
+                log_message('error', "Email não fornecido");
+                return $this->respond([
+                    'disponivel' => false,
+                    'mensagem' => 'Email não fornecido'
+                ]);
             }
 
-            // Log para debug
-            log_message('info', 'Cliente encontrado - CEP: ' . $cliente->cep . ', Bairro: ' . $cliente->Bairro);
-
-            // Sempre usar cálculo por bairro
-            $tipoEntrega = 'bairro';
-
-            $response = [
-                'sucesso' => true,
-                'tipo' => $tipoEntrega,
-                'cliente' => [
-                    'bairro' => $cliente->Bairro
-                ]
-            ];
-
-            // Buscar bairros - com dados de fallback
-            try {
-                $bairros = $db->query("SELECT * FROM bairros WHERE ativo = 1")->getResult();
-            } catch (\Exception $e) {
-                log_message('info', 'Tabela bairros não existe, usando fallback');
-                $bairros = [];
-            }
+            $db = \Config\Database::connect();
             
-            if (empty($bairros)) {
-                // Dados de fallback se tabela estiver vazia ou não existir
-                $bairros = [
-                    (object)['nome' => 'Centro', 'valor_entrega' => 5.00, 'ativo' => 1],
-                    (object)['nome' => 'Vila Nova', 'valor_entrega' => 8.00, 'ativo' => 1]
-                ];
-            }
+            // Buscar na tabela clientes (campos com maiúscula)
+            $dadosEndereco = $db->query("SELECT Bairro as bairro, Cidade as cidade FROM clientes WHERE email = ?", [$email])->getRow();
+            log_message('info', "Busca em clientes: " . ($dadosEndereco ? json_encode($dadosEndereco) : 'NULL'));
             
-            $response['bairros'] = $bairros;
+            if (!$dadosEndereco || !$dadosEndereco->bairro || !$dadosEndereco->cidade) {
+                log_message('error', "Endereço não encontrado ou incompleto");
+                return $this->respond([
+                    'disponivel' => false,
+                    'mensagem' => 'Endereço não cadastrado no perfil'
+                ]);
+            }
 
-            log_message('info', 'Resposta configuração: ' . json_encode($response));
-            return $this->respond($response);
+            $bairroModel = new \App\Models\BairroModel();
+            
+            // Primeira tentativa: busca exata por bairro e cidade
+            $bairroEncontrado = $bairroModel
+                ->where('TRIM(LOWER(nome))', strtolower(trim($dadosEndereco->bairro)))
+                ->where('TRIM(LOWER(cidade))', strtolower(trim($dadosEndereco->cidade)))
+                ->where('ativo', 1)
+                ->first();
 
+            log_message('info', "Busca específica para: '" . trim($dadosEndereco->bairro) . "', '" . trim($dadosEndereco->cidade) . "' - " . ($bairroEncontrado ? 'ENCONTRADO' : 'NÃO ENCONTRADO'));
+
+            // Se não encontrou, busca por bairro universal (*) para a cidade
+            if (!$bairroEncontrado) {
+                $bairroEncontrado = $bairroModel
+                    ->where('nome', '*')
+                    ->where('TRIM(LOWER(cidade))', strtolower(trim($dadosEndereco->cidade)))
+                    ->where('ativo', 1)
+                    ->first();
+                    
+                if ($bairroEncontrado) {
+                    log_message('info', "Bairro universal (*) encontrado para cidade: {$dadosEndereco->cidade}");
+                } else {
+                    log_message('info', "Bairro universal (*) NÃO encontrado para cidade: {$dadosEndereco->cidade}");
+                }
+            }
+
+            log_message('info', "Bairro encontrado: " . ($bairroEncontrado ? json_encode($bairroEncontrado) : 'NULL'));
+
+            if ($bairroEncontrado) {
+                return $this->respond([
+                    'disponivel' => true,
+                    'valor_entrega' => $bairroEncontrado->valor_entrega
+                ]);
+            } else {
+                return $this->respond([
+                    'disponivel' => false,
+                    'mensagem' => "Delivery não disponível para {$dadosEndereco->bairro}, {$dadosEndereco->cidade}"
+                ]);
+            }
         } catch (\Exception $e) {
-            log_message('error', 'Erro configuração entrega: ' . $e->getMessage());
-            return $this->respond(['sucesso' => false, 'msg' => 'Erro interno: ' . $e->getMessage()]);
-        }
-    }
-
-    public function carrinhoCliente()
-    {
-        $json = $this->request->getJSON();
-        $email = $json->email ?? '';
-
-        if (empty($email)) {
-            return $this->respond(['sucesso' => false, 'msg' => 'Email não informado']);
-        }
-
-        $db = \Config\Database::connect();
-
-        try {
-            // Buscar cliente
-            $cliente = $db->query("SELECT id FROM clientes WHERE email = ?", [$email])->getRow();
-            
-            if (!$cliente) {
-                return $this->respond(['sucesso' => false, 'msg' => 'Cliente não encontrado']);
-            }
-
-            // Buscar itens do carrinho usando session_id baseado no email
-            $sessionId = 'cliente_' . $cliente->id;
-            $itensCarrinho = $db->query("
-                SELECT produto_id as id, produto_nome as nome, preco_unitario as preco, 
-                       quantidade, preco_total as totalCalculado, observacoes
-                FROM carrinho 
-                WHERE session_id = ?
-            ", [$sessionId])->getResult();
-
+            log_message('error', "Erro em verificarEntrega: " . $e->getMessage());
             return $this->respond([
-                'sucesso' => true,
-                'itens' => $itensCarrinho
-            ]);
-
-        } catch (\Exception $e) {
-            log_message('error', 'Erro ao buscar carrinho: ' . $e->getMessage());
-            return $this->respond(['sucesso' => false, 'msg' => 'Erro interno']);
+                'disponivel' => false,
+                'mensagem' => 'Erro interno do servidor'
+            ], 500);
         }
     }
 }

@@ -15,6 +15,23 @@
         width: 140px;
         text-align: center;
     }
+    
+    /* Estilos para área de pesquisa */
+    .search-form {
+        margin-bottom: 20px;
+    }
+    
+    .search-form .form-group {
+        margin-bottom: 0;
+    }
+    
+    .search-form .form-control {
+        border-radius: 4px;
+    }
+    
+    .btn-group-actions {
+        gap: 8px;
+    }
 </style>
 
 <?php echo $this->endSection(); ?>
@@ -36,10 +53,53 @@
                             Dados dos extras dos produtos
                         </p>
                     </div>
-                    <a href="<?= site_url("admin/extras/criar") ?>" class="btn btn-success">
-                        <i class="fas fa-plus"></i>
-                        Cadastrar
-                    </a>
+                    <div class="d-flex gap-2 btn-group-actions">
+                        <a href="<?= site_url("admin/extras/associar-categoria") ?>" class="btn btn-warning">
+                            <i class="fas fa-link"></i>
+                            Associar por Categoria
+                        </a>
+                        <a href="<?= site_url("admin/extras/criar") ?>" class="btn btn-success">
+                            <i class="fas fa-plus"></i>
+                            Cadastrar
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Área de Pesquisa -->
+                <div class="search-form">
+                    <form method="GET" action="<?= site_url('admin/extras') ?>" class="d-flex gap-2 align-items-end">
+                        <div class="form-group flex-grow-1">
+                            <label for="search">Pesquisar:</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="search" 
+                                   name="search" 
+                                   placeholder="Digite o nome ou descrição do extra..."
+                                   value="<?= esc($search ?? '') ?>">
+                        </div>
+                        <div class="form-group">
+                            <label for="ativo">Status:</label>
+                            <select class="form-control" id="ativo" name="ativo">
+                                <option value="">Todos</option>
+                                <option value="1" <?= ($ativo === '1') ? 'selected' : '' ?>>Ativo</option>
+                                <option value="0" <?= ($ativo === '0') ? 'selected' : '' ?>>Inativo</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i>
+                                Pesquisar
+                            </button>
+                        </div>
+                        <?php if ($search || $ativo !== null): ?>
+                            <div class="form-group">
+                                <a href="<?= site_url('admin/extras') ?>" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i>
+                                    Limpar
+                                </a>
+                            </div>
+                        <?php endif; ?>
+                    </form>
                 </div>
 
                 <div class="table-responsive pt-3">
@@ -121,11 +181,21 @@
                                                           method="post" 
                                                           style="display: inline;" 
                                                           onsubmit="return confirm('Tem certeza que deseja restaurar a extra <?= esc($extra->nome) ?>?')">
-                                                        <?= csrf_field() ?>
                                                         <button type="submit" 
-                                                                class="btn btn-warning btn-sm" 
+                                                                class="btn btn-success btn-sm" 
                                                                 title="Restaurar">
                                                             <i class="fas fa-undo"></i>
+                                                        </button>
+                                                    </form>
+                                                    <!-- Botão Apagar Definitivamente -->
+                                                    <form action="<?= site_url("admin/extras/deletar-definitivamente/$extra->id") ?>" 
+                                                          method="post" 
+                                                          style="display: inline;" 
+                                                          onsubmit="return confirm('ATENÇÃO! Esta ação é IRREVERSÍVEL!\n\nTem certeza que deseja apagar esta extra DEFINITIVAMENTE?');">
+                                                        <button type="submit" 
+                                                                class="btn btn-danger btn-sm" 
+                                                                title="Apagar Definitivamente">
+                                                            <i class="fas fa-trash-alt"></i>
                                                         </button>
                                                     </form>
                                                 <?php endif; ?>

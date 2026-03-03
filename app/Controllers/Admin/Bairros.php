@@ -18,8 +18,20 @@ class Bairros extends BaseController {
     public function index() {
         $db = \Config\Database::connect();
         
-        // Configuração simplificada - apenas bairros
-        $config = (object)['modo_cobranca' => 'bairro'];
+        // Carrega configuração de entrega
+        $configModel = new \App\Models\ConfiguracaoEntregaModel();
+        $config = $configModel->first();
+        
+        // Se não existe configuração, cria uma padrão
+        if (!$config) {
+            $config = (object)[
+                'modo_cobranca' => 'bairro',
+                'taxa_por_km' => 0,
+                'taxa_minima' => 0,
+                'distancia_maxima' => 0,
+                'cep_loja' => ''
+            ];
+        }
         
         $data = [
             'titulo'  => "Listando os bairros atendidos",
@@ -43,13 +55,6 @@ class Bairros extends BaseController {
     }
 
     public function cadastrar() {
-        if (!$this->request->isAJAX()) {
-            $checkToken = $this->validaToken();
-            if (!$checkToken) {
-                return redirect()->back()->with('erro', 'Token inválido');
-            }
-        }
-
         // Filtrar apenas os campos permitidos (CEP não é salvo no banco)
         $dadosPost = $this->request->getPost();
         $dadosLimpos = [];
@@ -75,7 +80,7 @@ class Bairros extends BaseController {
 
         // Verificar duplicação de bairro
         if (isset($dadosLimpos['nome'])) {
-            $bairroExistente = $this->verificarBairroDuplicado($dadosLimpos['nome']);
+            $bairroExistente = $this->verificarBairroDuplicado($dadosLimpos['nome'], $dadosLimpos['cidade'] ?? null);
             if ($bairroExistente) {
                 return redirect()->back()
                                ->withInput()
@@ -157,22 +162,24 @@ class Bairros extends BaseController {
         ];
     }
 
-    private function verificarBairroDuplicado($nomeBairro) {
-        // Normalizar o nome do bairro digitado
-        $nomeNormalizado = $this->normalizarNome($nomeBairro);
+    private function verificarBairroDuplicado($nomeBairro, $cidade = null) {
+        if (!$cidade) {
+            return false;
+        }
         
-        // Buscar todos os bairros existentes
+        $nomeNormalizado = $this->normalizarNome($nomeBairro);
+        $cidadeNormalizada = $this->normalizarNome($cidade);
+        
         $bairrosExistentes = $this->bairroModel->findAll();
         
         foreach ($bairrosExistentes as $bairro) {
-            $nomeExistenteNormalizado = $this->normalizarNome($bairro->nome);
-            
-            if ($nomeNormalizado === $nomeExistenteNormalizado) {
-                return $bairro; // Retorna o bairro duplicado
+            if ($this->normalizarNome($bairro->nome) === $nomeNormalizado && 
+                $this->normalizarNome($bairro->cidade) === $cidadeNormalizada) {
+                return $bairro;
             }
         }
         
-        return false; // Não encontrou duplicação
+        return false;
     }
 
     private function normalizarNome($nome) {
@@ -252,13 +259,6 @@ class Bairros extends BaseController {
     }
 
     public function atualizar($id = null) {
-        if (!$this->request->isAJAX()) {
-            $checkToken = $this->validaToken();
-            if (!$checkToken) {
-                return redirect()->back()->with('erro', 'Token inválido');
-            }
-        }
-
         $bairro = $this->buscaBairroOu404($id);
         
         // Filtrar apenas os campos permitidos (CEP não é salvo no banco)
@@ -317,13 +317,6 @@ class Bairros extends BaseController {
     }
 
     public function deletar($id = null) {
-        if (!$this->request->isAJAX()) {
-            $checkToken = $this->validaToken();
-            if (!$checkToken) {
-                return redirect()->back()->with('erro', 'Token inválido');
-            }
-        }
-
         $bairro = $this->buscaBairroOu404($id);
         
         if ($bairro->deletado_em != null) {
@@ -341,13 +334,6 @@ class Bairros extends BaseController {
     }
 
     public function desfazerExclusao($id = null) {
-        if (!$this->request->isAJAX()) {
-            $checkToken = $this->validaToken();
-            if (!$checkToken) {
-                return redirect()->back()->with('erro', 'Token inválido');
-            }
-        }
-
         $bairro = $this->buscaBairroOu404($id);
         
         if ($bairro->deletado_em == null) {
@@ -360,6 +346,22 @@ class Bairros extends BaseController {
             return redirect()->back()
                            ->with('errors_model', $this->bairroModel->errors())
                            ->with('atencao', 'Não foi possível desfazer a exclusão. Tente novamente.');
+        }
+    }
+
+    public function deletarDefinitivamente($id = null) {
+        $bairro = $this->buscaBairroOu404($id);
+        
+        if ($bairro->deletado_em == null) {
+            return redirect()->back()->with('atencao', 'Apenas bairros excluídos podem ser apagados definitivamente');
+        }
+
+        if ($this->bairroModel->delete($id, true)) {
+            return redirect()->to(site_url('admin/bairros'))
+                           ->with('sucesso', 'Bairro apagado definitivamente!');
+        } else {
+            return redirect()->back()
+                           ->with('atencao', 'Não foi possível apagar o bairro definitivamente.');
         }
     }
 
@@ -379,14 +381,6 @@ class Bairros extends BaseController {
 
         return $bairro;
     }
-
-    private function validaToken() {
-        $token = $this->request->getPost(csrf_token());
-        if (!$token || !hash_equals(csrf_hash(), $token)) {
-            return false;
-        }
-        return true;
-    }
     
     private function converterValorParaDecimal($valor) {
         // Remove pontos (separadores de milhares) e substitui vírgula por ponto
@@ -395,5 +389,43 @@ class Bairros extends BaseController {
         
         // Garante que seja um número válido
         return is_numeric($valor) ? (float) $valor : 0;
+    }
+
+    public function salvarConfiguracao() {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['sucesso' => false, 'msg' => 'Requisição inválida']);
+        }
+
+        $json = $this->request->getJSON();
+        
+        $configModel = new \App\Models\ConfiguracaoEntregaModel();
+        
+        // Busca configuração existente ou cria nova
+        $config = $configModel->first();
+        
+        $dados = [
+            'modo_cobranca' => $json->modo_cobranca ?? 'bairro',
+            'taxa_por_km' => $json->taxa_por_km ?? 0,
+            'taxa_minima' => $json->taxa_minima ?? 0,
+            'distancia_maxima' => $json->distancia_maxima ?? 0,
+            'cep_loja' => $json->cep_loja ?? ''
+        ];
+
+        try {
+            if ($config) {
+                $resultado = $configModel->update($config->id, $dados);
+            } else {
+                $resultado = $configModel->insert($dados);
+            }
+
+            if ($resultado) {
+                return $this->response->setJSON(['sucesso' => true, 'msg' => 'Configuração salva com sucesso']);
+            } else {
+                return $this->response->setJSON(['sucesso' => false, 'msg' => 'Erro ao salvar configuração']);
+            }
+        } catch (\Exception $e) {
+            log_message('error', 'Erro ao salvar configuração: ' . $e->getMessage());
+            return $this->response->setJSON(['sucesso' => false, 'msg' => 'Erro no banco de dados']);
+        }
     }
 }

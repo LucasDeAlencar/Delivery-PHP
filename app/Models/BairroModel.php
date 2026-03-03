@@ -24,16 +24,15 @@ class BairroModel extends Model{
     
     // Validation
     protected $validationRules = [
-        'nome' => 'required|min_length[2]|max_length[120]|is_unique[bairros.nome,id,{id}]',
+        'nome' => 'required|min_length[1]|max_length[120]',
         'cidade' => 'required|min_length[2]|max_length[20]',
         'valor_entrega' => 'required|numeric|greater_than[0]'
     ];
     protected $validationMessages = [
         'nome' => [
             'required' => 'O campo Nome é obrigatório',
-            'min_length' => 'O campo Nome deve ter pelo menos 2 caracteres',
+            'min_length' => 'O campo Nome deve ter pelo menos 1 caractere',
             'max_length' => 'O campo Nome deve ter no máximo 120 caracteres',
-            'is_unique' => 'Esse bairro já existe',
         ],
         'cidade' => [
             'required' => 'O campo Cidade é obrigatório',
@@ -52,15 +51,15 @@ class BairroModel extends Model{
     public function criaSlug(array $data) {
         $datetime = new \DateTime('now', new \DateTimeZone('America/Sao_Paulo'));
         
-        // Só gera o slug automaticamente se:
-        // 1. O nome foi fornecido
-        // 2. O slug não foi fornecido ou está vazio
         if (isset($data['data']['nome'])) {
-            // Se o slug não foi fornecido ou está vazio, gera automaticamente
             if (!isset($data['data']['slug']) || empty(trim($data['data']['slug']))) {
-                $data['data']['slug'] = mb_url_title($data['data']['nome'], '-', TRUE);
+                if (trim($data['data']['nome']) === '*') {
+                    $cidade = $data['data']['cidade'] ?? 'cidade';
+                    $data['data']['slug'] = mb_url_title($cidade . '-todos', '-', TRUE);
+                } else {
+                    $data['data']['slug'] = mb_url_title($data['data']['nome'], '-', TRUE);
+                }
             } else {
-                // Se o slug foi fornecido, limpa e formata
                 $data['data']['slug'] = mb_url_title($data['data']['slug'], '-', TRUE);
             }
             

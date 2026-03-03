@@ -267,6 +267,21 @@
                     </div>
                     
                     <div class="col-md-4">
+                        <label for="max_extras" class="form-label">Máximo de Extras</label>
+                        <input type="number" 
+                               class="form-control" 
+                               id="max_extras" 
+                               name="max_extras" 
+                               value="<?php echo old('max_extras', $produto->max_extras ?? ''); ?>"
+                               min="0"
+                               max="99"
+                               placeholder="Ilimitado">
+                        <small class="form-text text-muted">
+                            Máximo de extras que podem ser selecionados (vazio = ilimitado)
+                        </small>
+                    </div>
+                    
+                    <div class="col-md-4">
                         <label class="form-label d-block">&nbsp;</label>
                         <div class="form-check">
                             <input type="checkbox" 

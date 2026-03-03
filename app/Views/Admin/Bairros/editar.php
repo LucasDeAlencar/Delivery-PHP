@@ -121,6 +121,10 @@
                                         <div class="invalid-feedback">
                                             Por favor, informe o nome do bairro.
                                         </div>
+                                        <small class="form-text text-info">
+                                            <i class="fas fa-info-circle mr-1"></i>
+                                            <strong>Dica:</strong> Use "*" como nome para criar um preço universal para toda a cidade
+                                        </small>
                                     </div>
 
                                     <div class="form-group">

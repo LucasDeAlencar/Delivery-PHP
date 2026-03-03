@@ -27,6 +27,7 @@ class DadosCorporativos extends BaseController
 
         $json = $this->request->getJSON();
         
+        // Usar todos os campos necessários
         $dados = [
             'endereco' => $json->endereco ?? '',
             'cep' => $json->cep ?? '',
@@ -35,15 +36,27 @@ class DadosCorporativos extends BaseController
             'email' => $json->email ?? '',
             'instagram' => $json->instagram ?? '',
             'facebook' => $json->facebook ?? '',
+            'preco_minimo_compra' => $json->preco_minimo_compra ?? 0,
             'updated_at' => date('Y-m-d H:i:s')
         ];
 
         $db = \Config\Database::connect();
         
         try {
-            $resultado = $db->table('dados_corporativos')
-                           ->where('id', 1)
-                           ->update($dados);
+            // Verificar se registro existe
+            $existe = $db->table('dados_corporativos')->where('id', 1)->get()->getRow();
+            
+            if (!$existe) {
+                // Criar registro se não existir
+                $dados['id'] = 1;
+                $dados['created_at'] = date('Y-m-d H:i:s');
+                $resultado = $db->table('dados_corporativos')->insert($dados);
+            } else {
+                // Atualizar registro existente
+                $resultado = $db->table('dados_corporativos')
+                               ->where('id', 1)
+                               ->update($dados);
+            }
 
             if ($resultado !== false) {
                 return $this->response->setJSON(['sucesso' => true, 'msg' => 'Dados atualizados com sucesso']);

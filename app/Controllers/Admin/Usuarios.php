@@ -287,4 +287,24 @@ class Usuarios extends BaseController {
             return redirect()->back()->with('erro', 'Não foi possível restaurar o usuário.');
         }
     }
+
+    public function deletarDefinitivamente($id = null) {
+        $usuario = $this->usuarioModel->withDeleted(true)->find($id);
+        
+        if (!$usuario) {
+            return redirect()->back()->with('erro', 'Usuário não encontrado');
+        }
+
+        if ($usuario->deletado_em == null) {
+            return redirect()->back()->with('atencao', 'Apenas usuários excluídos podem ser apagados definitivamente');
+        }
+
+        if ($this->usuarioModel->delete($id, true)) {
+            return redirect()->to(site_url('admin/usuarios'))
+                           ->with('sucesso', 'Usuário apagado definitivamente!');
+        } else {
+            return redirect()->back()
+                           ->with('atencao', 'Não foi possível apagar o usuário definitivamente.');
+        }
+    }
 }

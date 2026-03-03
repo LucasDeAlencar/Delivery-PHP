@@ -235,6 +235,21 @@
                     </div>
                     
                     <div class="col-md-4">
+                        <label for="max_extras" class="form-label">Máximo de Extras</label>
+                        <input type="number" 
+                               class="form-control" 
+                               id="max_extras" 
+                               name="max_extras" 
+                               value="<?php echo old('max_extras', ''); ?>"
+                               min="0"
+                               max="99"
+                               placeholder="Ilimitado">
+                        <small class="form-text text-muted">
+                            Máximo de extras que podem ser selecionados (vazio = ilimitado)
+                        </small>
+                    </div>
+                    
+                    <div class="col-md-4">
                         <label class="form-label d-block">&nbsp;</label>
                         <div class="form-check">
                             <input type="checkbox" 
@@ -255,13 +270,12 @@
 
                 <div class="form-group row">
                     <div class="col-12">
-                        <label for="ingredientes" class="form-label">Ingredientes *</label>
+                        <label for="ingredientes" class="form-label">Descrição</label>
                         <textarea class="form-control <?php echo (session('errors.ingredientes') ? 'is-invalid' : ''); ?>" 
                                   id="ingredientes" 
                                   name="ingredientes" 
                                   rows="5"
-                                  placeholder="Descreva os ingredientes do produto"
-                                  required><?php echo old('ingredientes'); ?></textarea>
+                                  placeholder="Descreva o produto"><?php echo old('ingredientes'); ?></textarea>
                         <?php if (session('errors.ingredientes')): ?>
                             <div class="invalid-feedback">
                                 <?php echo session('errors.ingredientes'); ?>

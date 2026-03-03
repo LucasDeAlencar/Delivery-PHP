@@ -17,17 +17,19 @@ class Home extends BaseController {
         $db = \Config\Database::connect();
         $dadosCorporativos = $db->table('dados_corporativos')->where('id', 1)->get()->getRow();
         
-        // Buscar categorias ativas
+        // Buscar categorias ativas ordenadas por ordem
         $categorias = $categoriaModel->where('ativo', true)
+                                   ->orderBy('ordem', 'ASC')
                                    ->orderBy('nome', 'ASC')
                                    ->findAll();
         
-        // Buscar produtos ativos com suas categorias
-        $produtos = $produtoModel->select('produtos.*, categorias.nome as categoria_nome, categorias.slug as categoria_slug')
+        // Buscar produtos (ativos e inativos) com suas categorias, ordenados por ordem da categoria e depois alfabeticamente
+        $produtos = $produtoModel->select('produtos.*, categorias.nome as categoria_nome, categorias.slug as categoria_slug, categorias.ordem as categoria_ordem')
                                 ->join('categorias', 'categorias.id = produtos.categoria_id')
-                                ->where('produtos.ativo', true)
                                 ->where('categorias.ativo', true)
+                                ->orderBy('categorias.ordem', 'ASC')
                                 ->orderBy('categorias.nome', 'ASC')
+                                ->orderBy('produtos.ativo', 'DESC')
                                 ->orderBy('produtos.nome', 'ASC')
                                 ->findAll();
         

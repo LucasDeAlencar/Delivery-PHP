@@ -65,6 +65,7 @@ class ProdutoExtrasApi extends BaseController
             'success' => true,
             'produto_id' => $produtoId,
             'obrigatorio_extras' => intval($produto->obrigatorio_extras ?? 0),
+            'max_extras' => intval($produto->max_extras ?? 0),
             'extras' => $extras,
             'total_extras' => count($extras)
         ]);

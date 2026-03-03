@@ -1,0 +1,357 @@
+/**
+ * Sistema Unificado de Produto e Carrinho
+ * Versão otimizada - Sem scroll ao abrir modal
+ */
+
+window.SistemaProduto = {
+    produto: null,
+    extras: [],
+    extrasDisponiveis: [],
+    carrinho: [],
+
+    init() {
+        this.carregarCarrinho();
+        this.bindEventos();
+    },
+
+    abrirPopup(elemento) {
+        const dados = this.extrairDados(elemento);
+        if (!dados.id) return;
+
+        this.produto = dados;
+        this.extras = [];
+
+        if (window.ProdutoExtras) {
+            window.ProdutoExtras.limparExtras();
+        }
+
+        this.preencherModal(dados);
+        this.carregarExtras(dados.id);
+
+        $('#modalCompra').modal({
+            show: true,
+            scrollable: true,
+            focus: false,
+            backdrop: true,
+            keyboard: true
+        });
+
+        return false;
+    },
+
+    extrairDados(elemento) {
+        const $el = $(elemento);
+        return {
+            id: $el.data('produto-id'),
+            nome: $el.data('produto-nome'),
+            preco: parseFloat($el.data('produto-preco')),
+            imagem: $el.data('produto-imagem'),
+            categoria: $el.data('produto-categoria'),
+            descricao: $el.data('produto-descricao') || ''
+        };
+    },
+
+    preencherModal(dados) {
+        $('#modal-produto-nome').text(dados.nome);
+        $('#modal-produto-preco')
+            .text(`R$ ${dados.preco.toFixed(2).replace('.', ',')}`)
+            .attr('data-valor-base', dados.preco);
+
+        $('#modal-produto-categoria').text(dados.categoria);
+        $('#modal-produto-descricao').text(dados.descricao);
+        $('#modal-produto-imagem').attr('src', dados.imagem);
+
+        $('#quantidade').val(1);
+        $('#observacoes').val('');
+        $('#extras-selecionados-resumo').hide();
+        $('#modal-produto-preco-extras').text('Sem extras');
+
+        this.atualizarTotal();
+    },
+
+    async carregarExtras(produtoId) {
+        try {
+            const response = await fetch(`/api/produto-extras/${produtoId}`);
+            const data = await response.json();
+
+            if (data.success && data.extras?.length > 0) {
+                this.extrasDisponiveis = data.extras;
+                $('#container-btn-extras').show();
+                
+                // Configurar no objeto global ProdutoExtras
+                if (window.ProdutoExtras) {
+                    window.ProdutoExtras.extrasDisponiveis = data.extras;
+                    window.ProdutoExtras.obrigatorioExtras = parseInt(data.obrigatorio_extras) || 0;
+                    window.ProdutoExtras.maxExtras = parseInt(data.max_extras) || 0;
+                    console.log('SistemaProduto - Extras carregados:', {
+                        obrigatorio: window.ProdutoExtras.obrigatorioExtras,
+                        max: window.ProdutoExtras.maxExtras
+                    });
+                }
+                
+                let textoBtn = 'Selecionar Extras';
+                if (data.obrigatorio_extras > 0) {
+                    textoBtn = `Selecionar Extras (${data.obrigatorio_extras} obrigatório)`;
+                } else if (data.max_extras > 0) {
+                    textoBtn = `Selecionar Extras (Máx. ${data.max_extras})`;
+                } else {
+                    textoBtn = 'Selecionar Extras (Opcional)';
+                }
+                $('#texto-btn-extras').text(textoBtn);
+            } else {
+                // Sem extras disponíveis - ainda assim configurar valores
+                if (window.ProdutoExtras && data.obrigatorio_extras !== undefined) {
+                    window.ProdutoExtras.obrigatorioExtras = parseInt(data.obrigatorio_extras) || 0;
+                    window.ProdutoExtras.maxExtras = parseInt(data.max_extras) || 0;
+                }
+                this.extrasDisponiveis = [];
+                $('#container-btn-extras').hide();
+            }
+        } catch (error) {
+            console.error('Erro ao carregar extras:', error);
+            this.extrasDisponiveis = [];
+            $('#container-btn-extras').hide();
+        }
+    },
+
+    atualizarTotal() {
+        const precoBase = this.produto?.preco || 0;
+        const quantidade = parseInt($('#quantidade').val()) || 1;
+        
+        let extrasSelecionados = [];
+        if (window.ProdutoExtras && typeof window.ProdutoExtras.getExtrasSelecionados === 'function') {
+            extrasSelecionados = window.ProdutoExtras.getExtrasSelecionados();
+        }
+        
+        const totalExtras = extrasSelecionados.reduce((t, e) => t + (e.preco * e.quantidade), 0);
+        const total = (precoBase + totalExtras) * quantidade;
+
+        $('#modal-total').text(`R$ ${total.toFixed(2).replace('.', ',')}`);
+    },
+
+    adicionarAoCarrinho() {
+        if (!this.produto) return;
+
+        // Recarregar carrinho do localStorage antes de adicionar
+        this.carregarCarrinho();
+
+        // Validar extras obrigatórios
+        if (window.ProdutoExtras && typeof window.ProdutoExtras.validarSelecao === 'function') {
+            if (!window.ProdutoExtras.validarSelecao()) {
+                return;
+            }
+        }
+
+        let extrasSelecionados = [];
+        if (window.ProdutoExtras && typeof window.ProdutoExtras.getExtrasSelecionados === 'function') {
+            extrasSelecionados = window.ProdutoExtras.getExtrasSelecionados();
+        }
+
+        const item = {
+            id: this.produto.id,
+            nome: this.produto.nome,
+            preco: this.produto.preco,
+            quantidade: parseInt($('#quantidade').val()) || 1,
+            observacoes: $('#observacoes').val() || '',
+            extras: extrasSelecionados,
+            total: this.calcularTotalItem(extrasSelecionados)
+        };
+
+        const chave = this.gerarChave(item);
+        const existente = this.carrinho.find(c => this.gerarChave(c) === chave);
+
+        if (existente) {
+            existente.quantidade += item.quantidade;
+            existente.total = this.calcularTotalItem(extrasSelecionados, existente.quantidade);
+        } else {
+            this.carrinho.push(item);
+        }
+
+        this.salvarCarrinho();
+        this.fecharModal();
+        this.mostrarModalMobile('Sucesso!', 'Produto adicionado ao carrinho!', 'success');
+    },
+
+    calcularTotalItem(extras = null, quantidade = null) {
+        const qtd = quantidade !== null ? quantidade : (parseInt($('#quantidade').val()) || 1);
+        const extrasUsar = extras !== null ? extras : (window.ProdutoExtras && typeof window.ProdutoExtras.getExtrasSelecionados === 'function' ? window.ProdutoExtras.getExtrasSelecionados() : []);
+        
+        const totalExtras = extrasUsar.reduce((t, e) => t + (e.preco * e.quantidade), 0);
+        return (this.produto.preco + totalExtras) * qtd;
+    },
+
+    gerarChave(item) {
+        const extrasKey = item.extras.map(e => `${e.id}:${e.quantidade}`).sort().join(',');
+        return `${item.id}_${item.observacoes}_${extrasKey}`;
+    },
+
+    fecharModal() {
+        $('#modalCompra').modal('hide');
+        this.produto = null;
+        this.extras = [];
+    },
+
+    salvarCarrinho() {
+        if (this.carrinho.length === 0) {
+            localStorage.removeItem('carrinho');
+        } else {
+            localStorage.setItem('carrinho', JSON.stringify(this.carrinho));
+        }
+    },
+
+    carregarCarrinho() {
+        const dados = localStorage.getItem('carrinho');
+        this.carrinho = dados ? JSON.parse(dados) : [];
+        
+        // Garantir que o array está limpo se não houver dados
+        if (!dados || dados === '[]' || dados === 'null') {
+            this.carrinho = [];
+            localStorage.removeItem('carrinho');
+        }
+    },
+
+    bindEventos() {
+        let scrollPosicao = 0;
+        let scrollInterval = null;
+
+        $('#modalCompra').on('show.bs.modal', () => {
+            scrollPosicao = window.scrollY || window.pageYOffset;
+            document.body.style.overflow = 'unset';
+            document.body.style.position = 'relative';
+        });
+
+        $('#modalCompra').on('shown.bs.modal', () => {
+            document.body.style.overflow = '';
+            scrollPosicao = window.scrollY || window.pageYOffset;
+            
+            let attempts = 0;
+            scrollInterval = setInterval(() => {
+                if (attempts < 10) {
+                    window.scrollTo(0, scrollPosicao);
+                    attempts++;
+                } else {
+                    clearInterval(scrollInterval);
+                }
+            }, 50);
+        });
+
+        $('#modalCompra').on('hide.bs.modal', () => {
+            if (scrollInterval) clearInterval(scrollInterval);
+        });
+
+        $('#modalCompra').on('hidden.bs.modal', () => {
+            if (scrollInterval) clearInterval(scrollInterval);
+            window.scrollTo(0, scrollPosicao);
+        });
+
+        $(document).on('extrasAtualizados', () => {
+            this.atualizarTotal();
+        });
+
+        $(document).on('click', '[data-produto-id]:not(#modalCompra)', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            
+            const elemento = e.currentTarget;
+            const that = this;
+            
+            setTimeout(function() {
+                that.abrirPopup(elemento);
+            }, 0);
+            
+            return false;
+        });
+
+        $(document).on('click', '#btn-aumentar', () => {
+            const input = $('#quantidade');
+            const val = parseInt(input.val()) || 1;
+            if (val < 99) {
+                input.val(val + 1);
+                this.atualizarTotal();
+            }
+        });
+
+        $(document).on('click', '#btn-diminuir', () => {
+            const input = $('#quantidade');
+            const val = parseInt(input.val()) || 1;
+            if (val > 1) {
+                input.val(val - 1);
+                this.atualizarTotal();
+            }
+        });
+
+        $(document).on('input', '#quantidade', () => this.atualizarTotal());
+
+        $(document).on('click', '#btn-adicionar-carrinho', () => this.adicionarAoCarrinho());
+    },
+
+    mostrarModalMobile(titulo, mensagem, tipo = 'info') {
+        const cores = {
+            success: '#28a745',
+            error: '#dc3545',
+            warning: '#ffc107',
+            info: '#17a2b8'
+        };
+
+        const isMobile = window.innerWidth <= 480;
+        
+        const html = `
+            <div id="modal-mobile" class="modal-mobile-container" style="
+                position: fixed; 
+                top: 0; 
+                left: 0; 
+                width: 100%; 
+                height: 100%; 
+                background: rgba(0,0,0,0.8); 
+                z-index: 10000; 
+                display: flex; 
+                ${isMobile ? 'align-items: flex-end;' : 'align-items: center;'}
+                justify-content: center;
+                backdrop-filter: blur(5px);
+                -webkit-backdrop-filter: blur(5px);
+            ">
+                <div class="modal-mobile-content" style="
+                    background: #1a1a1a; 
+                    width: ${isMobile ? '100%' : '90%'}; 
+                    max-width: ${isMobile ? 'none' : '350px'}; 
+                    border-radius: ${isMobile ? '20px 20px 0 0' : '15px'}; 
+                    padding: ${isMobile ? '25px 20px 30px' : '20px'}; 
+                    color: white; 
+                    text-align: center; 
+                    border-top: 4px solid ${cores[tipo]};
+                    ${isMobile ? 'animation: slideUp 0.3s ease-out;' : ''}
+                ">
+                    <h4 style="color: ${cores[tipo]}; margin-bottom: 15px; font-size: ${isMobile ? '1.3rem' : '1.1rem'};">${titulo}</h4>
+                    <p style="margin-bottom: 20px; font-size: ${isMobile ? '1rem' : '0.95rem'}; line-height: 1.5;">${mensagem}</p>
+                    <button onclick="$('#modal-mobile').remove()" style="
+                        background: ${cores[tipo]}; 
+                        color: white; 
+                        border: none; 
+                        padding: ${isMobile ? '14px 30px' : '12px 25px'}; 
+                        border-radius: 8px; 
+                        cursor: pointer;
+                        font-size: ${isMobile ? '1rem' : '0.95rem'};
+                        font-weight: 600;
+                        width: ${isMobile ? '100%' : 'auto'};
+                        max-width: ${isMobile ? '200px' : 'none'};
+                    ">
+                        OK
+                    </button>
+                </div>
+            </div>
+        `;
+
+        $('body').append(html);
+
+        setTimeout(() => {
+            $('#modal-mobile').fadeOut(300, function () {
+                $(this).remove();
+            });
+        }, 3000);
+    }
+};
+
+$(document).ready(() => {
+    SistemaProduto.init();
+});

@@ -38,6 +38,17 @@ class Pedidos extends BaseController {
             'estatisticas' => $estatisticas,
             'isAdmin' => $isAdmin,
         ];
+        
+        // Buscar suportes pendentes
+        $db = \Config\Database::connect();
+        $suportes = $db->table('suporte_pedidos')
+            ->where('status', 'pendente')
+            ->orderBy('criado_em', 'DESC')
+            ->get()
+            ->getResultArray();
+        
+        $data['suportes_pendentes'] = $suportes;
+        $data['total_suportes'] = count($suportes);
 
         return view('Admin/Pedidos/index', $data);
     }

@@ -19,7 +19,7 @@ class Categorias extends BaseController {
 
         $data = [
             'titulo' => 'Listando as categorias',
-            'categorias' => $this->categoriaModel->withDeleted(true)->paginate(10),
+            'categorias' => $this->categoriaModel->withDeleted(true)->orderBy('ordem', 'ASC')->paginate(10),
             'pager' => $this->categoriaModel->pager,
         ];
 
@@ -78,7 +78,7 @@ class Categorias extends BaseController {
 
             // Filtra apenas os campos permitidos
             $dadosPermitidos = [];
-            $camposPermitidos = ['nome', 'slug', 'ativo'];
+            $camposPermitidos = ['nome', 'slug', 'ativo', 'ordem'];
 
             foreach ($camposPermitidos as $campo) {
                 if (isset($post[$campo])) {
@@ -149,7 +149,7 @@ class Categorias extends BaseController {
 
             // Filtra apenas os campos permitidos
             $dadosPermitidos = [];
-            $camposPermitidos = ['nome', 'slug', 'ativo'];
+            $camposPermitidos = ['nome', 'slug', 'ativo', 'ordem'];
 
             foreach ($camposPermitidos as $campo) {
                 if (isset($post[$campo])) {
@@ -198,10 +198,14 @@ class Categorias extends BaseController {
 
     public function deletar($id = null) {
         if ($this->request->getMethod() !== 'post') {
-            $categoria = $this->categoriaModel->find($id);
+            $categoria = $this->categoriaModel->withDeleted(true)->find($id);
 
             if (!$categoria) {
                 return redirect()->back()->with('erro', 'Categoria não encontrada');
+            }
+
+            if ($categoria->deletado_em != null) {
+                return redirect()->back()->with('info', 'Esta categoria já foi excluída anteriormente');
             }
 
             // Usa soft delete
@@ -236,6 +240,56 @@ class Categorias extends BaseController {
                             ->with('sucesso', 'Categoria restaurada com sucesso.');
         } else {
             return redirect()->back()->with('erro', 'Não foi possível restaurar a categoria.');
+        }
+    }
+
+    public function deletarDefinitivamente($id = null) {
+        $categoria = $this->categoriaModel->withDeleted(true)->find($id);
+        
+        if (!$categoria) {
+            return redirect()->back()->with('erro', 'Categoria não encontrada');
+        }
+
+        if ($categoria->deletado_em == null) {
+            return redirect()->back()->with('atencao', 'Apenas categorias excluídas podem ser apagadas definitivamente');
+        }
+
+        if ($this->categoriaModel->delete($id, true)) {
+            return redirect()->to(site_url('admin/categorias'))
+                           ->with('sucesso', 'Categoria apagada definitivamente!');
+        } else {
+            return redirect()->back()
+                           ->with('atencao', 'Não foi possível apagar a categoria definitivamente.');
+        }
+    }
+
+    public function atualizarOrdem() {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['erro' => true, 'msg' => 'Requisição inválida']);
+        }
+
+        $id = $this->request->getPost('id');
+        $ordem = $this->request->getPost('ordem');
+
+        if (!$id || !is_numeric($ordem)) {
+            return $this->response->setJSON(['erro' => true, 'msg' => 'Dados inválidos']);
+        }
+
+        // Usar query direta para evitar problemas com o model
+        $db = \Config\Database::connect();
+        
+        try {
+            $result = $db->table('categorias')
+                         ->where('id', $id)
+                         ->update(['ordem' => (int)$ordem]);
+            
+            if ($result) {
+                return $this->response->setJSON(['sucesso' => true, 'msg' => 'Ordem atualizada com sucesso']);
+            } else {
+                return $this->response->setJSON(['erro' => true, 'msg' => 'Nenhuma linha foi atualizada']);
+            }
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['erro' => true, 'msg' => 'Erro: ' . $e->getMessage()]);
         }
     }
 }

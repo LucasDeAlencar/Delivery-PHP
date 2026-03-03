@@ -76,4 +76,31 @@ class Cliente extends BaseController
             return $this->response->setJSON(['erro' => true, 'msg' => 'Erro ao atualizar dados']);
         }
     }
+
+    public function telefone()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Requisição inválida']);
+        }
+
+        $json = $this->request->getJSON();
+        $email = $json->email ?? '';
+
+        if (empty($email)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Email não informado']);
+        }
+
+        $db = \Config\Database::connect();
+        $cliente = $db->query("SELECT telefone, nome FROM clientes WHERE email = ?", [$email])->getRow();
+
+        if ($cliente) {
+            return $this->response->setJSON([
+                'success' => true,
+                'telefone' => $cliente->telefone ?? '',
+                'nome' => $cliente->nome ?? ''
+            ]);
+        }
+
+        return $this->response->setJSON(['success' => false, 'message' => 'Cliente não encontrado']);
+    }
 }

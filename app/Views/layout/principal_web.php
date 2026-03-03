@@ -9,6 +9,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
+    <link rel="icon" type="image/png" href="<?= site_url('logo.png') ?>">
+    <link rel="shortcut icon" type="image/png" href="<?= site_url('logo.png') ?>">
+    
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Josefin+Sans" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Nothing+You+Could+Do" rel="stylesheet">
@@ -33,6 +36,8 @@
     <link rel="stylesheet" href="<?= site_url('web/src/css/style.css') ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="<?= site_url('assets/css/carrinho-modal.css?v=' . time()) ?>">
+    <link rel="stylesheet" href="<?= site_url('assets/css/carrinho-popup.css?v=' . time()) ?>">
+    <link rel="stylesheet" href="<?= site_url('assets/css/modal-fix.css?v=' . time()) ?>">
     <link rel="stylesheet" href="<?= site_url('assets/css/mobile-responsive.css?v=' . time()) ?>">
     <link rel="stylesheet" href="<?= site_url('assets/css/mobile-touch.css?v=' . time()) ?>">
     <link rel="stylesheet" href="<?= site_url('assets/css/about-center.css?v=' . time()) ?>">
@@ -173,14 +178,14 @@
   <body>
   	<nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
 	    <div class="container">
-		      <a class="navbar-brand" href="<?= site_url('/') ?>"><span class="flaticon-pizza-1 mr-1"></span>No Kapricho<br><small>A melhor pizzaria da cidade</small></a>
+		      <a class="navbar-brand" href="<?= site_url('/') ?>"><span class="fas fa-hotdog mr-1"></span>Delicias MV<br><small class="d-none d-md-inline">Seu delivery favorito</small></a>
 		      
 		      <!-- Ícone do Carrinho independente -->
 		      <div class="carrinho-navbar d-flex align-items-center">
-		          <a href="#" onclick="window.CarrinhoMenu && window.CarrinhoMenu.mostrar(); return false;" 
+		          <a href="#" onclick="CarrinhoSimples.mostrar(); return false;" 
 		             class="carrinho-link d-flex align-items-center text-decoration-none">
 		              <div class="carrinho-icon-container position-relative">
-		                  <i class="fas fa-shopping-cart text-warning" style="font-size: 28px;"></i>
+		                  <i id="carrinho-icon" class="fas fa-shopping-cart text-warning" style="font-size: 28px;"></i>
 		                  <span id="carrinho-badge" class="carrinho-counter position-absolute" style="display: none;">0</span>
 		              </div>
 		          </a>
@@ -203,20 +208,20 @@
     <!-- END nav -->
 
     <!-- Hero Section -->
-    <section class="home-slider owl-carousel img" style="background-image: url(<?= site_url('web/src/images/bg_1.jpg') ?>);">
+    <section class="home-slider owl-carousel img" style="background-image: url('web/src/images/WSalgados.jpg');">
       <div class="slider-item">
       	<div class="overlay"></div>
         <div class="container">
           <div class="row slider-text align-items-center" data-scrollax-parent="true">
 
             <div class="col-md-6 col-sm-12 ftco-animate">
-            	<span class="subheading">Delicioso</span>
-              <h1 class="mb-4">Culinária Italiana</h1>
-              <p class="mb-4 mb-md-5">Sabores autênticos que conquistam o paladar, preparados com ingredientes frescos e receitas tradicionais.</p>
+            	<span class="subheading">Irresistível</span>
+              <h1 class="mb-4">Bolinhas de Presunto com Queijo</h1>
+              <p class="mb-4 mb-md-5">A clássica receita da casa, com recheio de presunto e queijo que derrete na boca. Perfeito para degustar em um final de semana.</p>
               <p><a href="#menu" class="btn btn-primary p-3 px-xl-4 py-xl-3">Fazer Pedido</a> <a href="#about" class="btn btn-white btn-outline-white p-3 px-xl-4 py-xl-3">Ver Home</a></p>
             </div>
             <div class="col-md-6 ftco-animate">
-            	<img src="<?= site_url('web/src/images/bg_1.png') ?>" class="img-fluid" alt="">
+            	<img src="<?= base_url('web/src/images/BolinhaDePresunto-1.png') ?>" class="img-fluid" alt="Sonho de Valsa">
             </div>
 
           </div>
@@ -229,28 +234,28 @@
           <div class="row slider-text align-items-center" data-scrollax-parent="true">
 
             <div class="col-md-6 col-sm-12 order-md-last ftco-animate">
-            	<span class="subheading">Crocante</span>
-              <h1 class="mb-4">Pizza Italiana</h1>
-              <p class="mb-4 mb-md-5">Massas artesanais, molhos especiais e ingredientes selecionados para uma experiência única.</p>
+            	<span class="subheading">Saboroso</span>
+              <h1 class="mb-4">Coxinha da casa</h1>
+              <p class="mb-4 mb-md-5">Recheada com frango e catupiry. Uma combinação fantastica de sabor</p>
               <p><a href="#menu" class="btn btn-primary p-3 px-xl-4 py-xl-3">Fazer Pedido</a> <a href="#about" class="btn btn-white btn-outline-white p-3 px-xl-4 py-xl-3">Ver Home</a></p>
             </div>
             <div class="col-md-6 ftco-animate">
-            	<img src="<?= site_url('web/src/images/bg_2.png') ?>" class="img-fluid" alt="">
+            	<img src="<?= base_url('web/src/images/Coxinha.png') ?>" class="img-fluid" alt="Serenata de Amor">
             </div>
 
           </div>
         </div>
       </div>
 
-      <div class="slider-item" style="background-image: url(<?= site_url('web/src/images/bg_3.jpg') ?>);">
+      <div class="slider-item" style="background-image: url('web/src/images/WSalgados-2.jpg');">
       	<div class="overlay"></div>
         <div class="container">
           <div class="row slider-text justify-content-center align-items-center" data-scrollax-parent="true">
 
             <div class="col-md-7 col-sm-12 text-center ftco-animate">
             	<span class="subheading">Bem-vindo</span>
-              <h1 class="mb-4">Preparamos suas receitas favoritas</h1>
-              <p class="mb-4 mb-md-5">Cada prato é preparado com carinho e dedicação para proporcionar momentos especiais.</p>
+              <h1 class="mb-4">Salgados para todos os momentos</h1>
+              <p class="mb-4 mb-md-5">Coxinhas, quibes, empadas e muito mais. Tudo para temperar seu dia com qualidade e sabor.</p>
               <p><a href="#menu" class="btn btn-primary p-3 px-xl-4 py-xl-3">Fazer Pedido</a> <a href="#about" class="btn btn-white btn-outline-white p-3 px-xl-4 py-xl-3">Ver Home</a></p>
             </div>
 
@@ -319,10 +324,10 @@
     	<div class="one-half img" style="background-image: url(<?= site_url('web/src/images/about.jpg') ?>);"></div>
     	<div class="one-half ftco-animate">
         <div class="heading-section ftco-animate ">
-          <h2 class="mb-4">Bem-vindo ao <span class="flaticon-pizza">Nosso</span> Restaurante</h2>
+          <h2 class="mb-4">Bem-vindo à <span class="fas fa-hotdog">Nossa</span> Salgadaria</h2>
         </div>
         <div>
-  				<p>Há mais de 20 anos servindo os melhores pratos da culinária italiana com ingredientes frescos e receitas tradicionais. Nossa paixão pela gastronomia se reflete em cada prato que preparamos, sempre buscando proporcionar uma experiência única aos nossos clientes.</p>
+  				<p>Há mais de 20 anos temperando momentos especiais com os melhores salgados, assados e petiscos selecionados. Nossa paixão por proporcionar satisfação se reflete em cada recheio que oferecemos, sempre buscando trazer sabor e alegria aos nossos clientes</p>
   			</div>
     	</div>
     </section>
@@ -349,14 +354,14 @@
     	<div class="container-wrap">
     		<div class="row no-gutters">
 					<div class="col-md-6 ftco-animate">
-						<a href="#" class="gallery img d-flex align-items-center" style="background-image: url(<?= site_url('web/src/images/gallery-2.jpg') ?>);">
+						<a href="#" class="gallery img d-flex align-items-center" style="background-image: url('web/src/images/WSalgados.jpg');">
 							<div class="icon mb-4 d-flex align-items-center justify-content-center">
     						<span class="icon-search"></span>
     					</div>
 						</a>
 					</div>
 					<div class="col-md-6 ftco-animate">
-						<a href="#" class="gallery img d-flex align-items-center" style="background-image: url(<?= site_url('web/src/images/gallery-4.jpg') ?>);">
+						<a href="#" class="gallery img d-flex align-items-center" style="background-image: url('web/src/images/WSalgados-2.jpg');">
 							<div class="icon mb-4 d-flex align-items-center justify-content-center">
     						<span class="icon-search"></span>
     					</div>
@@ -412,7 +417,7 @@
 	            </div>
 	            <div class="form-group">
 	              <button type="submit" class="btn btn-primary py-3 px-4">
-	                  <i class="fas fa-envelope mr-2"></i>Enviar por Email
+	                  <i class="fas fa-envelope mr-2"></i>Enviar por Whatsapp
 	              </button>
 	            </div>
 	    			</form>
@@ -461,26 +466,25 @@
     		        return;
     		    }
     		    
-    		    // Enviar por email
-    		    fetch('<?= site_url('contato/enviar') ?>', {
-    		        method: 'POST',
-    		        headers: {
-    		            'Content-Type': 'application/x-www-form-urlencoded',
-    		        },
-    		        body: `nome=${encodeURIComponent(nome)}&email=${encodeURIComponent(email)}&telefone=${encodeURIComponent(telefone)}&mensagem=${encodeURIComponent(mensagem)}`
-    		    })
-    		    .then(response => response.json())
-    		    .then(data => {
-    		        if (data.success) {
-    		            alert('✅ ' + data.message);
-    		            this.reset();
-    		        } else {
-    		            alert('❌ ' + data.message);
-    		        }
-    		    })
-    		    .catch(error => {
-    		        alert('❌ Erro ao enviar mensagem. Tente novamente.');
-    		    });
+    		    // Montar mensagem para WhatsApp
+    		    const whatsappNumero = '<?= preg_replace('/\D/', '', $dadosCorporativos->whatsapp ?? '') ?>';
+    		    
+    		    if (!whatsappNumero) {
+    		        alert('❌ WhatsApp não configurado. Entre em contato pelo telefone.');
+    		        return;
+    		    }
+    		    
+    		    const textoWhatsApp = `*Contato via Site*%0A%0A` +
+    		        `*Nome:* ${encodeURIComponent(nome)}%0A` +
+    		        `*Email:* ${encodeURIComponent(email)}%0A` +
+    		        `*Telefone:* ${encodeURIComponent(telefone)}%0A%0A` +
+    		        `*Mensagem:*%0A${encodeURIComponent(mensagem)}`;
+    		    
+    		    // Abrir WhatsApp
+    		    window.open(`https://wa.me/55${whatsappNumero}?text=${textoWhatsApp}`, '_blank');
+    		    
+    		    // Limpar formulário
+    		    this.reset();
     		});
     		</script>
     	</div>
@@ -576,38 +580,38 @@
     <!-- Modal do Carrinho -->
     <div class="modal fade" id="modalCarrinho" tabindex="-1" role="dialog" aria-labelledby="modalCarrinhoLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalCarrinhoLabel">
+            <div class="modal-content" style="background: #1a1a1a; border: 1px solid #333; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                <div class="modal-header" style="background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%); border-bottom: 1px solid #333; border-radius: 15px 15px 0 0;">
+                    <h5 class="modal-title text-warning" id="modalCarrinhoLabel" style="font-family: 'Poppins', sans-serif; font-weight: 600;">
                         <i class="fas fa-shopping-cart mr-2"></i>Meu Carrinho
-                        <span class="badge-total-itens" id="modal-carrinho-total-itens">0 itens</span>
+                        <span class="badge badge-warning ml-2" id="modal-carrinho-total-itens">0 itens</span>
                     </h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                    <button type="button" class="btn btn-outline-light" onclick="fecharCarrinhoEVoltarMenu()" style="font-weight: 600;">
+                        <i class="fas fa-arrow-left mr-2"></i>Voltar ao Menu
                     </button>
                 </div>
-                <div class="modal-body" id="modal-carrinho-body">
-                    <!-- Itens do carrinho serão inseridos aqui via JavaScript -->
+                <div class="modal-body" id="modal-carrinho-body" style="background: #1a1a1a; max-height: 60vh; overflow-y: auto; padding: 20px;">
+                    <!-- Conteúdo será preenchido via JavaScript -->
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer" style="background: #1a1a1a; border-top: 1px solid #333; border-radius: 0 0 15px 15px;">
                     <div class="w-100">
                         <!-- Resumo do Total -->
-                        <div class="carrinho-resumo-total">
-                            <div class="resumo-linha">
-                                <span>Total do Pedido:</span>
-                                <strong id="modal-carrinho-total">R$ 0,00</strong>
+                        <div class="carrinho-resumo-total mb-3 p-3 rounded" style="background: #2d2d2d; border: 1px solid #333;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-light" style="font-family: 'Poppins', sans-serif; font-weight: 600;">Total do Pedido:</span>
+                                <strong id="modal-carrinho-total" class="h4 text-warning mb-0" style="font-family: 'Poppins', sans-serif; font-weight: 700;">R$ 0,00</strong>
                             </div>
                         </div>
                         
                         <!-- Botões de Ação -->
                         <div class="row" style="margin: 0;">
                             <div class="col-12 col-md-6 mb-2 mb-md-0" style="padding: 0 5px;">
-                                <button type="button" class="btn btn-limpar-carrinho w-100" id="btn-limpar-carrinho" onclick="Carrinho.limpar()">
+                                <button type="button" class="btn btn-outline-danger w-100" id="btn-limpar-carrinho" style="border: 2px solid #dc3545; color: #dc3545; font-weight: 600; transition: all 0.3s ease;">
                                     <i class="fas fa-trash mr-2"></i>Limpar Carrinho
                                 </button>
                             </div>
                             <div class="col-12 col-md-6" style="padding: 0 5px;">
-                                <button type="button" class="btn btn-finalizar-carrinho w-100" id="btn-finalizar-pedido" onclick="Carrinho.finalizar()">
+                                <button type="button" class="btn btn-warning w-100" id="btn-finalizar-pedido" style="background: linear-gradient(135deg, #f8b531 0%, #fac56e 100%); border: none; color: #000; font-weight: 600; font-family: 'Poppins', sans-serif;">
                                     <i class="fas fa-check-circle mr-2"></i>Finalizar Pedido
                                 </button>
                             </div>
@@ -620,6 +624,9 @@
     
     <!-- loader -->
     <div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#F96D00"/></svg></div>
+
+    <!-- Popup de notificação de scroll -->
+    <div id="scroll-popup">Posição restaurada!</div>
 
     <!-- Scripts -->
     <script src="<?= site_url('web/src/js/auth-check.js') ?>"></script>
@@ -638,24 +645,145 @@
     <script src="<?= site_url('web/src/js/jquery.timepicker.min.js') ?>"></script>
     <script src="<?= site_url('web/src/js/scrollax.min.js') ?>"></script>
     <script src="<?= site_url('web/src/js/main.js') ?>"></script>
-    <script src="<?= site_url('assets/js/carrinho-modal-v2.js?v=' . time()) ?>"></script>
+    <script src="<?= site_url('web/src/js/ajax-config.js?v=' . time()) ?>"></script>
+    <script src="<?= site_url('assets/js/sistema-produto.js?v=' . time()) ?>"></script>
+    <script src="<?= site_url('assets/js/carrinho-simples.js?v=' . time()) ?>"></script>
     <script src="<?= site_url('assets/js/finalizar-pedido.js?v=' . time()) ?>"></script>
-    <script src="<?= site_url('web/src/js/carrinho-menu.js?v=' . time()) ?>"></script>
-    <script src="<?= site_url('web/src/js/carrinho-trigger.js?v=' . time()) ?>"></script>
     
     <script>
-        // Inicializar CarrinhoMenu quando a página carregar
-        $(document).ready(function() {
-            if (typeof CarrinhoMenu !== 'undefined') {
-                CarrinhoMenu.init();
-                console.log('CarrinhoMenu inicializado com sucesso');
+    // Controlar ícone do carrinho baseado no status do pedido
+    $(document).ready(function() {
+        // === SISTEMA DE FILTROS ===
+        
+        function filtrarProdutos(categoria) {
+            const produtos = document.querySelectorAll('.filtr-item');
+            
+            produtos.forEach(function(produto) {
+                const categoriaProduto = produto.getAttribute('data-category');
+                
+                if (categoria === 'all' || categoriaProduto === categoria) {
+                    produto.style.display = 'block';
+                } else {
+                    produto.style.display = 'none';
+                }
+            });
+        }
+
+        const botoesFiltro = document.querySelectorAll('.filter-button');
+        
+        botoesFiltro.forEach(function(botao) {
+            const categoria = botao.getAttribute('data-filter');
+            
+            botao.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                document.querySelectorAll('.menu_filter li').forEach(li => li.classList.remove('active'));
+                this.parentElement.classList.add('active');
+                
+                const categoria = this.getAttribute('data-filter');
+                filtrarProdutos(categoria);
+            });
+        });
+        
+        // Mostrar todos inicialmente
+        filtrarProdutos('all');
+        
+        // === ÍCONE DO CARRINHO ===
+        function atualizarIconeCarrinho() {
+            const pedidoEmAndamento = localStorage.getItem('pedido_em_andamento');
+            const carrinhoIcon = $('#carrinho-icon');
+            const emailCliente = localStorage.getItem('cliente_email');
+            
+            if (pedidoEmAndamento) {
+                // Verificar status do pedido
+                $.ajax({
+                    url: `/acompanhar-pedido/${pedidoEmAndamento}`,
+                    method: 'GET',
+                    success: function(response) {
+                        if (response.success) {
+                            const status = response.pedido.status;
+                            if (status === 'entregue' || status === 'cancelado') {
+                                // Pedido finalizado, voltar ao ícone normal
+                                localStorage.removeItem('pedido_em_andamento');
+                                carrinhoIcon.removeClass('fa-box-open fa-truck').addClass('fa-shopping-cart').removeClass('text-info text-success').addClass('text-warning');
+                            } else {
+                                // Verificar se o pedido pertence ao cliente logado
+                                let pedidoPertence = false;
+                                const emailClienteLogado = localStorage.getItem('cliente_email');
+                                
+                                if (emailClienteLogado && response.pedido.email_cliente) {
+                                    // Ambos têm email - comparar
+                                    pedidoPertence = (response.pedido.email_cliente.toLowerCase() === emailClienteLogado.toLowerCase());
+                                } else if (!emailClienteLogado && !response.pedido.email_cliente) {
+                                    // Nenhum tem email - permitir por compatibilidade
+                                    pedidoPertence = true;
+                                } else if (emailClienteLogado && !response.pedido.email_cliente) {
+                                    // Cliente logado mas pedido não tem email - não permitir
+                                    pedidoPertence = false;
+                                }
+                                
+                                if (!pedidoPertence) {
+                                    // Pedido não pertence ao cliente, limpar
+                                    localStorage.removeItem('pedido_em_andamento');
+                                    localStorage.removeItem('codigo_pedido_ativo');
+                                    carrinhoIcon.removeClass('fa-box-open fa-truck').addClass('fa-shopping-cart').removeClass('text-info text-success').addClass('text-warning');
+                                } else {
+                                    // Pedido em andamento e pertence ao cliente, alterar ícone
+                                    const iconClass = status === 'saiu_entrega' ? 'fa-truck' : 'fa-box-open';
+                                    const colorClass = status === 'saiu_entrega' ? 'text-success' : 'text-info';
+                                    carrinhoIcon.removeClass('fa-shopping-cart fa-box-open fa-truck text-warning text-info text-success').addClass(iconClass).addClass(colorClass);
+                                }
+                            }
+                        } else {
+                            // Pedido não encontrado, remover do localStorage
+                            localStorage.removeItem('pedido_em_andamento');
+                            carrinhoIcon.removeClass('fa-box-open fa-truck').addClass('fa-shopping-cart').removeClass('text-info text-success').addClass('text-warning');
+                        }
+                    },
+                    error: function() {
+                        // Erro na consulta, manter ícone normal
+                        carrinhoIcon.removeClass('fa-box-open fa-truck').addClass('fa-shopping-cart').removeClass('text-info text-success').addClass('text-warning');
+                    }
+                });
             } else {
-                console.error('CarrinhoMenu não encontrado');
+                // Sem pedido em andamento, ícone normal
+                carrinhoIcon.removeClass('fa-box-open fa-truck').addClass('fa-shopping-cart').removeClass('text-info text-success').addClass('text-warning');
+            }
+        }
+        
+        // Atualizar ícone ao carregar a página
+        atualizarIconeCarrinho();
+        
+        // Atualizar ícone a cada 30 segundos
+        setInterval(atualizarIconeCarrinho, 30000);
+        
+        // === SISTEMA DE RESTAURAÇÃO DE SCROLL ===
+        // Restaurar posição 0.5 segundos após modal abrir
+        $(document).on('shown.bs.modal', '#modalCompra, #modalExtras', function() {
+            setTimeout(() => {
+                if (window.__scrollPos !== undefined) {
+                    window.scrollTo(0, window.__scrollPos);
+                }
+            }, 500);
+        });
+        
+        // Restaurar posição quando modal fechar
+        $(document).on('hidden.bs.modal', '#modalCompra, #modalExtras', function() {
+            if (window.__scrollPos !== undefined) {
+                window.scrollTo(0, window.__scrollPos);
             }
         });
+    });
     </script>
     
     <style>
+        /* Backdrop com blur de 80% */
+        .modal-backdrop {
+            backdrop-filter: blur(8px) !important;
+            -webkit-backdrop-filter: blur(8px) !important;
+            background-color: rgba(0, 0, 0, 0.8) !important;
+        }
+        
         /* Evitar scroll automático nos modais */
         .modal {
             overflow-y: auto !important;
@@ -668,6 +796,151 @@
         }
         .modal-open {
             padding-right: 0 !important;
+            overflow: auto !important;
+        }
+        
+        /* Popup denotificação de posição */
+        #scroll-popup {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(248, 181, 49, 0.95);
+            color: #000;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            z-index: 10000;
+            display: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            animation: fadeInOut 0.5s ease-out;
+            font-size: 14px;
+            text-align: center;
+            max-width: 90%;
+        }
+        
+        @media (max-width: 480px) {
+            #scroll-popup {
+                top: 10px;
+                padding: 10px 16px;
+                font-size: 13px;
+                border-radius: 20px;
+            }
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+            20% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
+        
+        /* Animação slide up para mobile */
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        
+        /* Estilos responsivos para modais */
+        @media (max-width: 768px) {
+            .modal-dialog {
+                max-width: 90%;
+                margin: 10px auto;
+            }
+            
+            .modal-content {
+                border-radius: 15px;
+            }
+            
+            .modal-body {
+                padding: 15px;
+            }
+            
+            .modal-header, .modal-footer {
+                padding: 12px 15px;
+            }
+            
+            #scroll-popup {
+                top: 10px;
+                padding: 10px 20px;
+                font-size: 14px;
+                width: auto;
+                max-width: 90%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .modal-dialog {
+                max-width: 100%;
+                margin: 0;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+            }
+            
+            .modal-content {
+                max-height: 90vh;
+                border-radius: 20px 20px 0 0;
+                overflow-y: auto;
+            }
+            
+            .modal.show .modal-dialog {
+                transform: translateY(0) !important;
+            }
+            
+            .modal-header {
+                position: sticky;
+                top: 0;
+                background: #1a1a1a;
+                z-index: 1;
+            }
+            
+            .modal-footer {
+                position: sticky;
+                bottom: 0;
+                background: #1a1a1a;
+                z-index: 1;
+            }
+            
+            #scroll-popup {
+                top: 15px;
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+        }
+        
+        /* Controles de quantidade dos extras */
+        .extra-controles {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn-qty {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #f8b531;
+            background: transparent;
+            color: #f8b531;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .btn-qty:hover {
+            background: #f8b531;
+            color: #000;
+        }
+        
+        .qty-valor {
+            color: #f8b531;
+            font-weight: bold;
+            min-width: 20px;
+            text-align: center;
         }
     </style>
     
@@ -688,7 +961,7 @@
     <!-- Modal de Edição de Dados -->
     <div class="modal fade" id="modalEdicaoCliente" tabindex="-1" role="dialog" aria-labelledby="modalEdicaoLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content" style="background: #1a1a1a; border: 1px solid #333;">
+            <div class="modal-content" style="background: #1a1a1a; border: 1px solid #333; margin: 10px;">
                 <div class="modal-header" style="border-bottom: 1px solid #333;">
                     <h5 class="modal-title" id="modalEdicaoLabel" style="color: #f8b531;">
                         <i class="fas fa-edit mr-2"></i>Editar Meus Dados
@@ -697,7 +970,7 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body" style="color: #fff;">
+                <div class="modal-body" style="color: #fff; max-height: 60vh; overflow-y: auto;">
                     <form id="formEdicaoCliente">
                         <div class="form-group">
                             <label style="color: #f8b531;">Nome Completo *</label>
@@ -740,17 +1013,44 @@
                         </div>
                     </form>
                 </div>
-                <div class="modal-footer" style="border-top: 1px solid #333;">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn" id="btnSalvarEdicao" style="background: #f8b531; color: #000;">
-                        <i class="fas fa-save mr-2"></i>Salvar Alterações
-                    </button>
+                <div class="modal-footer" style="border-top: 1px solid #333; padding: 10px 15px;">
+                    <div class="d-flex flex-column flex-sm-row w-100">
+                        <button type="button" class="btn btn-secondary mb-2 mb-sm-0 mr-sm-2 flex-fill" data-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn flex-fill" id="btnSalvarEdicao" style="background: #f8b531; color: #000;">
+                            <i class="fas fa-save mr-2"></i>Salvar Alterações
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Verificar se há cliente logado via sessão PHP (apenas no primeiro carregamento após login)
+        <?php if (session()->has('cliente_email')): ?>
+            var novoEmailCliente = '<?= session()->get('cliente_email') ?>';
+            
+            // Pegar o email anterior que estava salvo
+            // Prioridade: cliente_email (se ainda existir), depois ultimo_email_logout
+            var emailAnterior = localStorage.getItem('cliente_email') || localStorage.getItem('ultimo_email_logout');
+            
+            // Salvar o novo e-mail
+            localStorage.setItem('cliente_email', novoEmailCliente);
+            
+            // Atualizar o ultimo_email_logout com o email atual para futuras comparações
+            localStorage.setItem('ultimo_email_logout', novoEmailCliente);
+            
+            // Se mudou de usuário (login diferente E temos referência do usuário anterior), limpar pedidos anteriores
+            // Se não temos referência anterior (navegador foi fechado), mantemos o pedido por segurança
+            if (emailAnterior && emailAnterior.toLowerCase() !== novoEmailCliente.toLowerCase()) {
+                localStorage.removeItem('pedido_em_andamento');
+                localStorage.removeItem('codigo_pedido_ativo');
+            }
+            
+            console.log('Login detectado:', { novo: novoEmailCliente, anterior: emailAnterior, mudou: emailAnterior && emailAnterior.toLowerCase() !== novoEmailCliente.toLowerCase() });
+            <?php session()->remove('cliente_email'); ?>
+        <?php endif; ?>
+
         // Gerenciar cliente logado
         document.addEventListener('DOMContentLoaded', function() {
             const clienteLogado = document.getElementById('cliente-logado');
@@ -787,6 +1087,13 @@
             // Logout
             btnLogout.addEventListener('click', function(e) {
                 e.preventDefault();
+                
+                // Salvar o email do usuário que está fazendo logout APENAS se não existir um anterior
+                // Isso mantém referência ao "usuário anterior" para comparação no próximo login
+                const emailAtual = localStorage.getItem('cliente_email');
+                if (emailAtual && !localStorage.getItem('ultimo_email_logout')) {
+                    localStorage.setItem('ultimo_email_logout', emailAtual);
+                }
                 
                 // Limpar dados do localStorage
                 localStorage.removeItem('cliente_email');
@@ -829,7 +1136,6 @@
                     }
                 })
                 .catch(error => {
-                    console.error('Erro:', error);
                     alert('Erro ao carregar dados');
                 });
             }
@@ -866,7 +1172,6 @@
                     }
                 })
                 .catch(error => {
-                    console.error('Erro:', error);
                     alert('Erro ao salvar dados');
                 });
             });
@@ -912,12 +1217,125 @@
                         document.getElementById('edit-endereco').value = data.logradouro || '';
                     }
                 })
-                .catch(error => console.error('Erro ao buscar CEP:', error));
+                .catch(error => {});
             }
         });
     </script>
     
+    <style>
+        /* Responsividade geral para dispositivos móveis */
+        @media (max-width: 767px) {
+            /* Modal responsivo */
+            .modal-dialog {
+                margin: 5px !important;
+                max-width: calc(100% - 10px) !important;
+            }
+            
+            .modal-content {
+                border-radius: 8px !important;
+            }
+            
+            .modal-body {
+                padding: 15px !important;
+            }
+            
+            .modal-footer {
+                padding: 10px 15px !important;
+            }
+            
+            /* Navbar brand responsivo */
+            .navbar-brand {
+                font-size: 1.1rem !important;
+                line-height: 1.2 !important;
+            }
+            
+            .navbar-brand small {
+                font-size: 0.7rem !important;
+            }
+            
+            /* Hero section responsivo */
+            .home-slider .slider-item h1 {
+                font-size: 1.8rem !important;
+            }
+            
+            .home-slider .slider-item p {
+                font-size: 0.9rem !important;
+            }
+            
+            /* Botões responsivos */
+            .btn {
+                padding: 8px 16px !important;
+                font-size: 0.9rem !important;
+            }
+            
+            /* Container responsivo */
+            .container-fluid {
+                padding-left: 10px !important;
+                padding-right: 10px !important;
+            }
+            
+            /* Seções com padding reduzido */
+            .ftco-section {
+                padding: 3em 0 !important;
+            }
+            
+            /* Footer responsivo */
+            .ftco-footer {
+                padding: 3em 0 2em !important;
+            }
+            
+            .ftco-footer .ftco-footer-widget {
+                margin-bottom: 2em !important;
+            }
+        }
+        
+        @media (max-width: 575px) {
+            /* Telas muito pequenas */
+            .modal-dialog {
+                margin: 0 !important;
+                max-width: 100% !important;
+                height: 100vh !important;
+            }
+            
+            .modal-content {
+                height: 100% !important;
+                border-radius: 0 !important;
+            }
+            
+            .modal-body {
+                max-height: calc(100vh - 120px) !important;
+                overflow-y: auto !important;
+            }
+            
+            /* Navbar ainda mais compacta */
+            .navbar-brand {
+                font-size: 1rem !important;
+            }
+            
+            /* Hero ainda mais compacto */
+            .home-slider .slider-item h1 {
+                font-size: 1.5rem !important;
+            }
+            
+            .home-slider .slider-item .btn {
+                padding: 6px 12px !important;
+                font-size: 0.8rem !important;
+                margin: 2px !important;
+            }
+        }
+    </style>
+    
     <!-- Scripts personalizados -->
+    <script src="<?= site_url('web/src/js/carrinho-popup.js?v=' . time()) ?>"></script>
+    <script>
+        function fecharCarrinhoEVoltarMenu() {
+            $('#modalCarrinho').modal('hide');
+            const menuSection = document.getElementById('menu');
+            if (menuSection) {
+                menuSection.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    </script>
     <?= $this->renderSection('scripts') ?>
     
   </body>

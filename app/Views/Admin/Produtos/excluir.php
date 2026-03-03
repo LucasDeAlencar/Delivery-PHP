@@ -141,8 +141,9 @@
                                 <ul class="mb-0">
                                     <li>O produto será <strong>PERMANENTEMENTE</strong> excluído do banco de dados</li>
                                     <li>A imagem do produto será removida do servidor</li>
-                                    <li>Todos os extras associados serão removidos</li>
+                                    <li><strong>Todos os extras vinculados serão removidos</strong></li>
                                     <li>Todas as especificações associadas serão removidas</li>
+                                    <li>Pedidos anteriores manterão o histórico, mas sem vínculo ao produto</li>
                                     <li><strong class="text-uppercase">Esta ação NÃO pode ser desfeita!</strong></li>
                                 </ul>
                             </div>

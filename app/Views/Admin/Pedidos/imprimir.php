@@ -18,14 +18,14 @@
             padding: 15px;
             max-width: 80mm;
             margin: 0 auto;
-            background: #f5f5f5;
+            background: #fff;
             color: #000;
         }
         
         .container {
             background: white;
             padding: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 1px solid #000;
         }
 
         .header {
@@ -188,21 +188,37 @@
         @media print {
             body {
                 padding: 0;
-                background: white;
+                background: white !important;
                 font-size: 9px;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
-            
+
+            * {
+                color: #000 !important;
+                background: transparent !important;
+                border-color: #000 !important;
+                text-shadow: none !important;
+                box-shadow: none !important;
+            }
+
             .container {
                 box-shadow: none;
                 padding: 5px;
+                border: 1px solid #000;
             }
-            
-            .no-print {
-                display: none;
+
+            .no-print,
+            .btn {
+                display: none !important;
             }
 
             .section {
                 break-inside: avoid;
+            }
+
+            .item-obs {
+                color: #000 !important;
             }
         }
     </style>
@@ -211,7 +227,7 @@
     <div class="container">
         <!-- Cabeçalho -->
         <div class="header">
-            <div class="logo">NO KAPRICHO</div>
+            <div class="logo">Delicias MV</div>
             <div class="header-info">Tel: (11) 9999-9999</div>
         </div>
 
@@ -256,7 +272,7 @@
                     </div>
                     <?php if (!empty($item->extras)): ?>
                         <?php foreach ($item->extras as $extra): ?>
-                            <div class="item-obs" style="color: #f8b531;">
+                            <div class="item-obs">
                                 + <?= esc($extra->extra_nome) ?><?= $extra->quantidade > 1 ? ' x' . $extra->quantidade : '' ?>
                                 <?php if ($extra->extra_preco > 0): ?>
                                     (+R$ <?= number_format($extra->extra_preco * $extra->quantidade, 2, ',', '.') ?>)
@@ -312,7 +328,7 @@
         <!-- Rodapé -->
         <div class="footer">
             <div class="footer-destaque">Obrigado pela preferência!</div>
-            <div>No Kapricho - Volte sempre!</div>
+            <div>Delicias MV - Volte sempre!</div>
         </div>
 
         <!-- Botões -->

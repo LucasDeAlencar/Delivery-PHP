@@ -20,7 +20,8 @@ class ProdutoModel extends Model {
         'ativo',
         'imagem',
         'preco',
-        'obrigatorio_extras'
+        'obrigatorio_extras',
+        'max_extras'
     ];
     // Dates
     protected $useTimestamps = true;
@@ -31,7 +32,7 @@ class ProdutoModel extends Model {
     protected $validationRules = [
         'nome' => 'required|min_length[3]|max_length[120]',
         'categoria_id' => 'required|integer',
-        'ingredientes' => 'required',
+        'ingredientes' => 'permit_empty',
         'preco' => 'required|numeric',
         'imagem' => 'permit_empty',
     ];
@@ -45,9 +46,6 @@ class ProdutoModel extends Model {
         'categoria_id' => [
             'required' => 'O campo categoria é obrigatório.',
             'integer' => 'O campo categoria deve ser um número inteiro.',
-        ],
-        'ingredientes' => [
-            'required' => 'O campo ingredientes é obrigatório.',
         ],
         'preco' => [
             'required' => 'O campo preço é obrigatório.',
@@ -130,7 +128,7 @@ class ProdutoModel extends Model {
             // Se já está no formato decimal (1234.56), não faz nada
         }
         $preco = floatval($preco);
-        
+
         // Prepara os dados para inserção com os campos corretos do allowedFields
         $dadosParaInserir = [
             'nome' => $dadosProduto['nome'] ?? '',
@@ -140,6 +138,7 @@ class ProdutoModel extends Model {
             'imagem' => $dadosProduto['imagem'] ?? null,
             'ativo' => $dadosProduto['ativo'] ?? 0,
             'obrigatorio_extras' => $dadosProduto['obrigatorio_extras'] ?? 0,
+            'max_extras' => $dadosProduto['max_extras'] ?? 0,
         ];
 
         // Verifica se já existe um produto com o mesmo nome
@@ -178,12 +177,12 @@ class ProdutoModel extends Model {
             return false;
         }
     }
-    
+
     /**
      * Armazena erros de validação customizados
      */
     protected $validationErrors = [];
-    
+
     /**
      * Sobrescreve o método errors() para incluir erros customizados
      */
@@ -204,6 +203,7 @@ class ProdutoModel extends Model {
             'preco' => isset($dadosProduto['preco']) ? str_replace(',', '.', $dadosProduto['preco']) : 0,
             'ativo' => $dadosProduto['ativo'] ?? 0,
             'obrigatorio_extras' => $dadosProduto['obrigatorio_extras'] ?? 0,
+            'max_extras' => $dadosProduto['max_extras'] ?? 0,
         ];
 
         // Adiciona imagem apenas se foi fornecida

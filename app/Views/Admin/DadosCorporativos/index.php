@@ -111,6 +111,22 @@
                                        value="<?= esc($dados->facebook ?? '') ?>">
                             </div>
                         </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="preco_minimo_compra">Preço Mínimo de Compra (R$)</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">R$</span>
+                                    </div>
+                                    <input type="text" 
+                                           id="preco_minimo_compra" 
+                                           class="form-control money" 
+                                           placeholder="0,00"
+                                           value="<?= isset($dados->preco_minimo_compra) ? number_format($dados->preco_minimo_compra, 2, ',', '.') : '' ?>">
+                                </div>
+                                <small class="form-text text-muted">Valor mínimo para finalizar pedido</small>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="text-right mt-4">
@@ -172,7 +188,8 @@ $(document).ready(function() {
             whatsapp: $('#whatsapp').val().replace(/\D/g, ''),
             email: $('#email').val(),
             instagram: $('#instagram').val(),
-            facebook: $('#facebook').val()
+            facebook: $('#facebook').val(),
+            preco_minimo_compra: $('#preco_minimo_compra').val().replace(/\./g, '').replace(',', '.')
         };
 
         $.ajax({
@@ -181,16 +198,34 @@ $(document).ready(function() {
             dataType: 'json',
             contentType: 'application/json',
             data: JSON.stringify(dados),
+            beforeSend: function() {
+                $('#btnSalvar').prop('disabled', true).text('Salvando...');
+            },
             success: function(response) {
+                $('#btnSalvar').prop('disabled', false).html('<i class="fas fa-save mr-2"></i>Salvar Alterações');
+                
                 if (response.sucesso) {
-                    // Usar o sistema de notificação do admin
-                    toastr.success('Dados atualizados com sucesso!');
+                    if (typeof toastr !== 'undefined') {
+                        toastr.success('Dados atualizados com sucesso!');
+                    } else {
+                        alert('Dados atualizados com sucesso!');
+                    }
                 } else {
-                    toastr.error('Erro: ' + response.msg);
+                    if (typeof toastr !== 'undefined') {
+                        toastr.error('Erro: ' + response.msg);
+                    } else {
+                        alert('Erro: ' + response.msg);
+                    }
                 }
             },
             error: function() {
-                toastr.error('Erro ao salvar dados');
+                $('#btnSalvar').prop('disabled', false).html('<i class="fas fa-save mr-2"></i>Salvar Alterações');
+                
+                if (typeof toastr !== 'undefined') {
+                    toastr.error('Erro ao salvar dados');
+                } else {
+                    alert('Erro ao salvar dados');
+                }
             }
         });
     });

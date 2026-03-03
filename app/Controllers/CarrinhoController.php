@@ -44,10 +44,20 @@ class CarrinhoController extends BaseController {
         // Busca os dados no banco
         $carrinho_itens = $this->getItensCarrinho($sessionID);
 
+        // Buscar formas de pagamento ativas
+        $db = \Config\Database::connect();
+        $formasPagamento = $db->table('formas_pagamento')
+                ->where('ativo', 1)
+                ->where('deletado_em IS NULL')
+                ->orderBy('ordem', 'ASC')
+                ->get()
+                ->getResultArray();
+
         // Prepara a data para a view
         $data = [
             'carrinho_itens' => $carrinho_itens,
-            'total_itens' => $this->contarItensCarrinho($sessionID)
+            'total_itens' => $this->contarItensCarrinho($sessionID),
+            'formas_pagamento' => $formasPagamento
         ];
 
         // Retorna a view principal do carrinho
@@ -141,6 +151,68 @@ class CarrinhoController extends BaseController {
                     'message' => 'Produto adicionado ao carrinho!',
                     'total_itens' => $this->contarItensCarrinho($sessionID),
                     'csrf_token' => csrf_hash()
+        ]);
+    }
+
+    // Método para remover item do carrinho
+    public function remover($itemId = null) {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(403)->setBody('Acesso negado');
+        }
+
+        if (!$itemId) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'ID do item é obrigatório'
+            ])->setStatusCode(400);
+        }
+
+        $sessionID = session_id();
+        $db = \Config\Database::connect();
+
+        // Verificar se o item pertence à sessão atual
+        $item = $db->table('carrinho_temporario')
+                ->where('id', $itemId)
+                ->where('session_id', $sessionID)
+                ->get()
+                ->getRowArray();
+
+        if (!$item) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Item não encontrado'
+            ])->setStatusCode(404);
+        }
+
+        // Remover o item
+        $db->table('carrinho_temporario')
+                ->where('id', $itemId)
+                ->delete();
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Item removido do carrinho',
+            'total_itens' => $this->contarItensCarrinho($sessionID)
+        ]);
+    }
+
+    // Método para limpar carrinho
+    public function limpar() {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(403)->setBody('Acesso negado');
+        }
+
+        $sessionID = session_id();
+        $db = \Config\Database::connect();
+
+        $db->table('carrinho_temporario')
+                ->where('session_id', $sessionID)
+                ->delete();
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Carrinho limpo com sucesso',
+            'total_itens' => 0
         ]);
     }
 }

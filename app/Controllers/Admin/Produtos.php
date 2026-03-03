@@ -21,14 +21,28 @@ class Produtos extends BaseController {
     }
 
     public function index() {
+        $search = $this->request->getGet('search');
+        $categoria_filtro = $this->request->getGet('categoria');
+        
+        $builder = $this->produtoModel
+            ->select('produtos.*, categorias.nome AS categoria')
+            ->join('categorias', 'categorias.id = produtos.categoria_id', 'left');
+        
+        if ($search) {
+            $builder->like('produtos.nome', $search);
+        }
+        
+        if ($categoria_filtro) {
+            $builder->where('produtos.categoria_id', $categoria_filtro);
+        }
 
         $data = [
             'titulo' => 'Listando os produtos',
-            'produtos' => $this->produtoModel
-                    ->select('produtos.*, categorias.nome AS categoria')
-                    ->join('categorias', 'categorias.id = produtos.categoria_id', 'left')
-                    ->paginate(10),
+            'produtos' => $builder->paginate(10),
             'pager' => $this->produtoModel->pager,
+            'categorias' => $this->categoriaModel->orderBy('ordem', 'ASC')->orderBy('nome', 'ASC')->findAll(),
+            'search' => $search,
+            'categoria_filtro' => $categoria_filtro,
         ];
 
         return view('Admin/Produtos/index', $data);
@@ -374,43 +388,66 @@ class Produtos extends BaseController {
         $db = \Config\Database::connect();
         
         try {
+            log_message('info', "=== INICIANDO EXCLUSÃO DO PRODUTO ID: {$id} - Nome: {$produto->nome} ===");
+            
             // Inicia transação para garantir integridade
             $db->transStart();
+            log_message('info', 'Transação iniciada');
             
             // 1. Remove a imagem se existir
             if (!empty($produto->imagem)) {
                 $caminhoImagem = FCPATH . 'uploads/produtos/' . $produto->imagem;
                 if (file_exists($caminhoImagem)) {
                     unlink($caminhoImagem);
+                    log_message('info', "Imagem removida: {$caminhoImagem}");
+                } else {
+                    log_message('warning', "Imagem não encontrada no servidor: {$caminhoImagem}");
                 }
             }
 
             // 2. Remove os extras associados ao produto (produtos_extras)
+            $extrasCount = $db->table('produtos_extras')->where('produto_id', $id)->countAllResults(false);
             $db->table('produtos_extras')->where('produto_id', $id)->delete();
+            log_message('info', "Removidos {$extrasCount} extras associados");
 
             // 3. Remove as especificações associadas (produtos_especificacoes)
+            $especCount = $db->table('produtos_especificacoes')->where('produto_id', $id)->countAllResults(false);
             $db->table('produtos_especificacoes')->where('produto_id', $id)->delete();
+            log_message('info', "Removidas {$especCount} especificações associadas");
 
             // 4. Atualiza pedidos_itens para remover referência ao produto (SET NULL)
-            // Isso mantém o histórico do pedido mas remove a FK
-            $db->table('pedidos_itens')
-                ->where('produto_id', $id)
-                ->update(['produto_id' => null]);
+            $pedidosCount = $db->table('pedidos_itens')->where('produto_id', $id)->countAllResults(false);
+            if ($pedidosCount > 0) {
+                // Altera a coluna para aceitar NULL
+                $db->query("ALTER TABLE pedidos_itens MODIFY produto_id INT(11) UNSIGNED NULL");
+                log_message('info', 'Coluna produto_id alterada para aceitar NULL');
+                
+                $db->query("UPDATE pedidos_itens SET produto_id = NULL WHERE produto_id = ?", [$id]);
+                log_message('info', "Atualizados {$pedidosCount} itens de pedidos (produto_id = NULL)");
+            }
 
             // 5. Remove itens do carrinho temporário se existir
             if ($db->tableExists('carrinho_temporario')) {
+                $carrinhoCount = $db->table('carrinho_temporario')->where('produto_id', $id)->countAllResults(false);
                 $db->table('carrinho_temporario')->where('produto_id', $id)->delete();
+                log_message('info', "Removidos {$carrinhoCount} itens do carrinho temporário");
             }
 
             // 6. Deleta permanentemente o produto
+            log_message('info', 'Deletando produto do banco de dados');
             $this->produtoModel->delete($id, true);
+            log_message('info', 'Produto deletado com sucesso');
             
             // Confirma transação
             $db->transComplete();
+            log_message('info', 'Transação completada');
             
             if ($db->transStatus() === false) {
+                log_message('error', 'TRANSAÇÃO FALHOU - transStatus() retornou false');
                 throw new \Exception('Falha na transação');
             }
+            
+            log_message('info', "=== PRODUTO ID: {$id} EXCLUÍDO COM SUCESSO ===");
             
             return redirect()->to(site_url('admin/produtos'))
                             ->with('sucesso', "Produto '{$produto->nome}' excluído com sucesso!");
@@ -419,13 +456,115 @@ class Produtos extends BaseController {
             // Rollback em caso de erro
             $db->transRollback();
             
-            log_message('error', 'Erro ao excluir produto: ' . $e->getMessage());
+            log_message('error', "ERRO AO EXCLUIR PRODUTO ID: {$id}");
+            log_message('error', 'Mensagem: ' . $e->getMessage());
+            log_message('error', 'Arquivo: ' . $e->getFile() . ' - Linha: ' . $e->getLine());
+            log_message('error', 'Stack trace: ' . $e->getTraceAsString());
+            
             return redirect()->back()->with('erro', 
                 'Erro ao excluir o produto: ' . $e->getMessage()
             );
         }
     }
 
+    public function toggleAtivo() {
+        $produtoId = $this->request->getPost('produto_id');
+        $ativo = $this->request->getPost('ativo');
 
+        if (!$produtoId) {
+            return $this->response->setJSON(['success' => false, 'message' => 'ID do produto não informado']);
+        }
+
+        try {
+            $produto = $this->produtoModel->find($produtoId);
+            
+            if (!$produto) {
+                return $this->response->setJSON(['success' => false, 'message' => 'Produto não encontrado']);
+            }
+            
+            $novoStatus = $ativo ? 1 : 0;
+            $this->produtoModel->update($produtoId, ['ativo' => $novoStatus]);
+            
+            $status = $novoStatus ? 'ativado' : 'desativado';
+            return $this->response->setJSON(['success' => true, 'message' => "Produto {$status} com sucesso"]);
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Erro: ' . $e->getMessage()]);
+        }
+    }
+
+    public function acaoColetiva() {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Requisição inválida']);
+        }
+
+        $ids = $this->request->getPost('ids');
+        $acao = $this->request->getPost('acao');
+
+        if (empty($ids) || !is_array($ids)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Nenhum produto selecionado']);
+        }
+
+        if (!in_array($acao, ['ativar', 'inativar', 'excluir'])) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Ação inválida']);
+        }
+
+        $db = \Config\Database::connect();
+        
+        try {
+            $db->transStart();
+
+            if ($acao === 'ativar') {
+                $this->produtoModel->whereIn('id', $ids)->set(['ativo' => 1])->update();
+                $mensagem = count($ids) . ' produto(s) ativado(s) com sucesso';
+            } elseif ($acao === 'inativar') {
+                $this->produtoModel->whereIn('id', $ids)->set(['ativo' => 0])->update();
+                $mensagem = count($ids) . ' produto(s) inativado(s) com sucesso';
+            } else {
+                // Excluir produtos
+                foreach ($ids as $id) {
+                    $produto = $this->produtoModel->find($id);
+                    if ($produto) {
+                        // Remove imagem
+                        if (!empty($produto->imagem)) {
+                            $caminhoImagem = FCPATH . 'uploads/produtos/' . $produto->imagem;
+                            if (file_exists($caminhoImagem)) {
+                                unlink($caminhoImagem);
+                            }
+                        }
+                        
+                        // Remove extras e especificações
+                        $db->table('produtos_extras')->where('produto_id', $id)->delete();
+                        $db->table('produtos_especificacoes')->where('produto_id', $id)->delete();
+                        
+                        // Atualiza pedidos_itens
+                        $db->query("ALTER TABLE pedidos_itens MODIFY produto_id INT(11) UNSIGNED NULL");
+                        $db->query("UPDATE pedidos_itens SET produto_id = NULL WHERE produto_id = ?", [$id]);
+                        
+                        // Remove do carrinho
+                        if ($db->tableExists('carrinho_temporario')) {
+                            $db->table('carrinho_temporario')->where('produto_id', $id)->delete();
+                        }
+                        
+                        // Deleta produto
+                        $this->produtoModel->delete($id, true);
+                    }
+                }
+                $mensagem = count($ids) . ' produto(s) excluído(s) com sucesso';
+            }
+
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                throw new \Exception('Falha na transação');
+            }
+
+            return $this->response->setJSON(['success' => true, 'message' => $mensagem]);
+
+        } catch (\Exception $e) {
+            $db->transRollback();
+            log_message('error', 'Erro na ação coletiva: ' . $e->getMessage());
+            return $this->response->setJSON(['success' => false, 'message' => 'Erro ao executar ação: ' . $e->getMessage()]);
+        }
+    }
 
 }

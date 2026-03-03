@@ -127,6 +127,55 @@
 }
 
 /* Modal de extras */
+#modalExtras .modal-dialog {
+    max-width: 500px;
+    width: 90%;
+    margin: auto;
+}
+
+#modalExtras .modal-content {
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 15px;
+}
+
+#modalExtras .modal-header {
+    background: #1a1a1a;
+    border-bottom: 1px solid #333;
+    padding: 15px 20px;
+}
+
+#modalExtras .modal-header .modal-title {
+    color: #f8b531;
+    font-weight: 600;
+}
+
+#modalExtras .modal-header .close {
+    color: #fff;
+    opacity: 0.7;
+}
+
+#modalExtras .modal-header .close:hover {
+    opacity: 1;
+}
+
+#modalExtras .modal-body {
+    overflow-y: auto;
+    max-height: calc(80vh - 120px);
+    padding: 20px;
+    background: #1a1a1a;
+}
+
+#modalExtras .modal-footer {
+    background: #1a1a1a;
+    border-top: 1px solid #333;
+    padding: 15px 20px;
+}
+
 #modalExtras .modal-body::-webkit-scrollbar {
     width: 8px;
 }
@@ -295,6 +344,12 @@
 
 /* Responsividade */
 @media (max-width: 768px) {
+    #modalExtras .modal-dialog {
+        width: 95%;
+        margin: 10px auto;
+        max-width: none;
+    }
+    
     .extra-item {
         flex-wrap: wrap;
         padding: 12px;
@@ -354,6 +409,34 @@
 }
 
 @media (max-width: 480px) {
+    #modalExtras .modal-dialog {
+        width: 100%;
+        margin: 0;
+        max-width: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+    }
+    
+    #modalExtras .modal-content {
+        max-height: 85vh;
+        border-radius: 20px 20px 0 0;
+    }
+    
+    #modalExtras .modal-body {
+        max-height: calc(85vh - 130px);
+        padding: 15px;
+    }
+    
+    #modalExtras .modal-header {
+        padding: 12px 15px;
+    }
+    
+    #modalExtras .modal-footer {
+        padding: 12px 15px;
+    }
+    
     .extra-item {
         padding: 10px;
     }
@@ -381,6 +464,12 @@
         min-width: 28px;
         font-size: 14px;
     }
+    
+    #btn-confirmar-extras {
+        width: 100%;
+        padding: 14px;
+        font-size: 1rem;
+    }
 }
 
 /* Loading spinner */
@@ -402,6 +491,16 @@
     }
     to {
         opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Animação slide up */
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+    }
+    to {
         transform: translateY(0);
     }
 }

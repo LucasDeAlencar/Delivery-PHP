@@ -8,17 +8,18 @@ window.ProdutoExtras = {
     extrasDisponiveis: [],
     extrasSelecionados: [],
     obrigatorioExtras: 0,
+    maxExtras: 0,
 
     /**
      * Carrega extras de um produto
      */
     async carregarExtras(produtoId) {
-        console.log('📦 Carregando extras do produto', produtoId);
         
         this.produtoAtual = produtoId;
         this.extrasSelecionados = [];
         this.extrasDisponiveis = [];
         this.obrigatorioExtras = 0;
+        this.maxExtras = 0;
         
         try {
             const response = await fetch(`/api/produto-extras/${produtoId}`);
@@ -27,24 +28,27 @@ window.ProdutoExtras = {
             if (data.success && data.extras && data.extras.length > 0) {
                 this.extrasDisponiveis = data.extras;
                 this.obrigatorioExtras = parseInt(data.obrigatorio_extras) || 0;
+                this.maxExtras = parseInt(data.max_extras) || 0;
                 
-                console.log('✅ Extras carregados:', this.extrasDisponiveis.length);
-                console.log('⚠️ Obrigatórios:', this.obrigatorioExtras);
                 
                 // Mostrar botão de extras
                 $('#container-btn-extras').show();
                 
+                let textoBtn = 'Selecionar Extras';
                 if (this.obrigatorioExtras > 0) {
                     $('#badge-obrigatorio').show();
-                    $('#texto-btn-extras').text(`Selecionar Extras (${this.obrigatorioExtras} obrigatório)`);
+                    textoBtn = `Selecionar Extras (${this.obrigatorioExtras} obrigatório)`;
+                } else if (this.maxExtras > 0) {
+                    $('#badge-obrigatorio').hide();
+                    textoBtn = `Selecionar Extras (Máx. ${this.maxExtras})`;
                 } else {
                     $('#badge-obrigatorio').hide();
-                    $('#texto-btn-extras').text('Selecionar Extras (Opcional)');
+                    textoBtn = 'Selecionar Extras (Opcional)';
                 }
+                $('#texto-btn-extras').text(textoBtn);
                 
                 return true;
             } else {
-                console.log('ℹ️ Produto sem extras');
                 $('#container-btn-extras').hide();
                 return false;
             }
@@ -59,7 +63,6 @@ window.ProdutoExtras = {
      * Abre modal de extras
      */
     abrirModalExtras() {
-        console.log('🎨 Abrindo modal de extras');
         
         // Mostrar loading
         $('#extras-loading').show();
@@ -87,11 +90,18 @@ window.ProdutoExtras = {
             return;
         }
 
-        // Aviso de obrigatórios
+        // Aviso de obrigatórios e limite máximo
+        let avisoTexto = '';
         if (this.obrigatorioExtras > 0) {
-            $('#texto-aviso-obrigatorio').text(
-                `Selecione pelo menos ${this.obrigatorioExtras} extra(s).`
-            );
+            avisoTexto = `Selecione pelo menos ${this.obrigatorioExtras} extra(s).`;
+        }
+        if (this.maxExtras > 0) {
+            if (avisoTexto) avisoTexto += ' ';
+            avisoTexto += `Máximo permitido: ${this.maxExtras} extras.`;
+        }
+        
+        if (avisoTexto) {
+            $('#texto-aviso-obrigatorio').text(avisoTexto);
             $('#aviso-obrigatorio').show();
         } else {
             $('#aviso-obrigatorio').hide();
@@ -164,8 +174,14 @@ window.ProdutoExtras = {
             // Remover
             this.extrasSelecionados.splice(index, 1);
             $(`.extra-item[data-id="${extraId}"]`).removeClass('selected');
-            console.log('➖ Removido:', extra.nome);
         } else {
+            // Verificar limite máximo antes de adicionar
+            if (this.maxExtras > 0 && (this.getTotalItens() + 1) > this.maxExtras) {
+                alert(`Você pode selecionar no máximo ${this.maxExtras} extras.`);
+                $(`#chk-${extraId}`).prop('checked', false);
+                return;
+            }
+            
             // Adicionar
             this.extrasSelecionados.push({
                 id: extra.id,
@@ -174,7 +190,6 @@ window.ProdutoExtras = {
                 quantidade: 1
             });
             $(`.extra-item[data-id="${extraId}"]`).addClass('selected');
-            console.log('➕ Adicionado:', extra.nome);
         }
 
         this.atualizarContador();
@@ -186,6 +201,12 @@ window.ProdutoExtras = {
     aumentarQtd(extraId) {
         const extra = this.extrasDisponiveis.find(e => e.id == extraId);
         if (!extra) return;
+
+        // Verificar limite máximo antes de adicionar
+        if (this.maxExtras > 0 && (this.getTotalItens() + 1) > this.maxExtras) {
+            alert(`Você pode selecionar no máximo ${this.maxExtras} extras.`);
+            return;
+        }
 
         let selecionado = this.extrasSelecionados.find(e => e.id == extraId);
         
@@ -205,7 +226,6 @@ window.ProdutoExtras = {
 
         $(`#qty-${extraId}`).text(this.getQtdExtra(extraId));
         this.atualizarContador();
-        console.log('➕ Quantidade:', extra.nome, this.getQtdExtra(extraId));
     },
 
     /**
@@ -240,10 +260,22 @@ window.ProdutoExtras = {
      */
     atualizarContador() {
         const total = this.getTotalItens();
-        $('#contador-extras-modal').text(total);
+        if (this.maxExtras > 0) {
+            $('#contador-extras-modal').text(`${total}/${this.maxExtras}`);
+        } else {
+            $('#contador-extras-modal').text(total);
+        }
         
         // Habilitar/desabilitar botão confirmar
+        let desabilitar = false;
         if (this.obrigatorioExtras > 0 && total < this.obrigatorioExtras) {
+            desabilitar = true;
+        }
+        if (this.maxExtras > 0 && total > this.maxExtras) {
+            desabilitar = true;
+        }
+        
+        if (desabilitar) {
             $('#btn-confirmar-extras').prop('disabled', true).css('opacity', '0.5');
         } else {
             $('#btn-confirmar-extras').prop('disabled', false).css('opacity', '1');
@@ -261,10 +293,18 @@ window.ProdutoExtras = {
             return;
         }
 
-        console.log('✅ Extras confirmados:', this.extrasSelecionados);
+        if (this.maxExtras > 0 && total > this.maxExtras) {
+            alert(`Você pode selecionar no máximo ${this.maxExtras} extras.`);
+            return;
+        }
         
         // Atualizar resumo no modal de compra
         this.atualizarResumoCompra();
+        
+        // Atualizar total no modal de produto
+        if (window.SistemaProduto && typeof window.SistemaProduto.atualizarTotal === 'function') {
+            window.SistemaProduto.atualizarTotal();
+        }
         
         // Fechar modal
         $('#modalExtras').modal('hide');
@@ -287,26 +327,8 @@ window.ProdutoExtras = {
             $('#modal-produto-preco-extras').text('Sem extras adicionados');
         }
         
-        // Recalcular total
-        this.recalcularTotal();
-    },
-
-    /**
-     * Recalcular total do modal
-     */
-    recalcularTotal() {
-        const precoBase = parseFloat($('#modal-produto-preco').data('valor-base')) || 0;
-        const quantidade = parseInt($('#quantidade').val()) || 1;
-        const totalExtras = this.getTotalExtras();
-        const total = (precoBase + totalExtras) * quantidade;
-        
-        $('#modal-total').text(`R$ ${total.toFixed(2).replace('.', ',')}`);
-        
-        if (totalExtras > 0) {
-            $('#modal-total-detalhe').text(`Base: R$ ${(precoBase * quantidade).toFixed(2).replace('.', ',')} | Extras: R$ ${(totalExtras * quantidade).toFixed(2).replace('.', ',')}`);
-        } else {
-            $('#modal-total-detalhe').text('');
-        }
+        // Disparar evento para atualizar total
+        $(document).trigger('extrasAtualizados');
     },
 
     /**
@@ -330,6 +352,10 @@ window.ProdutoExtras = {
             alert(`Este produto requer ${this.obrigatorioExtras} extra(s).`);
             return false;
         }
+        if (this.maxExtras > 0 && total > this.maxExtras) {
+            alert(`Este produto permite no máximo ${this.maxExtras} extras.`);
+            return false;
+        }
         return true;
     },
 
@@ -341,6 +367,7 @@ window.ProdutoExtras = {
         this.extrasDisponiveis = [];
         this.extrasSelecionados = [];
         this.obrigatorioExtras = 0;
+        this.maxExtras = 0;
         $('#container-btn-extras').hide();
         $('#extras-selecionados-resumo').hide();
     },
@@ -371,4 +398,23 @@ window.ProdutoExtras = {
     }
 };
 
-console.log('✅ Sistema de Extras carregado');
+// Inicializar eventos quando o documento estiver pronto
+$(document).ready(function() {
+    // Botão para abrir modal de extras
+    $('#btn-selecionar-extras').on('click', function() {
+        window.ProdutoExtras.abrirModalExtras();
+    });
+
+    // Botão para confirmar seleção de extras
+    $('#btn-confirmar-extras').on('click', function() {
+        window.ProdutoExtras.confirmarExtras();
+    });
+
+    // Limpar extras ao fechar modal de compra
+    $('#modalCompra').on('hidden.bs.modal', function() {
+        window.ProdutoExtras.limparExtras();
+    });
+
+    console.log('🎯 Sistema de extras inicializado');
+});
+

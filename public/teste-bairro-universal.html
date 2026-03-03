@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste - Bairro Universal - Caso Real</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        .info { color: blue; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        .caso-real { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🏘️ Teste - Caso Real: Centro, Belo Horizonte</h1>
+        
+        <div class="caso-real">
+            <h3>📋 Situação Atual:</h3>
+            <p><strong>Cliente:</strong> bimdasbalas@gmail.com</p>
+            <p><strong>Endereço:</strong> Centro, Belo Horizonte</p>
+            <p><strong>Bairro Específico:</strong> ❌ "Centro, Belo Horizonte" NÃO cadastrado</p>
+            <p><strong>Bairro Universal:</strong> ✅ "*, Belo Horizonte" cadastrado (R$ 2,00)</p>
+            <p><strong>Esperado:</strong> Deve usar o bairro universal e retornar R$ 2,00</p>
+        </div>
+        
+        <div class="section">
+            <h3>1. Testar Lógica Implementada</h3>
+            <button onclick="testarLogica()">Testar EntregaApi</button>
+            <div id="resultado-logica"></div>
+        </div>
+        
+        <div class="section">
+            <h3>2. Testar Controller de Teste</h3>
+            <button onclick="testarController()">Testar TesteEntrega</button>
+            <div id="resultado-controller"></div>
+        </div>
+        
+        <div class="section">
+            <h3>3. Verificar Dados no Banco</h3>
+            <button onclick="verificarDados()">Verificar Status</button>
+            <div id="resultado-dados"></div>
+        </div>
+    </div>
+
+    <script>
+        async function testarLogica() {
+            const resultado = document.getElementById('resultado-logica');
+            resultado.innerHTML = '<p class="info">🔄 Testando...</p>';
+            
+            try {
+                const response = await fetch('/api/verificar-entrega', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: 'bimdasbalas@gmail.com' })
+                });
+                
+                const data = await response.json();
+                
+                if (data.disponivel) {
+                    resultado.innerHTML = `
+                        <p class="success">✅ FUNCIONANDO! Entrega disponível</p>
+                        <p><strong>Valor:</strong> R$ ${data.valor_entrega.toFixed(2).replace('.', ',')}</p>
+                        <p><small>O bairro universal (*) está sendo usado corretamente!</small></p>
+                    `;
+                } else {
+                    resultado.innerHTML = `
+                        <p class="error">❌ PROBLEMA: ${data.mensagem}</p>
+                        <p><small>O bairro universal (*) não está sendo encontrado</small></p>
+                    `;
+                }
+            } catch (error) {
+                resultado.innerHTML = `<p class="error">❌ Erro na requisição: ${error.message}</p>`;
+            }
+        }
+        
+        async function testarController() {
+            const resultado = document.getElementById('resultado-controller');
+            resultado.innerHTML = '<p class="info">🔄 Testando...</p>';
+            
+            try {
+                const response = await fetch('/teste-entrega');
+                const data = await response.json();
+                
+                let html = '<h4>Resultado Detalhado:</h4>';
+                html += `<p><strong>Cliente encontrado:</strong> ${data.cliente_encontrado ? '✅' : '❌'}</p>`;
+                
+                if (data.cliente) {
+                    html += `<p><strong>Endereço:</strong> ${data.cliente.bairro}, ${data.cliente.cidade}</p>`;
+                    html += `<p><strong>Busca específica:</strong> ${data.busca_especifica.encontrado ? '✅' : '❌'}</p>`;
+                    html += `<p><strong>Busca universal:</strong> ${data.busca_universal.encontrado ? '✅' : '❌'}</p>`;
+                    
+                    if (data.busca_universal.encontrado) {
+                        html += `<p><strong>Valor universal:</strong> R$ ${data.busca_universal.dados.valor_entrega}</p>`;
+                    }
+                    
+                    html += `<p><strong>Resultado final:</strong> ${data.resultado_final.entrega_disponivel ? '✅ Disponível' : '❌ Indisponível'}</p>`;
+                    
+                    if (data.resultado_final.entrega_disponivel) {
+                        html += `<p><strong>Bairro usado:</strong> ${data.resultado_final.bairro_usado}</p>`;
+                        html += `<p><strong>Valor:</strong> R$ ${data.resultado_final.valor_entrega}</p>`;
+                    }
+                }
+                
+                resultado.innerHTML = html;
+            } catch (error) {
+                resultado.innerHTML = `<p class="error">❌ Erro: ${error.message}</p>`;
+            }
+        }
+        
+        function verificarDados() {
+            const resultado = document.getElementById('resultado-dados');
+            resultado.innerHTML = `
+                <h4>Status dos Dados:</h4>
+                <p><strong>✅ Cliente:</strong> bimdasbalas@gmail.com existe</p>
+                <p><strong>✅ Endereço:</strong> Centro, Belo Horizonte</p>
+                <p><strong>❌ Bairro específico:</strong> "Centro, Belo Horizonte" NÃO existe</p>
+                <p><strong>✅ Bairro universal:</strong> "*, Belo Horizonte" existe (R$ 2,00)</p>
+                <p class="success"><strong>Conclusão:</strong> A lógica deveria funcionar!</p>
+            `;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste Quantidade e Comentários</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Teste de Quantidade e Comentários</h1>
+    
+    <div style="border: 1px solid #ccc; padding: 20px; margin: 20px 0;">
+        <h3>Adicionar Produto</h3>
+        
+        <label>Quantidade:</label>
+        <input type="number" id="quantidade" value="1" min="1" max="10">
+        <br><br>
+        
+        <label>Observações:</label>
+        <textarea id="observacoes" placeholder="Digite suas observações..."></textarea>
+        <br><br>
+        
+        <button onclick="adicionarProdutoTeste()">Adicionar ao Carrinho</button>
+    </div>
+    
+    <div id="carrinho-teste" style="background: #f5f5f5; padding: 20px; margin: 20px 0;">
+        <h3>Carrinho</h3>
+        <div id="itens-carrinho"></div>
+    </div>
+    
+    <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; font-family: monospace;" id="log"></div>
+    
+    <script>
+        // Sistema de carrinho simplificado para teste
+        const CarrinhoTeste = {
+            itens: [],
+            
+            adicionar: function(produto) {
+                console.log('📝 PRODUTO RECEBIDO:', produto);
+                
+                this.itens.push({
+                    id: produto.id,
+                    nome: produto.nome,
+                    quantidade: produto.quantidade,
+                    observacoes: produto.observacoes,
+                    preco: produto.preco
+                });
+                
+                this.salvar();
+                this.atualizar();
+                this.log(`Adicionado: ${produto.nome} (Qtd: ${produto.quantidade}, Obs: "${produto.observacoes}")`);
+            },
+            
+            salvar: function() {
+                localStorage.setItem('carrinho_teste', JSON.stringify(this.itens));
+                this.log('Salvo no localStorage');
+            },
+            
+            carregar: function() {
+                const dados = localStorage.getItem('carrinho_teste');
+                this.itens = dados ? JSON.parse(dados) : [];
+                this.log(`Carregado: ${this.itens.length} itens`);
+                this.atualizar();
+            },
+            
+            atualizar: function() {
+                const container = document.getElementById('itens-carrinho');
+                if (this.itens.length === 0) {
+                    container.innerHTML = '<p>Carrinho vazio</p>';
+                    return;
+                }
+                
+                container.innerHTML = this.itens.map((item, index) => `
+                    <div style="border: 1px solid #ddd; padding: 10px; margin: 5px 0;">
+                        <strong>${item.nome}</strong><br>
+                        Quantidade: ${item.quantidade}<br>
+                        Observações: "${item.observacoes}"<br>
+                        Preço: R$ ${item.preco.toFixed(2)}
+                        <button onclick="CarrinhoTeste.remover(${index})" style="float: right;">Remover</button>
+                    </div>
+                `).join('');
+            },
+            
+            remover: function(index) {
+                this.itens.splice(index, 1);
+                this.salvar();
+                this.atualizar();
+                this.log('Item removido');
+            },
+            
+            log: function(mensagem) {
+                const log = document.getElementById('log');
+                const timestamp = new Date().toLocaleTimeString();
+                log.innerHTML += `<div>[${timestamp}] ${mensagem}</div>`;
+                console.log(mensagem);
+            }
+        };
+        
+        function adicionarProdutoTeste() {
+            const quantidade = parseInt(document.getElementById('quantidade').value) || 1;
+            const observacoes = document.getElementById('observacoes').value.trim();
+            
+            console.log('🔍 CAPTURANDO:');
+            console.log('- Quantidade:', quantidade);
+            console.log('- Observações:', observacoes);
+            
+            CarrinhoTeste.adicionar({
+                id: Date.now(),
+                nome: 'Pizza Teste',
+                quantidade: quantidade,
+                observacoes: observacoes,
+                preco: 25.90
+            });
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', () => {
+            CarrinhoTeste.carregar();
+        });
+    </script>
+</body>
+</html>

@@ -96,6 +96,25 @@
         border-radius: 50%;
     }
 
+    /* Campo PIX */
+    .pix-config {
+        border-top: 1px solid var(--border-color);
+        padding-top: 15px;
+        margin-top: 15px;
+    }
+
+    .pix-config .form-control {
+        background: var(--input-bg);
+        border: 1px solid var(--border-color);
+        color: var(--text-color);
+        text-align: center;
+    }
+
+    .pix-config .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(248, 181, 49, 0.25);
+    }
+
     input:checked + .slider {
         background-color: var(--primary-color);
     }
@@ -192,7 +211,7 @@
                 </div>
 
                 <!-- Formulário -->
-                <form action="<?= site_url('admin/formas-pagamento/atualizar') ?>" method="POST" id="form-pagamento">
+                <form action="<?= site_url('admin/formas-pagamento/atualizar') ?>" method="POST" id="form-pagamento" enctype="multipart/form-data">
                     <?= csrf_field() ?>
 
                     <div class="row">
@@ -227,6 +246,39 @@
                                                 <span class="slider"></span>
                                             </label>
                                         </div>
+
+                                        <!-- Campo PIX (só aparece para PIX) -->
+                                        <?php if ($forma->slug === 'pix'): ?>
+                                        <div class="mt-3 pix-config" style="<?= $forma->ativo ? '' : 'display: none;' ?>">
+                                            <label class="form-label text-muted" style="font-size: 0.8rem;">Chave PIX:</label>
+                                            <input type="text" 
+                                                   name="chave_pix" 
+                                                   class="form-control form-control-sm" 
+                                                   placeholder="Digite sua chave PIX"
+                                                   value="<?= esc($forma->codigo ?? '') ?>"
+                                                   style="font-size: 0.8rem;"
+                                                   <?= $forma->ativo ? 'required' : '' ?>>
+                                            <small class="text-muted d-block">CPF, CNPJ, e-mail, telefone ou chave aleatória</small>
+                                            
+                                            <label class="form-label text-muted mt-2" style="font-size: 0.8rem;">QR Code do PIX:</label>
+                                            <input type="file" 
+                                                   name="qrcode_pix" 
+                                                   class="form-control form-control-sm" 
+                                                   accept="image/*"
+                                                   style="font-size: 0.8rem;">
+                                            <?php if (!empty($forma->qrcode_image)): ?>
+                                                <div class="mt-2">
+                                                    <img src="<?= base_url('uploads/qrcode_pix/' . $forma->qrcode_image) ?>" 
+                                                         alt="QR Code PIX" 
+                                                         style="max-width: 150px; border: 2px solid #f8b531; border-radius: 8px;">
+                                                    <div class="mt-1">
+                                                        <small class="text-muted">QR Code atual</small>
+                                                    </div>
+                                                </div>
+                                            <?php endif; ?>
+                                            <small class="text-muted d-block mt-1">Envie uma imagem do QR Code para pagamento PIX</small>
+                                        </div>
+                                        <?php endif; ?>
 
                                         <!-- Descrição -->
                                         <div class="text-center mt-2">
@@ -291,6 +343,8 @@
         $('.payment-toggle').on('change', function() {
             const $card = $(this).closest('.payment-card');
             const $badge = $card.find('.status-badge');
+            const $pixConfig = $card.find('.pix-config');
+            const $pixInput = $card.find('input[name="chave_pix"]');
             const isActive = $(this).is(':checked');
 
             console.log('Toggle alterado - ID:', $(this).data('id'), 'Ativo:', isActive);
@@ -299,9 +353,21 @@
             if (isActive) {
                 $card.removeClass('inactive');
                 $badge.removeClass('inactive').addClass('active').text('Ativo');
+                
+                // Mostrar campo PIX se for PIX
+                if ($pixConfig.length) {
+                    $pixConfig.show();
+                    $pixInput.attr('required', true);
+                }
             } else {
                 $card.addClass('inactive');
                 $badge.removeClass('active').addClass('inactive').text('Inativo');
+                
+                // Esconder campo PIX se for PIX
+                if ($pixConfig.length) {
+                    $pixConfig.hide();
+                    $pixInput.attr('required', false);
+                }
             }
 
             // Animação
@@ -318,6 +384,17 @@
             if (ativos === 0) {
                 e.preventDefault();
                 alert('⚠️ Atenção!\n\nVocê deve ter pelo menos uma forma de pagamento ativa.');
+                return false;
+            }
+
+            // Validar chave PIX se PIX estiver ativo
+            const pixAtivo = $('input[data-id]:checked').closest('.payment-card').find('.pix-config').is(':visible');
+            const chavePix = $('input[name="chave_pix"]').val();
+            
+            if (pixAtivo && !chavePix.trim()) {
+                e.preventDefault();
+                alert('⚠️ Atenção!\n\nA chave PIX é obrigatória quando o PIX está ativo.');
+                $('input[name="chave_pix"]').focus();
                 return false;
             }
 

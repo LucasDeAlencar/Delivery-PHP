@@ -13,6 +13,47 @@
         width: 140px;
         text-align: center;
     }
+    
+    /* Responsividade para tabela de expedientes */
+    @media (max-width: 768px) {
+        /* Coluna Dia mais larga para caber o nome completo */
+        .table th:nth-child(2), /* Dia */
+        .table td:nth-child(2) {
+            width: 120px;
+            min-width: 120px;
+        }
+        
+        .table th,
+        .table td {
+            padding: 8px 6px;
+            font-size: 0.85rem;
+        }
+        
+        .form-control {
+            font-size: 0.85rem;
+            padding: 4px 6px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        /* Coluna Dia ainda mais larga no mobile pequeno */
+        .table th:nth-child(2), /* Dia */
+        .table td:nth-child(2) {
+            width: 140px;
+            min-width: 140px;
+        }
+        
+        .table th,
+        .table td {
+            padding: 6px 4px;
+            font-size: 0.8rem;
+        }
+        
+        .form-control {
+            font-size: 0.8rem;
+            padding: 3px 5px;
+        }
+    }
 
     /* Estilos para status */
     .badge {
@@ -345,7 +386,7 @@
                 <!-- Paginação -->
                 <?php if (isset($pager)): ?>
                     <div class="d-flex justify-content-center mt-3">
-                        <?= $pager->links() ?>
+                        <?= $pager->links('default', 'bootstrap_pagination') ?>
                     </div>
                 <?php endif; ?>
             </div>

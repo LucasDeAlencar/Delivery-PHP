@@ -1,0 +1,115 @@
+/* Correções para o ícone de pizza e clique nos produtos */
+
+/* Produto clicável - Correções */
+.produto-item {
+    cursor: pointer !important;
+    user-select: none;
+    position: relative;
+}
+
+.produto-item:hover {
+    transform: translateY(-3px);
+}
+
+.produto-item .block {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.produto-item .block::before {
+    content: '🛒 Clique para comprar';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 193, 7, 0.95);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 14px;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 10;
+    white-space: nowrap;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+}
+
+.produto-item:hover .block::before {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.05);
+}
+
+/* Garantir que o ícone seja visível no hover */
+.produto-item:hover .filter_item_img i {
+    opacity: 1 !important;
+    transform: translate(-50%, -50%) scale(1.2) !important;
+    background: rgba(255, 193, 7, 1) !important;
+    box-shadow: 0 5px 15px rgba(255, 193, 7, 0.5) !important;
+}
+
+/* Melhorar centralização do ícone */
+.filter_item_img i {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    font-size: 24px !important;
+    color: #fff !important;
+    background: rgba(255, 193, 7, 0.9) !important;
+    width: 60px !important;
+    height: 60px !important;
+    line-height: 60px !important;
+    text-align: center !important;
+    border-radius: 50% !important;
+    opacity: 0 !important;
+    transition: all 0.3s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 2 !important;
+}
+
+/* Garantir que o modal funcione */
+.modal {
+    z-index: 1050 !important;
+}
+
+.modal-backdrop {
+    z-index: 1040 !important;
+}
+
+/* Efeito de sucesso no clique */
+.success-animation {
+    animation: successPulse 0.6s ease;
+}
+
+@keyframes successPulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(40, 167, 69, 0.5);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .produto-item .block::before {
+        font-size: 12px;
+        padding: 8px 15px;
+    }
+    
+    .filter_item_img i {
+        width: 50px !important;
+        height: 50px !important;
+        line-height: 50px !important;
+        font-size: 20px !important;
+    }
+}

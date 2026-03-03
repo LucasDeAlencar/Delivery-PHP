@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste de Validação do Carrinho</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Teste de Validação do Carrinho</h1>
+    
+    <div id="resultado"></div>
+    
+    <button onclick="testarValidacao()">Testar Validação</button>
+    <button onclick="adicionarProdutoTeste()">Adicionar Produto Teste</button>
+    <button onclick="verificarCarrinho()">Verificar Carrinho</button>
+    
+    <script>
+        // Simula o objeto Carrinho
+        window.Carrinho = {
+            itens: [
+                {id: 1, nome: 'Pizza Margherita', quantidade: 2},
+                {id: 999, nome: 'Produto Inexistente', quantidade: 1}, // Este deve ser removido
+                {id: 2, nome: 'Pizza Calabresa', quantidade: 1}
+            ],
+            salvar: function() {
+                console.log('Carrinho salvo');
+            },
+            atualizarModal: function() {
+                console.log('Modal atualizado');
+            },
+            mostrarNotificacao: function(msg, tipo) {
+                document.getElementById('resultado').innerHTML += '<p>' + msg + '</p>';
+            }
+        };
+        
+        function testarValidacao() {
+            if (window.ValidadorCarrinho) {
+                window.ValidadorCarrinho.validarItens();
+            } else {
+                alert('ValidadorCarrinho não encontrado');
+            }
+        }
+        
+        function adicionarProdutoTeste() {
+            window.Carrinho.itens.push({
+                id: 888, 
+                nome: 'Produto Teste Inválido', 
+                quantidade: 1
+            });
+            console.log('Produto teste adicionado');
+        }
+        
+        function verificarCarrinho() {
+            console.log('Itens no carrinho:', window.Carrinho.itens);
+            document.getElementById('resultado').innerHTML = 
+                '<h3>Itens no carrinho:</h3>' + 
+                JSON.stringify(window.Carrinho.itens, null, 2);
+        }
+    </script>
+    
+    <script src="/assets/js/validar-carrinho.js"></script>
+</body>
+</html>

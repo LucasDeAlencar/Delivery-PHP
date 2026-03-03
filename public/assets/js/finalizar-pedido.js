@@ -3,7 +3,6 @@
  * Versão 1.0
  */
 
-console.log('🛍️ Sistema de Finalização de Pedido carregando...');
 
 window.FinalizarPedido = {
     formasPagamento: [],
@@ -13,11 +12,9 @@ window.FinalizarPedido = {
     
     // Inicializa o sistema
     init: function() {
-        console.log('🚀 Inicializando sistema de finalização...');
         this.carregarFormasPagamento();
         this.carregarBairros();
         this.configurarEventos();
-        console.log('✅ Sistema de finalização inicializado!');
     },
     
     // Carrega formas de pagamento do servidor
@@ -28,7 +25,6 @@ window.FinalizarPedido = {
             
             if (data.success) {
                 this.formasPagamento = data.data;
-                console.log('💳 Formas de pagamento carregadas:', this.formasPagamento.length);
             }
         } catch (error) {
             console.error('Erro ao carregar formas de pagamento:', error);
@@ -50,21 +46,60 @@ window.FinalizarPedido = {
             
             if (data.success) {
                 this.bairros = data.data;
-                console.log('📍 Bairros carregados:', this.bairros.length);
             }
         } catch (error) {
             console.error('Erro ao carregar bairros:', error);
             this.bairros = [];
         }
     },
+
+    // Carrega preço mínimo de compra
+    carregarPrecoMinimo: async function() {
+        try {
+            const response = await fetch('/api/configuracao/preco-minimo');
+            const data = await response.json();
+            
+            if (data.success) {
+                return data.preco_minimo;
+            }
+        } catch (error) {
+            console.error('Erro ao carregar preço mínimo:', error);
+        }
+        return 0;
+    },
+
+    // Verifica se o valor do carrinho atende ao preço mínimo
+    verificarPrecoMinimo: async function() {
+        const precoMinimo = await this.carregarPrecoMinimo();
+        
+        if (precoMinimo > 0 && window.Carrinho) {
+            const totalCarrinho = window.Carrinho.calcularTotal();
+            
+            if (totalCarrinho < precoMinimo) {
+                const valorFaltante = precoMinimo - totalCarrinho;
+                this.mostrarNotificacao(
+                    `⚠️ Valor mínimo para pedido: R$ ${precoMinimo.toFixed(2).replace('.', ',')}. ` +
+                    `Adicione mais R$ ${valorFaltante.toFixed(2).replace('.', ',')} em produtos.`, 
+                    'warning'
+                );
+                return false;
+            }
+        }
+        return true;
+    },
     
     // Abre modal de finalização
-    abrirModal: function() {
-        console.log('📂 Abrindo modal de finalização...');
+    abrirModal: async function() {
         
         // Verificar se há itens no carrinho
         if (!window.Carrinho || window.Carrinho.itens.length === 0) {
             this.mostrarNotificacao('⚠️ Carrinho vazio! Adicione produtos antes de finalizar.', 'warning');
+            return;
+        }
+
+        // Verificar preço mínimo
+        const precoMinimoOk = await this.verificarPrecoMinimo();
+        if (!precoMinimoOk) {
             return;
         }
         
@@ -478,7 +513,6 @@ window.FinalizarPedido = {
     
     // Conclui o pedido
     concluirPedido: async function() {
-        console.log('📝 Concluindo pedido...');
         
         // Verificar tipo de entrega
         if (!this.tipoEntrega) {
@@ -529,7 +563,6 @@ window.FinalizarPedido = {
             valor_total: this.getValorTotalComTaxa()
         };
         
-        console.log('📦 Dados do pedido:', dados);
         
         // Desabilitar botão
         const $btn = $('#btn-concluir-pedido');
@@ -550,30 +583,30 @@ window.FinalizarPedido = {
             const result = await response.json();
             
             if (result.success) {
-                // Enviar para WhatsApp
-                this.enviarWhatsApp(result.pedido, dados);
+                // Remover redirecionamento WhatsApp - apenas mostrar popup do pedido
                 
                 // Limpar carrinho completamente
                 if (typeof window.Carrinho !== 'undefined') {
                     window.Carrinho.itens = [];
                     window.Carrinho.salvar();
                     window.Carrinho.atualizarBadge();
-                    console.log('🗑️ Carrinho limpo após pedido concluído');
                 }
                 
                 // Fechar modal
                 $('#modalFinalizarPedido').modal('hide');
                 
-                // Mostrar sucesso
-                this.mostrarNotificacao('✅ Pedido realizado com sucesso!', 'success');
+                // Salvar código do pedido em andamento
+                localStorage.setItem('pedido_em_andamento', result.pedido.codigo);
+                
+                // Abrir popup do pedido automaticamente
+                if (typeof CarrinhoSimples !== 'undefined') {
+                    CarrinhoSimples.exibirPopupAcompanhamento(result.pedido, result.itens || [], result.chave_pix || null, result.qrcode_image || null);
+                } else {
+                    this.mostrarNotificacao('✅ Pedido realizado com sucesso! Código: ' + result.pedido.codigo, 'success');
+                }
                 
                 // Limpar formulário
                 form.reset();
-                
-                // Aguardar um pouco e recarregar página para resetar tudo
-                setTimeout(() => {
-                    location.reload();
-                }, 2000);
             } else {
                 this.mostrarNotificacao('❌ Erro ao criar pedido: ' + result.message, 'error');
                 $btn.prop('disabled', false).html(originalText);
@@ -677,4 +710,3 @@ if (document.readyState === 'loading') {
     FinalizarPedido.init();
 }
 
-console.log('✅ Sistema de Finalização de Pedido carregado!');

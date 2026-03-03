@@ -198,6 +198,18 @@
                                             </span>
                                         </div>
                                     </div>
+
+                                    <div class="form-group">
+                                        <label for="ordem">Ordem de Exibição</label>
+                                        <input type="number" 
+                                               class="form-control" 
+                                               id="ordem" 
+                                               name="ordem" 
+                                               value="<?php echo esc($categoria->ordem ?? 0); ?>" 
+                                               placeholder="0"
+                                               min="0">
+                                        <small class="text-muted">Define a ordem de exibição na home (menor número aparece primeiro)</small>
+                                    </div>
                                 </div>
                             </div>
                         </div>

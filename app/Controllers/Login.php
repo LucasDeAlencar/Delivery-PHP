@@ -11,6 +11,14 @@ class Login extends BaseController {
         helper(['form']);
     }
 
+    public function index() {
+        $data = [
+            'titulo' => "Escolha uma opção"
+        ];
+
+        return view('Login/escolha', $data);
+    }
+
     public function novo() {
         $data = [
             'titulo' => "Realize o login "
@@ -20,103 +28,96 @@ class Login extends BaseController {
     }
 
     public function criar() {
+        log_message('info', '=== Login::criar INÍCIO ===');
+        
         if (strtoupper($this->request->getMethod()) !== 'POST') {
             return redirect()->back()->with('atencao', 'Método não permitido');
         }
 
-        $acao = $this->request->getPost('acao');
+        $login_tipo = $this->request->getPost('login_tipo');
         $email = $this->request->getPost('email');
-        
-        // Se ação é login, processar login de admin
-        if ($acao === 'login') {
-            $password = $this->request->getPost('password');
+        $celular = $this->request->getPost('celular');
+        $password = $this->request->getPost('password');
+
+        log_message('info', "Login::criar - Tipo: {$login_tipo}, Email: {$email}, Celular: {$celular}");
+
+        $db = \Config\Database::connect();
+
+        if ($login_tipo === 'celular') {
+            log_message('info', 'Login::criar - Tentando login por celular');
             
-            if (empty($email) || empty($password)) {
-                return redirect()->back()->with('atencao', 'Por favor, preencha todos os campos');
+            if (empty($celular)) {
+                log_message('error', 'Login::criar - Celular vazio');
+                return redirect()->back()->with('atencao', 'Por favor, preencha o número de celular');
             }
 
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                return redirect()->back()->with('atencao', 'Por favor, digite um e-mail válido');
+            $celularNumeros = preg_replace("/[^0-9]/", "", $celular);
+            log_message('info', "Login::criar - Celular limpo: {$celularNumeros}");
+            
+            $cliente = $db->query(
+                "SELECT * FROM clientes WHERE REPLACE(REPLACE(REPLACE(REPLACE(telefone, '(', ''), ')', ''), '-', ''), ' ', '') = ?",
+                [$celularNumeros]
+            )->getRow();
+
+            if ($cliente) {
+                log_message('info', "Login::criar - Cliente encontrado: {$cliente->nome}");
+                session()->set('cliente_id', $cliente->id);
+                session()->set('cliente_telefone', $celular);
+                session()->set('cliente_nome', $cliente->nome);
+                session()->set('cliente_email', $cliente->email);
+                log_message('info', 'Login::criar - Sessão criada, redirecionando para home');
+                return redirect()->to('/')->with('sucesso', "Bem-vindo(a), {$cliente->nome}!");
             }
 
-            $autenticacao = service('autenticacao');
-
-            if ($autenticacao->login($email, $password)) {
-                $usuario = $autenticacao->pegaUsuarioLogado();
-
-                if (!$usuario->ativo) {
-                    $autenticacao->logout();
-                    return redirect()->back()->with('atencao', 'Sua conta está desativada. Entre em contato com o suporte.');
-                }
-
-                if ($usuario->is_admin) {
-                    return redirect()->to(site_url('admin/home'))->with('sucesso', "Olá {$usuario->nome}, que bom que está de volta!");
-                } else {
-                    return redirect()->to(site_url('admin/pedidos'))->with('sucesso', "Bem-vindo(a), {$usuario->nome}! Você foi direcionado para a área de Pedidos.");
-                }
-            }
-
-            return redirect()->back()->with('atencao', 'E-mail ou senha incorretos');
+            log_message('error', "Login::criar - Cliente não encontrado com celular: {$celularNumeros}");
+            return redirect()->back()->with('atencao', 'Celular não cadastrado. <a href="' . site_url('registrar') . '">Cadastre-se aqui</a>');
         }
+
+        if (empty($email)) {
+            return redirect()->back()->with('atencao', 'Por favor, preencha o e-mail');
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return redirect()->back()->with('atencao', 'Por favor, digite um e-mail válido');
+        }
+
+        $cliente = $db->query("SELECT * FROM clientes WHERE email = ?", [$email])->getRow();
         
-        // Se ação é cadastro, processar cadastro de cliente
-        if ($acao === 'cadastro') {
-            $nome = $this->request->getPost('nome');
-            $telefone = $this->request->getPost('telefone');
-            $cep = $this->request->getPost('cep');
-            
-            // Remover hífen e outros caracteres não numéricos do CEP
-            $cep = preg_replace("/[^0-9]/", "", $cep);
-            $cidade = $this->request->getPost('cidade');
-            $bairro = $this->request->getPost('bairro');
-            $endereco = $this->request->getPost('endereco');
-            $numero = $this->request->getPost('numero');
-            $complemento = $this->request->getPost('complemento');
+        if ($cliente) {
+            session()->set('cliente_id', $cliente->id);
+            session()->set('cliente_email', $email);
+            session()->set('cliente_nome', $cliente->nome);
+            return redirect()->to('/')->with('sucesso', "Bem-vindo(a), {$cliente->nome}!");
+        }
 
-            if (empty($email) || empty($nome) || empty($telefone) || empty($cep) || empty($cidade) || empty($bairro) || empty($endereco)) {
-                return redirect()->back()->with('atencao', 'Por favor, preencha todos os campos obrigatórios');
+        $usuarioAdmin = $db->query("SELECT * FROM usuarios WHERE email = ?", [$email])->getRow();
+        
+        if (!$usuarioAdmin) {
+            return redirect()->back()->with('atencao', 'E-mail não cadastrado. <a href="' . site_url('registrar') . '">Cadastre-se aqui</a>');
+        }
+
+        if (empty($password)) {
+            return redirect()->back()->with('atencao', 'Por favor, preencha a senha');
+        }
+
+        $autenticacao = service('autenticacao');
+
+        if ($autenticacao->login($email, $password)) {
+            $usuario = $autenticacao->pegaUsuarioLogado();
+
+            if (!$usuario->ativo) {
+                $autenticacao->logout();
+                return redirect()->back()->with('atencao', 'Sua conta está desativada. Entre em contato com o suporte.');
             }
 
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                return redirect()->back()->with('atencao', 'Por favor, digite um e-mail válido');
-            }
-
-            $db = \Config\Database::connect();
-            
-            // Verificar se email já existe
-            $clienteExiste = $db->query("SELECT id FROM clientes WHERE email = ?", [$email])->getRow();
-            if ($clienteExiste) {
-                return redirect()->back()->with('atencao', 'Este e-mail já está cadastrado');
-            }
-
-            // Inserir cliente
-            $dados = [
-                'nome' => $nome,
-                'email' => $email,
-                'telefone' => $telefone,
-                'cep' => $cep,
-                'Bairro' => $bairro,
-                'Endereco' => $endereco,
-                'Numero' => (int)$numero ?: 0,
-                'Cidade' => $cidade,
-                'complemento' => $complemento ?: ''
-            ];
-
-            try {
-                $resultado = $db->table('clientes')->insert($dados);
-                if ($resultado) {
-                    return redirect()->to(site_url('/'))->with('sucesso', 'Cliente cadastrado com sucesso!');
-                } else {
-                    log_message('error', 'Falha ao inserir cliente: ' . print_r($dados, true));
-                    return redirect()->back()->with('atencao', 'Erro ao cadastrar cliente. Tente novamente.');
-                }
-            } catch (\Exception $e) {
-                log_message('error', 'Erro ao inserir cliente: ' . $e->getMessage());
-                return redirect()->back()->with('atencao', 'Erro no banco de dados: ' . $e->getMessage());
+            if ($usuario->is_admin) {
+                return redirect()->to(site_url('admin/home'))->with('sucesso', "Olá {$usuario->nome}, que bom que está de volta!");
+            } else {
+                return redirect()->to(site_url('admin/pedidos'))->with('sucesso', "Bem-vindo(a), {$usuario->nome}! Você foi direcionado para a área de Pedidos.");
             }
         }
 
-        return redirect()->back()->with('atencao', 'Ação inválida');
+        return redirect()->back()->with('atencao', 'Senha incorreta');
     }
 
     /**
@@ -134,7 +135,7 @@ class Login extends BaseController {
     }
     
     public function testarAutenticacao() {
-    	$email = 'admin@gmail.com';
+    $email = 'admin@gmail.com';
     $senhaTeste = 'admin123';
     
     echo "<h1>🔍 DIAGNÓSTICO COMPLETO DO PROBLEMA</h1>";
@@ -270,21 +271,61 @@ class Login extends BaseController {
 
         $db = \Config\Database::connect();
         
-        // Primeiro verifica se é usuário (admin/operário)
         $usuario = $db->query("SELECT email FROM usuarios WHERE email = ?", [$email])->getRow();
         if ($usuario) {
-            return $this->response->setJSON(['tipo' => 'admin']);
+            return $this->response->setJSON(['tipo' => 'admin', 'requer_senha' => true]);
         }
 
-        // Depois verifica se é cliente
         $cliente = $db->query("SELECT email FROM clientes WHERE email = ?", [$email])->getRow();
         if ($cliente) {
-            return $this->response->setJSON(['tipo' => 'cliente']);
+            return $this->response->setJSON(['tipo' => 'cliente', 'requer_senha' => false]);
         }
 
-        // Se não encontrou nem usuário nem cliente
-        return $this->response->setJSON(['tipo' => 'nao_encontrado']);
+        return $this->response->setJSON(['tipo' => 'nao_encontrado', 'requer_senha' => false]);
     }
+
+    public function loginCliente() {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['erro' => true, 'msg' => 'Requisição inválida']);
+        }
+
+        $json = $this->request->getJSON();
+        $email = $json->email ?? '';
+        $telefone = $json->telefone ?? '';
+
+        if (!empty($email)) {
+            if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return $this->response->setJSON(['erro' => true, 'msg' => 'Email inválido']);
+            }
+
+            $db = \Config\Database::connect();
+            $cliente = $db->query("SELECT * FROM clientes WHERE email = ?", [$email])->getRow();
+
+            if ($cliente) {
+                session()->set('cliente_email', $email);
+                return $this->response->setJSON(['sucesso' => true, 'msg' => 'Login realizado com sucesso']);
+            }
+
+            return $this->response->setJSON(['erro' => true, 'msg' => 'Cliente não encontrado']);
+        }
+
+        if (!empty($telefone)) {
+            $telefone = preg_replace("/[^0-9]/", "", $telefone);
+
+            $db = \Config\Database::connect();
+            $cliente = $db->query("SELECT * FROM clientes WHERE REPLACE(REPLACE(REPLACE(REPLACE(telefone, '(', ''), ')', ''), '-', ''), ' ', '') = ?", [$telefone])->getRow();
+
+            if ($cliente) {
+                session()->set('cliente_telefone', $telefone);
+                return $this->response->setJSON(['sucesso' => true, 'msg' => 'Login realizado com sucesso']);
+            }
+
+            return $this->response->setJSON(['erro' => true, 'msg' => 'Cliente não encontrado']);
+        }
+
+        return $this->response->setJSON(['erro' => true, 'msg' => 'Informe email ou telefone']);
+    }
+
     public function enviarCodigo() {
         if (!$this->request->isAJAX()) {
             return $this->response->setJSON(['erro' => true, 'msg' => 'Requisição inválida']);
@@ -297,117 +338,83 @@ class Login extends BaseController {
             return $this->response->setJSON(['erro' => true, 'msg' => 'Email inválido']);
         }
 
-        // Gerar código de 6 caracteres
         $codigo = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 6));
         
-        // Salvar código na sessão com timestamp
         session()->set('codigo_verificacao', [
             'codigo' => $codigo,
             'email' => $email,
             'timestamp' => time()
         ]);
 
-        // Tentar enviar email
         try {
             $emailService = service('email');
-            
-            $emailService->setFrom(env('email.SMTPUser') ?: 'noreply@nokapricho.com', 'No Kapricho Pizzaria');
             $emailService->setTo($email);
-            $emailService->setSubject('Código de Verificação - No Kapricho');
-            
-            $mensagem = "
+            $emailService->setSubject('Código de Verificação - Delivery MV 🍔');
+            $emailService->setMessage("
                 <!DOCTYPE html>
                 <html>
                 <head>
                     <meta charset='UTF-8'>
-                    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-                    <title>Código de Verificação</title>
                     <style>
-                        body { font-family: 'Poppins', sans-serif; margin: 0; padding: 0; background-color: #0d0d0d; color: #fff; }
-                        .container { max-width: 600px; margin: 0 auto; background: #1a1a1a; border: 2px solid #f8b531; border-radius: 15px; overflow: hidden; }
-                        .header { background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%); color: #f8b531; padding: 30px 20px; text-align: center; border-bottom: 1px solid #333; }
-                        .header h1 { margin: 0; font-size: 28px; font-weight: 600; color: #f8b531; }
+                        body { font-family: 'Poppins', sans-serif; margin: 0; padding: 0; background: #0d0d0d; }
+                        .container { max-width: 600px; margin: 20px auto; background: #1a1a1a; border: 3px solid #FC4400; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(252, 68, 0, 0.3); }
+                        .header { background: linear-gradient(135deg, #FC4400 0%, #e03800 100%); color: #fff; padding: 35px 20px; text-align: center; position: relative; }
+                        .header::before { content: '🍔'; position: absolute; top: 10px; left: 20px; font-size: 30px; }
+                        .header::after { content: '🍕'; position: absolute; top: 10px; right: 20px; font-size: 30px; }
+                        .header h1 { margin: 0; font-size: 32px; font-weight: 700; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+                        .header p { margin: 8px 0 0 0; font-size: 14px; opacity: 0.95; }
                         .content { padding: 40px 30px; text-align: center; background: #1a1a1a; }
-                        .code-box { background: #2d2d2d; border: 2px dashed #f8b531; border-radius: 12px; padding: 30px; margin: 30px 0; }
-                        .code { font-size: 36px; font-weight: bold; color: #f8b531; letter-spacing: 8px; font-family: 'Courier New', monospace; text-shadow: 0 0 10px rgba(248, 181, 49, 0.3); }
-                        .info { background: rgba(248, 181, 49, 0.1); border: 1px solid #f8b531; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: left; }
-                        .footer { background: #0d0d0d; color: #666; padding: 20px; text-align: center; font-size: 12px; border-top: 1px solid #333; }
-                        .warning { color: #ff6b6b; font-weight: bold; }
-                        .brand { color: #f8b531; font-weight: 600; }
-                        .text-light { color: #ccc; }
-                        .highlight { color: #f8b531; font-weight: bold; }
+                        .content h2 { color: #FC4400; margin: 0 0 15px 0; font-size: 24px; }
+                        .content > p { color: #fff; font-size: 15px; margin-bottom: 25px; }
+                        .code-box { background: #2d2d2d; border: 3px dashed #FC4400; border-radius: 15px; padding: 35px 20px; margin: 25px 0; position: relative; }
+                        .code-box::before { content: '🍟'; position: absolute; top: -15px; left: 20px; font-size: 25px; background: #1a1a1a; padding: 0 10px; }
+                        .code-box::after { content: '🌭'; position: absolute; top: -15px; right: 20px; font-size: 25px; background: #1a1a1a; padding: 0 10px; }
+                        .code { font-size: 42px; font-weight: bold; color: #FC4400; letter-spacing: 10px; font-family: 'Courier New', monospace; text-shadow: 0 0 10px rgba(252, 68, 0, 0.5); }
+                        .code-box p { color: #999; font-size: 13px; margin: 15px 0 0 0; }
+                        .info { background: rgba(120, 213, 239, 0.1); border-left: 4px solid #78d5ef; border-radius: 10px; padding: 20px 25px; margin: 25px 0; text-align: left; }
+                        .info p { color: #78d5ef; font-weight: 600; margin: 0 0 12px 0; font-size: 15px; }
+                        .info ul { color: #ccc; margin: 0; padding-left: 20px; line-height: 1.8; }
+                        .footer { background: #0d0d0d; color: #666; padding: 25px; text-align: center; font-size: 13px; border-top: 2px solid #333; }
+                        .footer p { margin: 0; }
                     </style>
                 </head>
                 <body>
                     <div class='container'>
                         <div class='header'>
-                            <h1>🍕 <span class='brand'>No Kapricho Pizzaria</span></h1>
-                            <p style='margin: 10px 0 0 0; opacity: 0.9; color: #ccc;'>Verificação de Acesso</p>
+                            <h1>🍔 Delivery MV 🍕</h1>
+                            <p>Verificação de Acesso</p>
                         </div>
-                        
                         <div class='content'>
-                            <h2 style='color: #f8b531; margin-bottom: 20px; font-weight: 600;'>Código de Verificação</h2>
-                            <p class='text-light' style='font-size: 16px; line-height: 1.6; margin-bottom: 30px;'>
-                                Para continuar com seu acesso, utilize o código abaixo:
-                            </p>
-                            
+                            <h2>Código de Verificação</h2>
+                            <p>Para continuar com seu acesso, utilize o código abaixo:</p>
                             <div class='code-box'>
-                                <div style='margin-bottom: 15px;'>
-                                    <svg width='64' height='64' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
-                                        <path d='M6 10V8C6 5.79086 7.79086 4 10 4H14C16.2091 4 18 5.79086 18 8V10' stroke='#f8b531' stroke-width='2' stroke-linecap='round'/>
-                                        <rect x='4' y='10' width='16' height='10' rx='2' fill='#f8b531' fill-opacity='0.2' stroke='#f8b531' stroke-width='2'/>
-                                        <circle cx='12' cy='15' r='2' fill='#f8b531'/>
-                                        <path d='M12 17V18' stroke='#f8b531' stroke-width='2' stroke-linecap='round'/>
-                                    </svg>
-                                </div>
                                 <div class='code'>{$codigo}</div>
-                                <p style='margin: 15px 0 0 0; color: #999; font-size: 14px;'>Digite este código na tela de verificação</p>
+                                <p>Digite este código na tela de verificação</p>
                             </div>
-                            
                             <div class='info'>
-                                <p style='margin: 0; color: #f8b531;'><strong>⚡ Informações importantes:</strong></p>
-                                <ul style='margin: 15px 0 0 0; color: #ccc; line-height: 1.8;'>
-                                    <li>Este código é válido por <span class='highlight'>5 minutos</span></li>
-                                    <li>Use <span class='highlight'>apenas uma vez</span></li>
+                                <p>🍟 Informações importantes:</p>
+                                <ul>
+                                    <li>Este código é válido por 5 minutos</li>
+                                    <li>Use apenas uma vez</li>
                                     <li>Não compartilhe com terceiros</li>
                                 </ul>
                             </div>
-                            
-                            <div style='margin-top: 30px; padding: 15px; background: rgba(255, 107, 107, 0.1); border: 1px solid #ff6b6b; border-radius: 8px;'>
-                                <p class='warning' style='margin: 0;'>
-                                    ⚠️ Se você não solicitou este código, ignore este email
-                                </p>
-                            </div>
                         </div>
-                        
                         <div class='footer'>
-                            <p style='margin: 0 0 5px 0;'>© 2024 No Kapricho Pizzaria - Sistema de Delivery</p>
-                            <p style='margin: 0; opacity: 0.7;'>Este é um email automático, não responda esta mensagem</p>
+                            <p>© 2024 Delivery MV - Sistema de Delivery 🍔</p>
                         </div>
                     </div>
                 </body>
                 </html>
-            ";
-            
-            $emailService->setMessage($mensagem);
+            ");
 
             if ($emailService->send()) {
-                return $this->response->setJSON([
-                    'sucesso' => true, 
-                    'msg' => 'Código enviado para seu email'
-                ]);
+                return $this->response->setJSON(['sucesso' => true, 'msg' => 'Código enviado para seu email']);
             } else {
                 throw new \Exception($emailService->printDebugger(['headers']));
             }
         } catch (\Exception $e) {
-            // Se falhar o envio, retornar código para desenvolvimento
-            log_message('error', 'Erro no envio de email: ' . $e->getMessage());
-            
-            return $this->response->setJSON([
-                'sucesso' => true, 
-                'msg' => 'Código gerado (email não configurado)',
-                'codigo_dev' => $codigo // Para desenvolvimento
-            ]);
+            return $this->response->setJSON(['sucesso' => true, 'msg' => 'Código gerado', 'codigo_dev' => $codigo]);
         }
     }
 
@@ -439,7 +446,7 @@ class Login extends BaseController {
         return $this->response->setJSON(['erro' => true, 'msg' => 'Código incorreto']);
     }
 
-	public function buscar_cep() {
+public function buscar_cep() {
         // Recebe o CEP via POST ou GET
         $cep = $this->request->getVar('cep'); 
 
@@ -471,5 +478,31 @@ class Login extends BaseController {
         // 5. Retorna os dados para a View ou Javascript
         // O array conterá: logradouro (rua), bairro, localidade (cidade), uf, etc.
         return $this->response->setJSON($dados);
+    }
+
+    public function verificarTelefone() {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['erro' => true, 'msg' => 'Requisição inválida']);
+        }
+
+        $json = $this->request->getJSON();
+        $telefone = $json->telefone ?? '';
+
+        $telefone = preg_replace("/[^0-9]/", "", $telefone);
+
+        if (strlen($telefone) < 10 || strlen($telefone) > 11) {
+            return $this->response->setJSON(['erro' => true, 'msg' => 'Telefone inválido']);
+        }
+
+        $db = \Config\Database::connect();
+        
+        $cliente = $db->query("SELECT * FROM clientes WHERE REPLACE(REPLACE(REPLACE(REPLACE(telefone, '(', ''), ')', ''), '-', ''), ' ', '') = ?", [$telefone])->getRow();
+
+        if ($cliente) {
+            session()->set('cliente_telefone', $telefone);
+            return $this->response->setJSON(['sucesso' => true, 'tipo' => 'cliente', 'msg' => 'Telefone encontrado']);
+        }
+
+        return $this->response->setJSON(['erro' => true, 'msg' => 'Telefone não cadastrado']);
     }
 }

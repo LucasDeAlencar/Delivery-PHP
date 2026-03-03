@@ -9,16 +9,25 @@ use App\Entities\Extra;
 class Extras extends BaseController {
 
     private $extraModel;
+    private $categoriaModel;
+    
+    // Desabilitar CSRF temporariamente para debug
+    protected $helpers = ['form'];
 
     public function __construct() {
         $this->extraModel = new \App\Models\ExtraModel();
+        $this->categoriaModel = new \App\Models\CategoriaModel();
     }
 
     public function index() {
+        $search = $this->request->getGet('search');
+        $ativo = $this->request->getGet('ativo');
 
         $data = [
             'titulo' => 'Listando os extras de produtos',
-            'extras' => $this->extraModel->withDeleted(true)->findAll(),
+            'extras' => $this->extraModel->buscarComFiltros($search, $ativo),
+            'search' => $search,
+            'ativo' => $ativo,
         ];
 
         return view('Admin/Extras/index', $data);
@@ -83,7 +92,7 @@ class Extras extends BaseController {
 
             // Filtra apenas os campos permitidos
             $dadosPermitidos = [];
-            $camposPermitidos = ['nome', 'slug', 'ativo', 'preco', 'descricao', 'multitude'];
+            $camposPermitidos = ['nome', 'ativo', 'preco', 'descricao', 'multitude'];
 
             foreach ($camposPermitidos as $campo) {
                 if (isset($post[$campo])) {
@@ -149,7 +158,7 @@ class Extras extends BaseController {
 
             // Filtra apenas os campos permitidos
             $dadosPermitidos = [];
-            $camposPermitidos = ['nome', 'slug', 'ativo', 'preco', 'descricao', 'multitude'];
+            $camposPermitidos = ['nome', 'ativo', 'preco', 'descricao', 'multitude'];
 
             foreach ($camposPermitidos as $campo) {
                 if (isset($post[$campo])) {
@@ -198,10 +207,14 @@ class Extras extends BaseController {
 
     public function deletar($id = null) {
         if ($this->request->getMethod() !== 'post') {
-            $extra = $this->extraModel->find($id);
+            $extra = $this->extraModel->withDeleted(true)->find($id);
 
             if (!$extra) {
                 return redirect()->back()->with('erro', 'Extra não encontrada');
+            }
+
+            if ($extra->deletado_em != null) {
+                return redirect()->back()->with('info', 'Esta extra já foi excluída anteriormente');
             }
 
             // Usa soft delete
@@ -236,6 +249,106 @@ class Extras extends BaseController {
                             ->with('sucesso', 'Extra restaurada com sucesso.');
         } else {
             return redirect()->back()->with('erro', 'Não foi possível restaurar a extra.');
+        }
+    }
+
+    public function deletarDefinitivamente($id = null) {
+        $extra = $this->extraModel->withDeleted(true)->find($id);
+        
+        if (!$extra) {
+            return redirect()->back()->with('erro', 'Extra não encontrada');
+        }
+
+        if ($extra->deletado_em == null) {
+            return redirect()->back()->with('atencao', 'Apenas extras excluídas podem ser apagadas definitivamente');
+        }
+
+        if ($this->extraModel->delete($id, true)) {
+            return redirect()->to(site_url('admin/extras'))
+                           ->with('sucesso', 'Extra apagada definitivamente!');
+        } else {
+            return redirect()->back()
+                           ->with('atencao', 'Não foi possível apagar a extra definitivamente.');
+        }
+    }
+
+    public function associarCategoria() {
+        $data = [
+            'titulo' => 'Associar Extra por Categoria',
+            'extras' => $this->extraModel->where('ativo', 1)->findAll(),
+            'categorias' => $this->categoriaModel->where('ativo', 1)->findAll(),
+        ];
+
+        return view('Admin/Extras/associar_categoria', $data);
+    }
+
+    public function processarAssociacao() {
+        if ($this->request->getMethod() === 'post') {
+            return redirect()->to(site_url('admin/extras/associar-categoria'));
+        }
+
+        $post = $this->request->getPost();
+        $extrasIds = $post['extra_id'] ?? [];
+        $categoriaId = $post['categoria_id'] ?? null;
+
+        // Validações
+        if (empty($extrasIds)) {
+            return redirect()->back()
+                           ->with('erro', 'Pelo menos um extra deve ser selecionado')
+                           ->withInput();
+        }
+
+        if (!$categoriaId) {
+            return redirect()->back()
+                           ->with('erro', 'Uma categoria deve ser selecionada')
+                           ->withInput();
+        }
+
+        try {
+            $db = \Config\Database::connect();
+            
+            $categoria = $db->table('categorias')->where('id', $categoriaId)->where('ativo', 1)->get()->getRowArray();
+            
+            if (!$categoria) {
+                return redirect()->back()->with('erro', 'Categoria não encontrada ou inativa');
+            }
+            
+            $extras = $db->table('extras')->whereIn('id', $extrasIds)->where('ativo', 1)->get()->getResultArray();
+
+            if (count($extras) != count($extrasIds)) {
+                return redirect()->back()->with('erro', 'Um ou mais extras não foram encontrados ou estão inativos');
+            }
+            
+            $produtos = $db->table('produtos')->where('categoria_id', $categoriaId)->where('ativo', 1)->get()->getResultArray();
+            
+            if (empty($produtos)) {
+                return redirect()->back()->with('erro', 'Nenhum produto ativo encontrado na categoria');
+            }
+            
+            $produto_ids = array_column($produtos, 'id');
+            
+            $db->table('produtos_extras')->whereIn('produto_id', $produto_ids)->delete();
+            
+            $associacoes_criadas = 0;
+            
+            foreach ($produtos as $produto) {
+                foreach ($extras as $extra) {
+                    $db->table('produtos_extras')->insert([
+                        'produto_id' => $produto['id'],
+                        'extra_id' => $extra['id']
+                    ]);
+                    $associacoes_criadas++;
+                }
+            }
+            
+            $extrasNomes = array_column($extras, 'nome');
+            $extrasTexto = implode(', ', $extrasNomes);
+            
+            return redirect()->to(site_url('admin/extras'))
+                           ->with('sucesso', "{$associacoes_criadas} associações criadas! Produtos da categoria '{$categoria['nome']}' foram associados aos extras: {$extrasTexto}");
+                           
+        } catch (\Exception $e) {
+            return redirect()->back()->with('erro', 'Erro ao processar associação: ' . $e->getMessage());
         }
     }
 }

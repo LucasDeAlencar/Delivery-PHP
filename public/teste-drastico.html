@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste Carrinho Drástico</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .produto { border: 1px solid #ccc; padding: 15px; margin: 10px 0; }
+        .btn-adicionar-drastico { 
+            background: green; color: white; border: none; 
+            padding: 8px 15px; cursor: pointer; margin: 5px; 
+        }
+        #carrinho-drastico { 
+            background: #f5f5f5; padding: 20px; margin: 20px 0; 
+            border: 2px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔥 TESTE CARRINHO DRÁSTICO</h1>
+    
+    <div id="carrinho-drastico">
+        <!-- Carrinho será inserido aqui -->
+    </div>
+    
+    <h2>Produtos de Teste</h2>
+    
+    <div class="produto">
+        <h3>Pizza Margherita</h3>
+        <p>R$ 25,90</p>
+        <button class="btn-adicionar-drastico" 
+                data-nome="Pizza Margherita" 
+                data-preco="25.90">
+            ADICIONAR
+        </button>
+    </div>
+    
+    <div class="produto">
+        <h3>Pizza Calabresa</h3>
+        <p>R$ 28,90</p>
+        <button class="btn-adicionar-drastico" 
+                data-nome="Pizza Calabresa" 
+                data-preco="28.90">
+            ADICIONAR
+        </button>
+    </div>
+    
+    <div class="produto">
+        <h3>Pizza Portuguesa</h3>
+        <p>R$ 32,90</p>
+        <button class="btn-adicionar-drastico" 
+                data-nome="Pizza Portuguesa" 
+                data-preco="32.90">
+            ADICIONAR
+        </button>
+    </div>
+    
+    <script src="/assets/js/carrinho-drastico.js"></script>
+    
+    <script>
+        // Log adicional para debug
+        console.log('🔥 Página de teste carregada');
+        
+        // Teste automático após 2 segundos
+        setTimeout(() => {
+            console.log('🧪 Executando teste automático...');
+            
+            // Adiciona alguns itens
+            window.CarrinhoDrastico.adicionar({nome: 'Teste Auto 1', preco: 10.00});
+            window.CarrinhoDrastico.adicionar({nome: 'Teste Auto 2', preco: 15.00});
+            
+            console.log('✅ Teste automático concluído');
+        }, 2000);
+    </script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <title>Login Admin - Restaurante</title>
+    <title>Entrar - Restaurante</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" rel="stylesheet">
@@ -77,14 +77,12 @@
             font-size: 1.1rem;
             font-weight: 600;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(248, 181, 49, 0.3);
             margin-top: 1rem;
         }
         .btn-login:hover {
             background: linear-gradient(135deg, #e6a42e 0%, #f0b861 100%);
             color: #000000;
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(248, 181, 49, 0.4);
         }
         .btn-login:disabled {
             opacity: 0.7;
@@ -108,44 +106,62 @@
             color: #90ee90;
             border: 1px solid #3a6a3a;
         }
-
-        /* Animação do botão reenviar */
-        .btn-reenviar {
+        .login-tabs {
+            display: flex;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #333;
+        }
+        .login-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            color: #888;
+            cursor: pointer;
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            font-weight: 500;
         }
-
-        .btn-reenviar:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(248, 181, 49, 0.3);
+        .login-tab:hover {
+            color: #f8b531;
         }
-
-        .btn-reenviar:active {
-            transform: translateY(0);
+        .login-tab.active {
+            color: #f8b531;
+            border-bottom-color: #f8b531;
         }
-
-        .btn-reenviar.loading {
-            pointer-events: none;
+        .login-tab i {
+            margin-right: 8px;
         }
-
-        .btn-reenviar.loading i {
-            animation: spin 1s linear infinite;
+        .tab-content {
+            display: none;
         }
-
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        .tab-content.active {
+            display: block;
         }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+        .back-link {
+            text-align: center;
+            margin-top: 1rem;
         }
-
-        .btn-reenviar.success {
-            animation: pulse 0.6s ease-in-out;
+        .back-link a {
+            color: #888;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .back-link a:hover {
+            color: #f8b531;
+        }
+        .cadastro-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #888;
+        }
+        .cadastro-link a {
+            color: #f8b531;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .cadastro-link a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -153,7 +169,7 @@
 
     <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
         <div class="container">
-            <a class="navbar-brand" href="<?= base_url('/') ?>"><span class="flaticon-pizza-1 mr-1"></span>No Kapricho<br><small>A melhor pizzaria da cidade</small></a>
+            <a class="navbar-brand" href="<?= base_url('/') ?>"><span class="fas fa-hotdog mr-1"></span>Delicias MV<br><small>O delivery favorito da cidade</small></a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="oi oi-menu"></span> Menu
             </button>
@@ -173,7 +189,7 @@
         <div class="login-container">
             <div class="login-header">
                 <div class="brand">
-                    <span class="flaticon-pizza-1"></span> No Kapricho
+                    <span class="fas fa-hotdog"></span> Delicias MV
                 </div>
                 <h4 style="color: #fff; margin: 1rem 0 0.5rem;">Olá, seja bem-vindo(a)!</h4>
                 <p>Por favor, realize o login para continuar</p>
@@ -191,19 +207,41 @@
                 </div>
             <?php endif; ?>
 
+            <div class="login-tabs">
+                <div class="login-tab active" data-tab="email">
+                    <i class="fas fa-envelope"></i>E-mail
+                </div>
+                <div class="login-tab" data-tab="celular">
+                    <i class="fas fa-mobile-alt"></i>Celular
+                </div>
+            </div>
+
             <form action="<?= site_url('login/criar') ?>" method="POST" id="loginForm">
                 <?= csrf_field() ?>
-                <input type="hidden" name="acao" id="acao" value="verificar">
+                <input type="hidden" name="login_tipo" id="login_tipo" value="email">
 
-                <div class="form-group">
-                    <label for="email">E-mail</label>
-                    <input type="email" 
-                           name="email" 
-                           id="email"
-                           value="<?= old('email') ?>" 
-                           class="form-control" 
-                           placeholder="Digite o seu e-mail"
-                           required>
+                <div class="tab-content active" id="tab-email">
+                    <div class="form-group">
+                        <label for="email">E-mail</label>
+                        <input type="email" 
+                               name="email" 
+                               id="email"
+                               value="<?= old('email') ?>" 
+                               class="form-control" 
+                               placeholder="Digite o seu e-mail">
+                    </div>
+                </div>
+
+                <div class="tab-content" id="tab-celular">
+                    <div class="form-group">
+                        <label for="celular">Celular</label>
+                        <input type="tel" 
+                               name="celular" 
+                               id="celular"
+                               value="<?= old('celular') ?>" 
+                               class="form-control" 
+                               placeholder="(00) 00000-0000">
+                    </div>
                 </div>
 
                 <div class="form-group" id="campo-senha" style="display: none;">
@@ -212,162 +250,24 @@
                            name="password" 
                            id="password"
                            class="form-control" 
-                           placeholder="Digite a sua senha"
-                           required>
+                           placeholder="Digite a sua senha">
                 </div>
 
-                <div id="campos-cliente" style="display: none;">
-                    <div class="form-group">
-                        <label for="nome">Nome Completo *</label>
-                        <input type="text" 
-                               name="nome" 
-                               id="nome"
-                               value="<?= old('nome') ?>" 
-                               class="form-control" 
-                               placeholder="Digite seu nome completo"
-                               data-required="true">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="telefone">Telefone *</label>
-                        <input type="tel" 
-                               name="telefone" 
-                               id="telefone"
-                               value="<?= old('telefone') ?>" 
-                               class="form-control" 
-                               placeholder="(00) 00000-0000"
-                               data-required="true">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="cep">CEP *</label>
-                        <input type="text" 
-                               name="cep" 
-                               id="cep"
-                               value="<?= old('cep') ?>" 
-                               class="form-control" 
-                               placeholder="00000-000"
-                               data-required="true">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="cidade">Cidade *</label>
-                        <input type="text" 
-                               name="cidade" 
-                               id="cidade"
-                               value="<?= old('cidade') ?>" 
-                               class="form-control" 
-                               placeholder="Campo autopreenchido pelo CEP"
-                               readonly
-                               data-required="true">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="bairro">Bairro *</label>
-                        <input type="text" 
-                               name="bairro" 
-                               id="bairro"
-                               value="<?= old('bairro') ?>" 
-                               class="form-control" 
-                               placeholder="Campo autopreenchido pelo CEP"
-                               readonly
-                               data-required="true">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="endereco">Logradouro *</label>
-                        <input type="text" 
-                               name="endereco" 
-                               id="endereco"
-                               value="<?= old('endereco') ?>" 
-                               class="form-control" 
-                               placeholder="Campo autopreenchido pelo CEP"
-                               readonly
-                               data-required="true">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="numero">Número</label>
-                        <input type="text" 
-                               name="numero" 
-                               id="numero"
-                               value="<?= old('numero') ?>" 
-                               class="form-control" 
-                               placeholder="Número da residência">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="complemento">Complemento</label>
-                        <input type="text" 
-                               name="complemento" 
-                               id="complemento"
-                               value="<?= old('complemento') ?>" 
-                               class="form-control" 
-                               placeholder="Apartamento, bloco, etc.">
-                    </div>
-                </div>
-
-                <button type="button" class="btn btn-login" id="btnVerificar">
-                    <i class="fas fa-search mr-2"></i>VERIFICAR E-MAIL
-                </button>
-
-                <button type="submit" class="btn btn-login" id="btnEntrar" style="display: none;">
+                <button type="submit" class="btn btn-login" id="btnEntrar">
                     <i class="fas fa-sign-in-alt mr-2"></i>ENTRAR
                 </button>
 
-                <button type="submit" class="btn btn-login" id="btnCadastrar" style="display: none;">
-                    <i class="fas fa-user-plus mr-2"></i>CADASTRAR CLIENTE
-                </button>
+                <div class="back-link">
+                    <a href="<?= site_url('login') ?>">
+                        <i class="fas fa-arrow-left mr-1"></i>Voltar
+                    </a>
+                </div>
+
+                <div class="cadastro-link">
+                    Não tem conta? <a href="<?= site_url('registrar') ?>">Cadastre-se aqui</a>
+                </div>
 
             </form>
-        </div>
-    </div>
-
-    <!-- Modal de Verificação de Código -->
-    <div class="modal fade" id="modalVerificacao" tabindex="-1" role="dialog" aria-labelledby="modalVerificacaoLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content" style="background: #1a1a1a; border: 1px solid #333;">
-                <div class="modal-header" style="border-bottom: 1px solid #333;">
-                    <h5 class="modal-title" id="modalVerificacaoLabel" style="color: #f8b531;">
-                        <i class="fas fa-envelope mr-2"></i>Verificação de Email
-                    </h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: #f8b531; opacity: 0.8; font-size: 1.5rem;">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body" style="color: #fff;">
-                    <p>Enviamos um código de 6 caracteres para seu email.</p>
-                    <p><strong>Tempo restante: <span id="tempo-restante">5:00</span></strong></p>
-                    
-                    <div class="form-group">
-                        <label for="codigo-verificacao" style="color: #f8b531;">Digite o código:</label>
-                        <input type="text" 
-                               id="codigo-verificacao" 
-                               class="form-control text-center" 
-                               placeholder="000000"
-                               maxlength="6"
-                               style="font-size: 1.5rem; letter-spacing: 0.5rem; text-transform: uppercase;">
-                    </div>
-                    
-                    <div id="codigo-dev" style="background: #2d5a2d; padding: 10px; border-radius: 5px; margin-top: 10px; display: none;">
-                        <small style="color: #90ee90;">Código para desenvolvimento: <strong id="codigo-dev-valor"></strong></small>
-                    </div>
-                    
-                    <div class="text-center mt-3">
-                        <button type="button" class="btn btn-outline-warning btn-sm btn-reenviar" id="btnReenviarCodigo" onclick="reenviarCodigo()">
-                            <i class="fas fa-redo mr-1"></i>Reenviar código
-                        </button>
-                        <div id="timer-reenvio" style="display: none; color: #999; font-size: 0.9rem; margin-top: 5px;">
-                            Aguarde <span id="segundos-restantes">30</span>s para reenviar
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer" style="border-top: 1px solid #333;">
-                    <button type="button" class="btn btn-login" id="btnVerificarCodigo">
-                        <i class="fas fa-check mr-2"></i>VERIFICAR
-                    </button>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -376,75 +276,39 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Verificar se já está logado como cliente
             const emailSalvo = localStorage.getItem('cliente_email');
             if (emailSalvo) {
                 window.location.href = '<?= base_url('/') ?>';
                 return;
             }
 
-            const form = document.getElementById('loginForm');
-            const btnVerificar = document.getElementById('btnVerificar');
-            const btnEntrar = document.getElementById('btnEntrar');
-            const btnCadastrar = document.getElementById('btnCadastrar');
             const emailInput = document.getElementById('email');
-            const passwordInput = document.getElementById('password');
+            const celularInput = document.getElementById('celular');
             const campoSenha = document.getElementById('campo-senha');
-            const camposCliente = document.getElementById('campos-cliente');
+            let loginTipo = 'email';
 
-            btnVerificar.addEventListener('click', function () {
-                const email = emailInput.value.trim();
-
-                if (!email) {
-                    alert('Por favor, digite um e-mail');
-                    emailInput.focus();
-                    return;
-                }
-
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(email)) {
-                    alert('Por favor, digite um e-mail válido');
-                    emailInput.focus();
-                    return;
-                }
-
-                btnVerificar.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>VERIFICANDO...';
-                btnVerificar.disabled = true;
-
-                fetch('<?= site_url('login/verificarEmail') ?>', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({
-                        email: email,
-                        '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.tipo === 'admin') {
-                        // Admin encontrado - ir direto para campo senha (sem verificação de email)
-                        mostrarCampoSenha();
-                    } else if (data.tipo === 'cliente') {
-                        // Cliente encontrado - enviar código de verificação
-                        enviarCodigoVerificacao(email, 'cliente');
+            document.querySelectorAll('.login-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    this.classList.add('active');
+                    document.getElementById('tab-' + tabId).classList.add('active');
+                    
+                    loginTipo = tabId;
+                    document.getElementById('login_tipo').value = tabId;
+                    
+                    if (tabId === 'email') {
+                        emailInput.focus();
                     } else {
-                        // Email não encontrado - enviar código para cadastro
-                        enviarCodigoVerificacao(email, 'cadastro');
+                        celularInput.focus();
                     }
-                })
-                .catch(error => {
-                    console.error('Erro:', error);
-                    alert('Erro ao verificar e-mail. Tente novamente.');
-                    btnVerificar.innerHTML = originalText;
-                    btnVerificar.disabled = false;
                 });
             });
 
-            // Máscaras
-            document.getElementById('telefone').addEventListener('input', function (e) {
+            celularInput.addEventListener('input', function(e) {
                 let value = e.target.value.replace(/\D/g, '');
                 if (value.length <= 11) {
                     value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
@@ -455,349 +319,48 @@
                 e.target.value = value;
             });
 
-            document.getElementById('cep').addEventListener('input', function (e) {
-                let value = e.target.value.replace(/\D/g, '');
-                if (value.length <= 8) {
-                    value = value.replace(/(\d{5})(\d{3})/, '$1-$2');
-                }
-                e.target.value = value;
+            let emailVerificado = false;
 
-                if (value.replace(/\D/g, '').length === 8) {
-                    buscarCEP(value.replace(/\D/g, ''));
+            const btnEntrar = document.getElementById('btnEntrar');
+            btnEntrar.addEventListener('click', function(e) {
+                if (loginTipo === 'email' && !emailVerificado) {
+                    e.preventDefault();
+                    const email = emailInput.value.trim();
+                    
+                    if (!email || !email.includes('@')) {
+                        alert('Por favor, digite um e-mail válido');
+                        return;
+                    }
+
+                    fetch('<?= site_url('login/verificarEmail') ?>', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({ email: email })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.requer_senha) {
+                            emailVerificado = true;
+                            emailInput.readOnly = true;
+                            emailInput.style.opacity = '0.7';
+                            campoSenha.style.display = 'block';
+                            document.getElementById('password').focus();
+                        } else if (data.tipo === 'cliente') {
+                            document.getElementById('loginForm').submit();
+                        } else {
+                            alert('E-mail não cadastrado');
+                        }
+                    })
+                    .catch(() => {
+                        alert('Erro ao verificar e-mail');
+                    });
                 }
             });
-
-            function buscarCEP(cep) {
-                const bairroInput = document.getElementById('bairro');
-                const cidadeInput = document.getElementById('cidade');
-                const enderecoInput = document.getElementById('endereco');
-
-                fetch('<?= site_url('login/buscar_cep') ?>', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({cep: cep})
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.erro) {
-                        bairroInput.value = '';
-                        cidadeInput.value = '';
-                        enderecoInput.value = '';
-                        alert(data.msg || 'CEP não encontrado');
-                    } else {
-                        bairroInput.value = data.bairro || '';
-                        cidadeInput.value = data.localidade || '';
-                        enderecoInput.value = data.logradouro || '';
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro ao buscar CEP:', error);
-                    bairroInput.value = '';
-                    cidadeInput.value = '';
-                    enderecoInput.value = '';
-                    alert('Erro ao buscar CEP. Tente novamente.');
-                });
-            }
 
             emailInput.focus();
-
-            // Funções de verificação por código
-            let tipoVerificacao = '';
-            let intervalTimer = null;
-            let originalText = '<i class="fas fa-search mr-2"></i>VERIFICAR E-MAIL'; // Texto original do botão
-
-            function enviarCodigoVerificacao(email, tipo) {
-                tipoVerificacao = tipo;
-                
-                fetch('<?= site_url('login/enviarCodigo') ?>', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({
-                        email: email,
-                        '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.sucesso) {
-                        // Mostrar código para desenvolvimento se disponível
-                        if (data.codigo_dev) {
-                            document.getElementById('codigo-dev-valor').textContent = data.codigo_dev;
-                            document.getElementById('codigo-dev').style.display = 'block';
-                        }
-                        
-                        $('#modalVerificacao').modal('show');
-                        iniciarTimer();
-                        document.getElementById('codigo-verificacao').focus();
-                    } else {
-                        alert('Erro ao enviar código: ' + data.msg);
-                        btnVerificar.innerHTML = originalText;
-                        btnVerificar.disabled = false;
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro:', error);
-                    alert('Erro ao enviar código. Tente novamente.');
-                    btnVerificar.innerHTML = originalText;
-                    btnVerificar.disabled = false;
-                });
-            }
-
-            function iniciarTimer() {
-                let tempoRestante = 300; // 5 minutos em segundos
-                const timerElement = document.getElementById('tempo-restante');
-                
-                intervalTimer = setInterval(() => {
-                    const minutos = Math.floor(tempoRestante / 60);
-                    const segundos = tempoRestante % 60;
-                    timerElement.textContent = `${minutos}:${segundos.toString().padStart(2, '0')}`;
-                    
-                    if (tempoRestante <= 0) {
-                        clearInterval(intervalTimer);
-                        $('#modalVerificacao').modal('hide');
-                        alert('Código expirado. Tente novamente.');
-                        btnVerificar.innerHTML = originalText;
-                        btnVerificar.disabled = false;
-                    }
-                    
-                    tempoRestante--;
-                }, 1000);
-            }
-
-            // Função para fechar modal de verificação
-            function fecharModalVerificacao() {
-                // Limpar todos os timers
-                if (intervalTimer) {
-                    clearInterval(intervalTimer);
-                    intervalTimer = null;
-                }
-                if (timerReenvio) {
-                    clearInterval(timerReenvio);
-                    timerReenvio = null;
-                }
-                
-                // Resetar estados
-                podeReenviar = true;
-                
-                // Resetar elementos visuais
-                document.getElementById('codigo-verificacao').value = '';
-                document.getElementById('codigo-dev').style.display = 'none';
-                document.getElementById('timer-reenvio').style.display = 'none';
-                
-                const btnReenviar = document.getElementById('btnReenviarCodigo');
-                btnReenviar.style.display = 'inline-block';
-                btnReenviar.innerHTML = '<i class="fas fa-redo mr-1"></i>Reenviar código';
-                btnReenviar.disabled = false;
-                btnReenviar.classList.remove('loading', 'success');
-                btnReenviar.style.backgroundColor = '';
-                
-                // Resetar botão principal VERIFICAR E-MAIL
-                btnVerificar.innerHTML = '<i class="fas fa-search mr-2"></i>VERIFICAR E-MAIL';
-                btnVerificar.disabled = false;
-            }
-
-            // Variáveis para controle do reenvio
-            let timerReenvio = null;
-            let podeReenviar = true;
-
-            // Função para reenviar código
-            function reenviarCodigo() {
-                if (!podeReenviar) return;
-                
-                const email = emailInput.value;
-                const btnReenviar = document.getElementById('btnReenviarCodigo');
-                const iconReenviar = btnReenviar.querySelector('i');
-                
-                // Adicionar classe loading e animação
-                btnReenviar.classList.add('loading');
-                btnReenviar.disabled = true;
-                btnReenviar.innerHTML = '<i class="fas fa-spinner mr-1"></i>Enviando...';
-                
-                podeReenviar = false;
-                
-                // Enviar novo código
-                fetch('<?= site_url('login/enviarCodigo') ?>', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({
-                        email: email,
-                        '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.sucesso) {
-                        // Animação de sucesso
-                        btnReenviar.classList.remove('loading');
-                        btnReenviar.classList.add('success');
-                        btnReenviar.innerHTML = '<i class="fas fa-check mr-1"></i>Enviado!';
-                        
-                        // Mostrar código para desenvolvimento se disponível
-                        if (data.codigo_dev) {
-                            document.getElementById('codigo-dev-valor').textContent = data.codigo_dev;
-                            document.getElementById('codigo-dev').style.display = 'block';
-                        }
-                        
-                        // Reiniciar timer principal
-                        if (intervalTimer) {
-                            clearInterval(intervalTimer);
-                        }
-                        iniciarTimer();
-                        
-                        // Limpar campo de código
-                        document.getElementById('codigo-verificacao').value = '';
-                        document.getElementById('codigo-verificacao').focus();
-                        
-                        // Iniciar timer de reenvio após 1 segundo
-                        setTimeout(() => {
-                            btnReenviar.classList.remove('success');
-                            btnReenviar.style.display = 'none';
-                            document.getElementById('timer-reenvio').style.display = 'block';
-                            
-                            // Timer de 30 segundos
-                            let segundosRestantes = 30;
-                            const spanSegundos = document.getElementById('segundos-restantes');
-                            
-                            timerReenvio = setInterval(() => {
-                                spanSegundos.textContent = segundosRestantes;
-                                segundosRestantes--;
-                                
-                                if (segundosRestantes < 0) {
-                                    clearInterval(timerReenvio);
-                                    document.getElementById('timer-reenvio').style.display = 'none';
-                                    btnReenviar.style.display = 'inline-block';
-                                    btnReenviar.innerHTML = '<i class="fas fa-redo mr-1"></i>Reenviar código';
-                                    btnReenviar.disabled = false;
-                                    podeReenviar = true;
-                                }
-                            }, 1000);
-                        }, 1000);
-                        
-                    } else {
-                        // Erro no envio
-                        btnReenviar.classList.remove('loading');
-                        btnReenviar.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i>Erro';
-                        btnReenviar.style.backgroundColor = '#dc3545';
-                        
-                        setTimeout(() => {
-                            btnReenviar.innerHTML = '<i class="fas fa-redo mr-1"></i>Reenviar código';
-                            btnReenviar.style.backgroundColor = '';
-                            btnReenviar.disabled = false;
-                            podeReenviar = true;
-                        }, 2000);
-                        
-                        alert('Erro ao reenviar código: ' + data.msg);
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro:', error);
-                    
-                    // Erro de conexão
-                    btnReenviar.classList.remove('loading');
-                    btnReenviar.innerHTML = '<i class="fas fa-wifi mr-1"></i>Sem conexão';
-                    btnReenviar.style.backgroundColor = '#dc3545';
-                    
-                    setTimeout(() => {
-                        btnReenviar.innerHTML = '<i class="fas fa-redo mr-1"></i>Reenviar código';
-                        btnReenviar.style.backgroundColor = '';
-                        btnReenviar.disabled = false;
-                        podeReenviar = true;
-                    }, 2000);
-                    
-                    alert('Erro de conexão. Tente novamente.');
-                });
-            }
-
-            // Event listener para quando o modal for fechado (X, ESC, backdrop)
-            $('#modalVerificacao').on('hidden.bs.modal', function () {
-                fecharModalVerificacao();
-            });
-
-            // Verificar código
-            document.getElementById('btnVerificarCodigo').addEventListener('click', function() {
-                const codigo = document.getElementById('codigo-verificacao').value.trim();
-                
-                if (codigo.length !== 6) {
-                    alert('Digite o código de 6 caracteres');
-                    return;
-                }
-
-                fetch('<?= site_url('login/verificarCodigo') ?>', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({
-                        codigo: codigo,
-                        '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.sucesso) {
-                        clearInterval(intervalTimer);
-                        $('#modalVerificacao').modal('hide');
-                        
-                        // Processar baseado no tipo
-                        if (tipoVerificacao === 'admin') {
-                            mostrarCampoSenha();
-                        } else if (tipoVerificacao === 'cliente') {
-                            localStorage.setItem('cliente_email', emailInput.value);
-                            window.location.href = '<?= base_url('/') ?>';
-                        } else if (tipoVerificacao === 'cadastro') {
-                            mostrarCamposCadastro();
-                        }
-                    } else {
-                        alert('Erro: ' + data.msg);
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro:', error);
-                    alert('Erro ao verificar código. Tente novamente.');
-                });
-            });
-
-            function mostrarCampoSenha() {
-                campoSenha.style.display = 'block';
-                btnVerificar.style.display = 'none';
-                btnEntrar.style.display = 'block';
-                passwordInput.focus();
-                emailInput.readOnly = true;
-                emailInput.style.backgroundColor = '#1a1a1a';
-                document.getElementById('acao').value = 'login';
-                document.querySelectorAll('#campos-cliente input[data-required]').forEach(input => {
-                    input.removeAttribute('required');
-                });
-            }
-
-            function mostrarCamposCadastro() {
-                camposCliente.style.display = 'block';
-                btnVerificar.style.display = 'none';
-                btnCadastrar.style.display = 'block';
-                emailInput.readOnly = true;
-                emailInput.style.backgroundColor = '#1a1a1a';
-                document.getElementById('nome').focus();
-                document.getElementById('acao').value = 'cadastro';
-                document.querySelectorAll('#campos-cliente input[data-required]').forEach(input => {
-                    input.setAttribute('required', 'required');
-                });
-                passwordInput.removeAttribute('required');
-            }
-
-            // Permitir apenas letras e números no código
-            document.getElementById('codigo-verificacao').addEventListener('input', function(e) {
-                e.target.value = e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
-            });
         });
     </script>
 
