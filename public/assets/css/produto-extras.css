@@ -21,15 +21,15 @@
 }
 
 .extra-item:hover {
-    border-color: #f8b531;
-    background: rgba(248, 181, 49, 0.1);
+    border-color: #100e33;
+    background: rgba(23, 22, 54, 0.1);
     transform: translateX(5px);
 }
 
 .extra-item.selected {
-    border-color: #f8b531;
-    background: rgba(248, 181, 49, 0.15);
-    box-shadow: 0 0 15px rgba(248, 181, 49, 0.3);
+    border-color: #100e33;
+    background: rgba(23, 22, 54, 0.15);
+    box-shadow: 0 0 15px rgba(23, 22, 54, 0.3);
 }
 
 /* Checkbox */
@@ -42,7 +42,7 @@
     width: 24px;
     height: 24px;
     cursor: pointer;
-    accent-color: #f8b531;
+    accent-color: #100e33;
 }
 
 /* Informações do extra */
@@ -93,10 +93,10 @@
 }
 
 #btn-selecionar-extras:hover {
-    background: #f8b531 !important;
+    background: #100e33 !important;
     color: #000 !important;
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(248, 181, 49, 0.4);
+    box-shadow: 0 5px 15px rgba(23, 22, 54, 0.4);
 }
 
 #btn-selecionar-extras:active {
@@ -120,8 +120,8 @@
 /* Resumo de extras selecionados */
 #extras-selecionados-resumo {
     padding: 10px;
-    background: rgba(248, 181, 49, 0.1);
-    border: 1px solid #f8b531;
+    background: rgba(23, 22, 54, 0.1);
+    border: 1px solid #100e33;
     border-radius: 6px;
     text-align: center;
 }
@@ -150,7 +150,7 @@
 }
 
 #modalExtras .modal-header .modal-title {
-    color: #f8b531;
+    color: #100e33;
     font-weight: 600;
 }
 
@@ -185,7 +185,7 @@
 }
 
 #modalExtras .modal-body::-webkit-scrollbar-thumb {
-    background: #f8b531;
+    background: #100e33;
     border-radius: 4px;
 }
 
@@ -197,7 +197,7 @@
 #contador-extras-modal {
     font-size: 1.1rem;
     padding: 6px 12px;
-    background: #f8b531;
+    background: #100e33;
     color: #000;
     font-weight: 700;
 }
@@ -236,9 +236,9 @@
 .btn-qty {
     width: 32px;
     height: 32px;
-    border: 2px solid #f8b531;
+    border: 2px solid #100e33;
     background: #2d2d2d;
-    color: #f8b531;
+    color: #100e33;
     border-radius: 6px;
     font-size: 18px;
     font-weight: 700;
@@ -250,7 +250,7 @@
 }
 
 .btn-qty:hover {
-    background: #f8b531;
+    background: #100e33;
     color: #000;
 }
 
@@ -263,7 +263,7 @@
     text-align: center;
     font-size: 16px;
     font-weight: 700;
-    color: #f8b531;
+    color: #100e33;
 }
 
 /* Checkbox customizado */
@@ -276,7 +276,7 @@
     width: 24px;
     height: 24px;
     cursor: pointer;
-    accent-color: #f8b531;
+    accent-color: #100e33;
 }
 
 .extra-desc {
@@ -298,15 +298,15 @@
 .qty-label {
     font-size: 14px;
     font-weight: 600;
-    color: #f8b531;
+    color: #100e33;
     margin: 0;
     font-family: 'Poppins', sans-serif;
 }
 
 .qty-input {
     background: #2d2d2d;
-    color: #f8b531;
-    border: 2px solid #f8b531;
+    color: #100e33;
+    border: 2px solid #100e33;
     border-radius: 6px;
     width: 70px;
     height: 38px;
@@ -322,7 +322,7 @@
     outline: none;
     border-color: #fac56e;
     background: #1a1a1a;
-    box-shadow: 0 0 0 3px rgba(248, 181, 49, 0.2);
+    box-shadow: 0 0 0 3px rgba(23, 22, 54, 0.2);
 }
 
 .qty-input:hover {

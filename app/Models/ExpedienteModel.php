@@ -33,7 +33,8 @@ class ExpedienteModel extends Model
     
     protected $beforeInsert = ['validarHorarios'];
     protected $beforeUpdate = ['validarHorarios'];
-    
+    protected $afterInsert = ['resetAutoIncrement'];
+
     protected function validarHorarios(array $data)
     {
         if (isset($data['data']['abertura']) && isset($data['data']['fechamento'])) {
@@ -50,6 +51,20 @@ class ExpedienteModel extends Model
             }
         }
         
+        return $data;
+    }
+
+    protected function resetAutoIncrement($data): array
+    {
+        $table = $this->table;
+        $db = \Config\Database::connect();
+        
+        $query = $db->query("SELECT MAX(id) as max_id FROM $table");
+        $result = $query->getRow();
+        $maxId = $result->max_id ?? 0;
+
+        $db->query("ALTER TABLE $table AUTO_INCREMENT = " . ($maxId + 1));
+
         return $data;
     }
     

@@ -27,7 +27,7 @@
 
 .carrinho-header {
     background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
-    color: #f8b531;
+    color: #0055ff;
     padding: 15px 20px;
     display: flex;
     justify-content: space-between;
@@ -60,9 +60,9 @@
 }
 
 .btn-fechar:hover {
-    color: #f8b531;
+    color: #0055ff;
     opacity: 1;
-    background: rgba(248, 181, 49, 0.1);
+    background: rgba(23, 22, 54, 0.1);
 }
 
 .carrinho-content {
@@ -101,7 +101,7 @@
 .item-info h5 {
     margin: 0;
     font-size: 16px;
-    color: #f8b531;
+    color: #0055ff;
     font-family: 'Poppins', sans-serif;
     font-weight: 600;
 }
@@ -143,8 +143,8 @@
 
 .btn-qty {
     background: none;
-    border: 1px solid #f8b531;
-    color: #f8b531;
+    border: 1px solid #0055ff;
+    color: #0055ff;
     width: 25px;
     height: 25px;
     border-radius: 3px;
@@ -156,14 +156,14 @@
 }
 
 .btn-qty:hover {
-    background: #f8b531;
+    background: #0055ff;
     color: #000;
 }
 
 .qty-input {
     background: #333 !important;
     border: 1px solid #555 !important;
-    color: #f8b531 !important;
+    color: #0055ff !important;
     width: 50px;
     text-align: center;
     padding: 3px;
@@ -174,8 +174,8 @@
 
 .qty-input:focus {
     outline: none !important;
-    border-color: #f8b531 !important;
-    box-shadow: 0 0 0 2px rgba(248, 181, 49, 0.2) !important;
+    border-color: #0055ff !important;
+    box-shadow: 0 0 0 2px rgba(23, 22, 54, 0.2) !important;
 }
 
 .observacoes-control {
@@ -226,7 +226,7 @@
 .entrega-opcoes h4 {
     margin: 0 0 10px 0;
     font-size: 16px;
-    color: #f8b531;
+    color: #0055ff;
     font-family: 'Poppins', sans-serif;
 }
 
@@ -242,7 +242,7 @@
 }
 
 .carrinho-total {
-    border-top: 2px solid #f8b531;
+    border-top: 2px solid #0055ff;
     padding-top: 15px;
     background: #2d2d2d;
     border-radius: 8px;
@@ -259,7 +259,7 @@
 .total-final {
     font-weight: bold;
     font-size: 18px;
-    color: #f8b531;
+    color: #0055ff;
     border-top: 1px solid #555;
     padding-top: 10px;
     margin-top: 10px;
@@ -296,13 +296,13 @@
 }
 
 .btn-finalizar {
-    background: linear-gradient(135deg, #f8b531 0%, #fac56e 100%);
+    background: linear-gradient(135deg, #0055ff 0%, #2a2854 100%);
     color: #000;
 }
 
 .btn-finalizar:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(248, 181, 49, 0.3);
+    box-shadow: 0 4px 8px rgba(23, 22, 54, 0.3);
 }
 
 @media (max-width: 480px) {

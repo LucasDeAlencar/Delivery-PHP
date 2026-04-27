@@ -7,6 +7,12 @@ use CodeIgniter\Database\Migration;
 class CriaTabelaPedidos extends Migration {
 
     public function up() {
+        $db = \Config\Database::connect();
+        // Skip if table already exists (avoids duplicate creation when running migrations)
+        if ($db->tableExists('pedidos')) {
+            return;
+        }
+
         $this->forge->addField([
             'id' => [
                 'type' => 'INT',
@@ -87,7 +93,7 @@ class CriaTabelaPedidos extends Migration {
             ],
             'status' => [
                 'type' => 'ENUM',
-                'constraint' => ['pendente', 'confirmado', 'preparando', 'saiu_entrega', 'entregue', 'cancelado'],
+                'constraint' => ['pendente', 'confirmado', 'preparando', 'saiu_entrega', 'finalizado', 'cancelado'],
                 'default' => 'pendente',
                 'comment' => 'Status do pedido',
             ],

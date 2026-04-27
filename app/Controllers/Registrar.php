@@ -147,7 +147,7 @@ class Registrar extends BaseController {
         try {
             $emailService = service('email');
             $emailService->setTo($email);
-            $emailService->setSubject('Código de Verificação - Delicias MV');
+            $emailService->setSubject('Código de Verificação - Space Burger Dog Do Paulista');
             $emailService->setMessage("
                 <!DOCTYPE html>
                 <html>
@@ -155,21 +155,21 @@ class Registrar extends BaseController {
                     <meta charset='UTF-8'>
                     <style>
                         body { font-family: 'Poppins', sans-serif; margin: 0; padding: 0; background: #0d0d0d; }
-                        .container { max-width: 600px; margin: 20px auto; background: #1a1a1a; border: 3px solid #E83F00; border-radius: 20px; overflow: hidden; }
-                        .header { background: linear-gradient(135deg, #E83F00 0%, #ff6a00 100%); color: #fff; padding: 35px 20px; text-align: center; }
+                        .container { max-width: 600px; margin: 20px auto; background: #1a1a1a; border: 3px solid #0055ff; border-radius: 20px; overflow: hidden; }
+                        .header { background: linear-gradient(135deg, #0055ff 0%, #0055ff 100%); color: #fff; padding: 35px 20px; text-align: center; }
                         .header h1 { margin: 0; font-size: 32px; font-weight: 700; }
                         .content { padding: 40px 30px; text-align: center; background: #1a1a1a; }
-                        .content h2 { color: #E83F00; margin: 0 0 15px 0; }
+                        .content h2 { color: #0055ff; margin: 0 0 15px 0; }
                         .content p { color: #cccccc; font-size: 16px; line-height: 1.6; }
-                        .code-box { background: #2d2d2d; border: 3px dashed #E83F00; border-radius: 15px; padding: 25px; margin: 20px 0; }
-                        .code { font-size: 42px; font-weight: bold; color: #E83F00; letter-spacing: 10px; font-family: 'Courier New', monospace; }
+                        .code-box { background: #2d2d2d; border: 3px dashed #0055ff; border-radius: 15px; padding: 25px; margin: 20px 0; }
+                        .code { font-size: 42px; font-weight: bold; color: #0055ff; letter-spacing: 10px; font-family: 'Courier New', monospace; }
                         .footer { background: #0d0d0d; color: #888888; padding: 20px; text-align: center; font-size: 13px; }
                     </style>
                 </head>
                 <body>
                     <div class='container'>
                         <div class='header'>
-                            <h1>Delicias MV</h1>
+                            <h1>Space Burger Dog Do Paulista</h1>
                             <p>Verificação de Cadastro</p>
                         </div>
                         <div class='content'>
@@ -181,7 +181,7 @@ class Registrar extends BaseController {
                             <p style='color: #888888;'>Este código é válido por 5 minutos</p>
                         </div>
                         <div class='footer'>
-                            <p>© " . date('Y') . " Delicias MV - Sistema de Delivery</p>
+                            <p>© " . date('Y') . " Space Burger Dog Do Paulista - Sistema de Delivery</p>
                         </div>
                     </div>
                 </body>
@@ -202,7 +202,7 @@ class Registrar extends BaseController {
 
     public function verificarCodigo() {
         log_message('info', '=== Registrar::verificarCodigo INÍCIO ===');
-        
+
         if (!$this->request->isAJAX()) {
             return $this->response->setJSON(['erro' => true, 'msg' => 'Requisição inválida']);
         }
@@ -211,7 +211,7 @@ class Registrar extends BaseController {
         $codigo = $json->codigo ?? '';
 
         $dadosVerificacao = session()->get('codigo_verificacao_registro');
-        
+
         if (!$dadosVerificacao) {
             return $this->response->setJSON(['erro' => true, 'msg' => 'Código não encontrado. Solicite um novo código.']);
         }
@@ -227,6 +227,31 @@ class Registrar extends BaseController {
         }
 
         return $this->response->setJSON(['erro' => true, 'msg' => 'Código incorreto']);
+    }
+
+    public function verificarSessao() {
+        log_message('info', '=== Registrar::verificarSessao INÍCIO ===');
+
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['erro' => true, 'msg' => 'Requisição inválida']);
+        }
+
+        $dadosVerificacao = session()->get('codigo_verificacao_registro');
+
+        if (!$dadosVerificacao) {
+            return $this->response->setJSON(['erro' => true, 'msg' => 'Nenhuma sessão ativa']);
+        }
+
+        if (time() - $dadosVerificacao['timestamp'] > 300) {
+            session()->remove('codigo_verificacao_registro');
+            return $this->response->setJSON(['erro' => true, 'msg' => 'Código expirado']);
+        }
+
+        return $this->response->setJSON([
+            'sucesso' => true,
+            'email' => $dadosVerificacao['email'],
+            'timestamp' => $dadosVerificacao['timestamp']
+        ]);
     }
 
     public function buscar_cep() {

@@ -155,7 +155,7 @@ $(document).ready(function() {
         e.preventDefault();
         
         // Mostra um modal de confirmação adicional
-        if (confirm('Tem certeza absoluta de que deseja excluir a extra "<?= esc($extra->nome) ?>"?\n\nEsta ação é irreversível!')) {
+        if (confirm('Tem certeza absoluta de que deseja excluir a extra "' + <?= json_encode($extra->nome) ?> + '"?\n\nEsta ação é irreversível!')) {
             // Se confirmou, submete o formulário
             $('#form-exclusao').submit();
         }

@@ -27,7 +27,7 @@
     }
 
     .item-produto {
-        border-left: 3px solid #f8b531;
+        border-left: 3px solid #0055ff;
         padding-left: 15px;
         margin-bottom: 15px;
     }
@@ -60,9 +60,9 @@
         width: 12px;
         height: 12px;
         border-radius: 50%;
-        background: #f8b531;
+        background: #0055ff;
         border: 2px solid #fff;
-        box-shadow: 0 0 0 2px #f8b531;
+        box-shadow: 0 0 0 2px #0055ff;
     }
 </style>
 
@@ -116,6 +116,18 @@
                                 <br><small class="text-muted">Bairro: <?= esc($pedido->bairro_nome) ?></small>
                             <?php endif; ?>
                         </div>
+
+                        <?php
+                        $db = \Config\Database::connect();
+                        $mesaPedido = !empty($pedido->mesa_id)
+                            ? $db->table('mesas')->where('id', $pedido->mesa_id)->get()->getRow()
+                            : null;
+                        if ($mesaPedido): ?>
+                        <div class="info-label">Mesa</div>
+                        <div class="info-value">
+                            <i class="fas fa-chair"></i> Mesa <?= esc($mesaPedido->numero) ?>
+                        </div>
+                        <?php endif; ?>
                     </div>
 
                     <div class="col-md-6">
@@ -141,9 +153,9 @@
                                     <i class="fas fa-ban me-1"></i> INATIVO
                                 </span>
                                 <br><small class="text-muted">Este pedido não pode mais ser alterado</small>
-                            <?php elseif ($pedido->status === 'entregue'): ?>
+                            <?php elseif ($pedido->status === 'finalizado'): ?>
                                 <span class="badge bg-success" style="font-size: 1rem; padding: 8px 15px;">
-                                    <i class="fas fa-check-double me-1"></i> ENTREGUE
+                                    <i class="fas fa-check-double me-1"></i> FINALIZADO
                                 </span>
                                 <br><small class="text-muted">Pedido finalizado</small>
                             <?php elseif (isset($podeAlterar) && !$podeAlterar): ?>
@@ -165,10 +177,10 @@
                                         data-pedido-id="<?= $pedido->id ?>"
                                         style="width: auto; display: inline-block;">
                                     <option value="confirmado" selected>✅ Confirmado</option>
-                                    <option value="entregue">✔️ Entregue</option>
+                                    <option value="finalizado">✔️ Finalizado</option>
                                     <option value="cancelado">❌ Cancelado</option>
                                 </select>
-                                <br><small class="text-muted">Confirmado → Entregue ou Cancelado</small>
+                                <br><small class="text-muted">Confirmado → Finalizado ou Cancelado</small>
                             <?php else: ?>
                                 <span class="badge bg-secondary" style="font-size: 1rem; padding: 8px 15px;">
                                     <?= ucfirst($pedido->status) ?>
@@ -200,28 +212,41 @@
                     <?php foreach ($itens as $item): ?>
                         <div class="item-produto">
                             <div class="row align-items-center">
-                                <div class="col-md-6">
-                                    <h6 class="mb-1"><?= esc($item->produto_nome) ?></h6>
-                                    <?php if (!empty($item->observacoes)): ?>
-                                        <small class="text-muted">
-                                            <i class="fas fa-comment"></i> <?= esc($item->observacoes) ?>
-                                        </small>
-                                    <?php endif; ?>
-                                    
-                                    <?php if (!empty($item->extras)): ?>
-                                        <div class="extras-lista mt-2" style="padding-left: 10px; border-left: 2px solid #f8b531;">
-                                            <?php foreach ($item->extras as $extra): ?>
-                                                <small class="d-block text-warning">
-                                                    <i class="fas fa-plus-circle mr-1"></i>
-                                                    <?= esc($extra->extra_nome) ?>
-                                                    <?= $extra->quantidade > 1 ? ' x' . $extra->quantidade : '' ?>
-                                                    <?php if ($extra->extra_preco > 0): ?>
-                                                        (+R$ <?= number_format($extra->extra_preco * $extra->quantidade, 2, ',', '.') ?>)
-                                                    <?php endif; ?>
-                                                </small>
-                                            <?php endforeach; ?>
-                                        </div>
-                                    <?php endif; ?>
+                                 <div class="col-md-6">
+                                     <h6 class="mb-1"><?= esc($item->produto_nome) ?></h6>
+                                     
+                                     <?php if (!empty($item->tamanho_nome)): ?>
+                                         <div class="extras-lista mt-2" style="padding-left: 10px; border-left: 2px solid #17a2b8;">
+                                             <small class="d-block text-info">
+                                                 <i class="fas fa-ruler-combined mr-1"></i>
+                                                 Tamanho: <?= esc($item->tamanho_nome) ?>
+                                                 <?php if (!empty($item->tamanho_preco) && $item->tamanho_preco > 0): ?>
+                                                     - R$ <?= number_format($item->tamanho_preco, 2, ',', '.') ?>
+                                                 <?php endif; ?>
+                                             </small>
+                                         </div>
+                                     <?php endif; ?>
+                                     
+                                     <?php if (!empty($item->observacoes)): ?>
+                                         <small class="text-muted d-block">
+                                             <i class="fas fa-comment"></i> <?= esc($item->observacoes) ?>
+                                         </small>
+                                     <?php endif; ?>
+                                     
+                                     <?php if (!empty($item->extras)): ?>
+                                         <div class="extras-lista mt-2" style="padding-left: 10px; border-left: 2px solid #0055ff;">
+                                             <?php foreach ($item->extras as $extra): ?>
+                                                 <small class="d-block text-warning">
+                                                     <i class="fas fa-plus-circle mr-1"></i>
+                                                     <?= esc($extra->extra_nome) ?>
+                                                     <?= $extra->quantidade > 1 ? ' x' . $extra->quantidade : '' ?>
+                                                     <?php if ($extra->extra_preco > 0): ?>
+                                                         (+R$ <?= number_format($extra->extra_preco * $extra->quantidade, 2, ',', '.') ?>)
+                                                     <?php endif; ?>
+                                                 </small>
+                                             <?php endforeach; ?>
+                                         </div>
+                                     <?php endif; ?>
                                 </div>
                                 <div class="col-md-2 text-center">
                                     <strong>Qtd: <?= $item->quantidade ?></strong>
@@ -281,7 +306,7 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
-                    <?php if (isset($podeAlterar) && $podeAlterar && $pedido->status !== 'entregue' && $pedido->status !== 'inativo'): ?>
+                    <?php if (isset($podeAlterar) && $podeAlterar && $pedido->status !== 'finalizado' && $pedido->status !== 'inativo'): ?>
                         <a href="<?= site_url("admin/pedidos/cancelar/{$pedido->id}") ?>" 
                            class="btn btn-danger"
                            onclick="return confirm('Tem certeza que deseja cancelar este pedido?')">

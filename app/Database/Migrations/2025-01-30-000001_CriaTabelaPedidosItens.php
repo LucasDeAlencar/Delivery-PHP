@@ -7,6 +7,12 @@ use CodeIgniter\Database\Migration;
 class CriaTabelaPedidosItens extends Migration {
 
     public function up() {
+        $db = \Config\Database::connect();
+        // Skip if table already exists (avoids duplicate creation when running migrations)
+        if ($db->tableExists('pedidos_itens')) {
+            return;
+        }
+
         $this->forge->addField([
             'id' => [
                 'type' => 'INT',

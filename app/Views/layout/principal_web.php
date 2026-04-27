@@ -34,6 +34,7 @@
     <link rel="stylesheet" href="<?= site_url('web/src/css/flaticon.css') ?>">
     <link rel="stylesheet" href="<?= site_url('web/src/css/icomoon.css') ?>">
     <link rel="stylesheet" href="<?= site_url('web/src/css/style.css') ?>">
+    <link rel="stylesheet" href="<?= site_url('web/src/css/space-theme.css') ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="<?= site_url('assets/css/carrinho-modal.css?v=' . time()) ?>">
     <link rel="stylesheet" href="<?= site_url('assets/css/carrinho-popup.css?v=' . time()) ?>">
@@ -61,7 +62,7 @@
         .carrinho-counter {
             top: -8px;
             right: -8px;
-            background: linear-gradient(135deg, #f8b531 0%, #e6a429 100%);
+            background: linear-gradient(135deg, #00557f 0%, #003f5e 100%);
             color: #fff;
             font-size: 12px;
             font-weight: 700;
@@ -178,7 +179,10 @@
   <body>
   	<nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
 	    <div class="container">
-		      <a class="navbar-brand" href="<?= site_url('/') ?>"><span class="fas fa-hotdog mr-1"></span>Delicias MV<br><small class="d-none d-md-inline">Seu delivery favorito</small></a>
+		      <a class="navbar-brand" href="<?= site_url('/') ?>">
+ 		          <i class="fas fa-hamburger logo-space" style="font-size: 1.6rem; color: #f5a623; margin-right: 8px; line-height: 1;"></i>
+ 		          <span class="brand-name" style="color: #fff !important; font-size: 1.6rem; line-height: 1.2;">Space Burger Dog Do Paulista<span class="brand-sub" style="font-size: 0.8rem; text-transform: uppercase; display: block; color: #ccc !important">O seu delivery preferido</span></span>
+		      </a>
 		      
 		      <!-- Ícone do Carrinho independente -->
 		      <div class="carrinho-navbar d-flex align-items-center">
@@ -196,7 +200,7 @@
 		      </button>
 	      <div class="collapse navbar-collapse" id="ftco-nav">
 	        <ul class="navbar-nav ml-auto">
-	          <li class="nav-item active"><a href="<?= site_url('/') ?>" class="nav-link">Home</a></li>
+                    <li class="nav-item active"><a href="<?= site_url('/') ?>" class="nav-link">Home</a></li>
 	          <li class="nav-item"><a href="#menu" class="nav-link">Menu</a></li>
 	          <li class="nav-item"><a href="#services" class="nav-link">Serviços</a></li>
 	          <li class="nav-item"><a href="#about" class="nav-link">Sobre</a></li>
@@ -208,22 +212,20 @@
     <!-- END nav -->
 
     <!-- Hero Section -->
-    <section class="home-slider owl-carousel img" style="background-image: url('web/src/images/WSalgados.jpg');">
+    <section class="home-slider owl-carousel img" style="background-image: url('web/src/images/burger-1.jpg');">
       <div class="slider-item">
       	<div class="overlay"></div>
         <div class="container">
           <div class="row slider-text align-items-center" data-scrollax-parent="true">
-
             <div class="col-md-6 col-sm-12 ftco-animate">
             	<span class="subheading">Irresistível</span>
-              <h1 class="mb-4">Bolinhas de Presunto com Queijo</h1>
-              <p class="mb-4 mb-md-5">A clássica receita da casa, com recheio de presunto e queijo que derrete na boca. Perfeito para degustar em um final de semana.</p>
+              <h1 class="mb-4">Hamburgueres Artesanais</h1>
+              <p class="mb-4 mb-md-5">Nossos hamburgueres são feitos com carne fresquinha, pães artesanais e ingredientes selecionados. Sabor único que você não encontra em outro lugar!</p>
               <p><a href="#menu" class="btn btn-primary p-3 px-xl-4 py-xl-3">Fazer Pedido</a> <a href="#about" class="btn btn-white btn-outline-white p-3 px-xl-4 py-xl-3">Ver Home</a></p>
             </div>
             <div class="col-md-6 ftco-animate">
-            	<img src="<?= base_url('web/src/images/BolinhaDePresunto-1.png') ?>" class="img-fluid" alt="Sonho de Valsa">
+            	<img src="<?= base_url('web/src/images/ImagemPromocional2.jpeg') ?>" class="img-fluid" alt="Hamburguer Artesanal">
             </div>
-
           </div>
         </div>
       </div>
@@ -232,33 +234,29 @@
       	<div class="overlay"></div>
         <div class="container">
           <div class="row slider-text align-items-center" data-scrollax-parent="true">
-
             <div class="col-md-6 col-sm-12 order-md-last ftco-animate">
             	<span class="subheading">Saboroso</span>
-              <h1 class="mb-4">Coxinha da casa</h1>
-              <p class="mb-4 mb-md-5">Recheada com frango e catupiry. Uma combinação fantastica de sabor</p>
+              <h1 class="mb-4">HotDogs Especiais</h1>
+              <p class="mb-4 mb-md-5">Cachorros-quentes com salsichas premium, molhos especiais e muito queijo mussarela. Uma experiência única!</p>
               <p><a href="#menu" class="btn btn-primary p-3 px-xl-4 py-xl-3">Fazer Pedido</a> <a href="#about" class="btn btn-white btn-outline-white p-3 px-xl-4 py-xl-3">Ver Home</a></p>
             </div>
             <div class="col-md-6 ftco-animate">
-            	<img src="<?= base_url('web/src/images/Coxinha.png') ?>" class="img-fluid" alt="Serenata de Amor">
+            	<img src="<?= base_url('web/src/images/ImagemPromocional8.jpeg') ?>" class="img-fluid" alt="HotDog Especial">
             </div>
-
           </div>
         </div>
       </div>
 
-      <div class="slider-item" style="background-image: url('web/src/images/WSalgados-2.jpg');">
+      <div class="slider-item" style="background-image: url('web/src/images/ImagemPromocional3.jpeg');">
       	<div class="overlay"></div>
         <div class="container">
           <div class="row slider-text justify-content-center align-items-center" data-scrollax-parent="true">
-
             <div class="col-md-7 col-sm-12 text-center ftco-animate">
             	<span class="subheading">Bem-vindo</span>
-              <h1 class="mb-4">Salgados para todos os momentos</h1>
-              <p class="mb-4 mb-md-5">Coxinhas, quibes, empadas e muito mais. Tudo para temperar seu dia com qualidade e sabor.</p>
+              <h1 class="mb-4">Space Burger Dog Do Paulista & HotDog</h1>
+              <p class="mb-4 mb-md-5">A melhor combinação de hamburgueres e hotdogs da cidade. Entrega rápida, sabor garantido!</p>
               <p><a href="#menu" class="btn btn-primary p-3 px-xl-4 py-xl-3">Fazer Pedido</a> <a href="#about" class="btn btn-white btn-outline-white p-3 px-xl-4 py-xl-3">Ver Home</a></p>
             </div>
-
           </div>
         </div>
       </div>
@@ -324,10 +322,10 @@
     	<div class="one-half img" style="background-image: url(<?= site_url('web/src/images/about.jpg') ?>);"></div>
     	<div class="one-half ftco-animate">
         <div class="heading-section ftco-animate ">
-          <h2 class="mb-4">Bem-vindo à <span class="fas fa-hotdog">Nossa</span> Salgadaria</h2>
+            <h2 class="mb-4">Bem-vindo ao <span class="fas fa-hamburger" style="color: #00567e">Space Burger Dog Do Paulista</span></h2>
         </div>
         <div>
-  				<p>Há mais de 20 anos temperando momentos especiais com os melhores salgados, assados e petiscos selecionados. Nossa paixão por proporcionar satisfação se reflete em cada recheio que oferecemos, sempre buscando trazer sabor e alegria aos nossos clientes</p>
+  				<p>Somos especializados em hamburgueres artesanais e hotdogs especiais. Nossos produtos são feitos com ingredientes frescos e de qualidade, proporcionando o melhor sabor para você e sua família.</p>
   			</div>
     	</div>
     </section>
@@ -354,14 +352,14 @@
     	<div class="container-wrap">
     		<div class="row no-gutters">
 					<div class="col-md-6 ftco-animate">
-						<a href="#" class="gallery img d-flex align-items-center" style="background-image: url('web/src/images/WSalgados.jpg');">
+						<a href="#" class="gallery img d-flex align-items-center" style="background-image: url('web/src/images/ImagemPromocional4.jpeg');">
 							<div class="icon mb-4 d-flex align-items-center justify-content-center">
     						<span class="icon-search"></span>
     					</div>
 						</a>
 					</div>
 					<div class="col-md-6 ftco-animate">
-						<a href="#" class="gallery img d-flex align-items-center" style="background-image: url('web/src/images/WSalgados-2.jpg');">
+						<a href="#" class="gallery img d-flex align-items-center" style="background-image: url('web/src/images/ImagemPromocional9.jpeg');">
 							<div class="icon mb-4 d-flex align-items-center justify-content-center">
     						<span class="icon-search"></span>
     					</div>
@@ -498,7 +496,7 @@
           <div class="col-lg-3 col-md-6 mb-5 mb-md-5">
             <div class="ftco-footer-widget mb-4">
               <h2 class="ftco-heading-2">Sobre Nós</h2>
-              <p>Restaurante especializado em culinária italiana, oferecendo pratos tradicionais com ingredientes frescos e de qualidade.</p>
+              <p>Restaurante especializado em hamburgueres artesanais e hotdogs especiais, com ingredientes frescos e de qualidade.</p>
               <ul class="ftco-footer-social list-unstyled float-md-left float-lft mt-5">
                 <li class="ftco-animate"><a href="<?= !empty($dadosCorporativos->whatsapp) ? 'https://wa.me/55' . preg_replace('/\D/', '', $dadosCorporativos->whatsapp) . '?text=Olá! Gostaria de fazer um pedido.' : '#' ?>" target="_blank"><span class="icon-whatsapp"></span></a></li>
                 <li class="ftco-animate"><a href="<?= !empty($dadosCorporativos->facebook) ? 'https://facebook.com/' . $dadosCorporativos->facebook : '#' ?>" target="_blank"><span class="icon-facebook"></span></a></li>
@@ -524,7 +522,7 @@
                     $diaAtual = date('w');
                   ?>
                   <?php foreach ($expedientes as $exp): ?>
-                    <p class="pl-3" style="<?= $exp->dia == $diaAtual ? 'font-weight: bold; color: #f8b531;' : '' ?>">
+                    <p class="pl-3" style="<?= $exp->dia == $diaAtual ? 'font-weight: bold; color: #00557f;' : '' ?>">
                       <span class="<?= $exp->dia == $diaAtual ? 'text-warning' : '' ?>">
                         <?= $exp->dia == $diaAtual ? '➡️ ' : '' ?>
                         <?= esc($exp->dia_descricao) ?>: 
@@ -571,7 +569,7 @@
         </div>
         <div class="row">
           <div class="col-md-12 text-center">
-            <p>&copy; <?= date('Y') ?> Restaurante. Todos os direitos reservados.</p>
+            <p>&copy; <?= date('Y') ?> Space Burger Dog Do Paulista. Todos os direitos reservados.</p>
           </div>
         </div>
       </div>
@@ -611,7 +609,7 @@
                                 </button>
                             </div>
                             <div class="col-12 col-md-6" style="padding: 0 5px;">
-                                <button type="button" class="btn btn-warning w-100" id="btn-finalizar-pedido" style="background: linear-gradient(135deg, #f8b531 0%, #fac56e 100%); border: none; color: #000; font-weight: 600; font-family: 'Poppins', sans-serif;">
+                                <button type="button" class="btn btn-warning w-100" id="btn-finalizar-pedido" style="background: linear-gradient(135deg, #00557f 0%, #003f5e 100%); border: none; color: #fff; font-weight: 600; font-family: 'Poppins', sans-serif;">
                                     <i class="fas fa-check-circle mr-2"></i>Finalizar Pedido
                                 </button>
                             </div>
@@ -702,7 +700,7 @@
                     success: function(response) {
                         if (response.success) {
                             const status = response.pedido.status;
-                            if (status === 'entregue' || status === 'cancelado') {
+                            if (status === 'finalizado' || status === 'cancelado') {
                                 // Pedido finalizado, voltar ao ícone normal
                                 localStorage.removeItem('pedido_em_andamento');
                                 carrinhoIcon.removeClass('fa-box-open fa-truck').addClass('fa-shopping-cart').removeClass('text-info text-success').addClass('text-warning');
@@ -920,9 +918,9 @@
         .btn-qty {
             width: 30px;
             height: 30px;
-            border: 1px solid #f8b531;
+            border: 1px solid #00557f;
             background: transparent;
-            color: #f8b531;
+            color: #00557f;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -932,12 +930,12 @@
         }
         
         .btn-qty:hover {
-            background: #f8b531;
-            color: #000;
+            background: #00557f;
+            color: #fff;
         }
         
         .qty-valor {
-            color: #f8b531;
+            color: #00557f;
             font-weight: bold;
             min-width: 20px;
             text-align: center;
@@ -945,11 +943,11 @@
     </style>
     
     <!-- Indicador de cliente logado -->
-    <div id="cliente-logado" style="position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.8); color: #f8b531; padding: 10px 15px; border-radius: 25px; font-size: 14px; cursor: pointer; z-index: 1000; display: none; border: 1px solid #f8b531;">
+    <div id="cliente-logado" style="position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.8); color: #00557f; padding: 10px 15px; border-radius: 25px; font-size: 14px; cursor: pointer; z-index: 1000; display: none; border: 1px solid #00557f;">
         <i class="fas fa-user-circle mr-2"></i>
         <span id="email-cliente"></span>
-        <div id="menu-logout" style="position: absolute; bottom: 100%; right: 0; background: rgba(0,0,0,0.9); border: 1px solid #f8b531; border-radius: 8px; padding: 10px; margin-bottom: 5px; display: none; white-space: nowrap;">
-            <a href="#" id="btn-editar" style="color: #f8b531; text-decoration: none; font-size: 13px; display: block; margin-bottom: 8px;">
+        <div id="menu-logout" style="position: absolute; bottom: 100%; right: 0; background: rgba(0,0,0,0.9); border: 1px solid #00557f; border-radius: 8px; padding: 10px; margin-bottom: 5px; display: none; white-space: nowrap;">
+            <a href="#" id="btn-editar" style="color: #00557f; text-decoration: none; font-size: 13px; display: block; margin-bottom: 8px;">
                 <i class="fas fa-edit mr-2"></i>Editar Dados
             </a>
             <a href="#" id="btn-logout" style="color: #ff6b6b; text-decoration: none; font-size: 13px;">
@@ -963,7 +961,7 @@
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content" style="background: #1a1a1a; border: 1px solid #333; margin: 10px;">
                 <div class="modal-header" style="border-bottom: 1px solid #333;">
-                    <h5 class="modal-title" id="modalEdicaoLabel" style="color: #f8b531;">
+                    <h5 class="modal-title" id="modalEdicaoLabel" style="color: #00557f;">
                         <i class="fas fa-edit mr-2"></i>Editar Meus Dados
                     </h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: #fff;">
@@ -973,42 +971,42 @@
                 <div class="modal-body" style="color: #fff; max-height: 60vh; overflow-y: auto;">
                     <form id="formEdicaoCliente">
                         <div class="form-group">
-                            <label style="color: #f8b531;">Nome Completo *</label>
+                            <label style="color: #00557f;">Nome Completo *</label>
                             <input type="text" id="edit-nome" class="form-control" readonly style="background: #1a1a1a; border: 1px solid #444; color: #ccc;">
                         </div>
                         
                         <div class="form-group">
-                            <label style="color: #f8b531;">Telefone *</label>
+                            <label style="color: #00557f;">Telefone *</label>
                             <input type="tel" id="edit-telefone" class="form-control" required style="background: #2d2d2d; border: 1px solid #444; color: #fff;">
                         </div>
                         
                         <div class="form-group">
-                            <label style="color: #f8b531;">CEP *</label>
+                            <label style="color: #00557f;">CEP *</label>
                             <input type="text" id="edit-cep" class="form-control" required style="background: #2d2d2d; border: 1px solid #444; color: #fff;">
                         </div>
                         
                         <div class="form-group">
-                            <label style="color: #f8b531;">Cidade *</label>
+                            <label style="color: #00557f;">Cidade *</label>
                             <input type="text" id="edit-cidade" class="form-control" readonly placeholder="Campo autopreenchido pelo CEP" style="background: #1a1a1a; border: 1px solid #444; color: #ccc;">
                         </div>
                         
                         <div class="form-group">
-                            <label style="color: #f8b531;">Bairro *</label>
+                            <label style="color: #00557f;">Bairro *</label>
                             <input type="text" id="edit-bairro" class="form-control" readonly placeholder="Campo autopreenchido pelo CEP" style="background: #1a1a1a; border: 1px solid #444; color: #ccc;">
                         </div>
                         
                         <div class="form-group">
-                            <label style="color: #f8b531;">Logradouro *</label>
+                            <label style="color: #00557f;">Logradouro *</label>
                             <input type="text" id="edit-endereco" class="form-control" readonly placeholder="Campo autopreenchido pelo CEP" style="background: #1a1a1a; border: 1px solid #444; color: #ccc;">
                         </div>
                         
                         <div class="form-group">
-                            <label style="color: #f8b531;">Número</label>
+                            <label style="color: #00557f;">Número</label>
                             <input type="text" id="edit-numero" class="form-control" style="background: #2d2d2d; border: 1px solid #444; color: #fff;">
                         </div>
                         
                         <div class="form-group">
-                            <label style="color: #f8b531;">Complemento</label>
+                            <label style="color: #00557f;">Complemento</label>
                             <input type="text" id="edit-complemento" class="form-control" style="background: #2d2d2d; border: 1px solid #444; color: #fff;">
                         </div>
                     </form>
@@ -1016,7 +1014,7 @@
                 <div class="modal-footer" style="border-top: 1px solid #333; padding: 10px 15px;">
                     <div class="d-flex flex-column flex-sm-row w-100">
                         <button type="button" class="btn btn-secondary mb-2 mb-sm-0 mr-sm-2 flex-fill" data-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn flex-fill" id="btnSalvarEdicao" style="background: #f8b531; color: #000;">
+                        <button type="button" class="btn flex-fill" id="btnSalvarEdicao" style="background: #00557f; color: #fff;">
                             <i class="fas fa-save mr-2"></i>Salvar Alterações
                         </button>
                     </div>

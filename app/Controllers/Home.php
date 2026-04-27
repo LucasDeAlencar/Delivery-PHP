@@ -33,6 +33,12 @@ class Home extends BaseController {
                                 ->orderBy('produtos.nome', 'ASC')
                                 ->findAll();
         
+        // Carregar tamanhos para produtos com com_tamanho=1
+        $tamanhoProdutoModel = new \App\Models\TamanhoProdutoModel();
+        foreach ($produtos as $produto) {
+            $produto->tamanhos = ($produto->com_tamanho) ? $tamanhoProdutoModel->buscaPorProduto($produto->id) : [];
+        }
+        
         // Buscar expedientes
         $expedientes = $expedienteModel->orderBy('dia', 'ASC')->findAll();
         
@@ -42,6 +48,16 @@ class Home extends BaseController {
         // Pegar expediente de hoje
         $expedienteHoje = $this->getExpedienteHoje($expedientes);
         
+        // Buscar config de mesas
+        $configMesas = $db->table('configuracao_mesas')->where('id', 1)->get()->getRow();
+        $mesasAtivas = [];
+        if ($configMesas && $configMesas->sistema_ativo == 1) {
+            $mesasAtivas = $db->table('mesas')
+                ->where('ativo', 1)
+                ->orderBy('numero', 'ASC')
+                ->get()->getResult();
+        }
+
         $data = [
             'titulo' => 'Seja muito bem vindo(a)',
             'categorias' => $categorias,
@@ -49,7 +65,9 @@ class Home extends BaseController {
             'expedientes' => $expedientes,
             'estaAberto' => $estaAberto,
             'expedienteHoje' => $expedienteHoje,
-            'dadosCorporativos' => $dadosCorporativos
+            'dadosCorporativos' => $dadosCorporativos,
+            'sistemaMessasAtivo' => $configMesas ? (bool)$configMesas->sistema_ativo : false,
+            'mesasAtivas' => $mesasAtivas,
         ];
         
         return view('Home/index', $data);

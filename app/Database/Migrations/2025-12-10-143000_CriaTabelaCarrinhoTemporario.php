@@ -26,6 +26,17 @@ class CriaTabelaCarrinhoTemporario extends Migration
                 'unsigned' => true,
                 'null' => false,
             ],
+            'tamanho_id' => [
+                'type' => 'INT',
+                'constraint' => 10,
+                'unsigned' => true,
+                'null' => true,
+            ],
+            'tamanho_nome' => [
+                'type' => 'VARCHAR',
+                'constraint' => 64,
+                'null' => true,
+            ],
             'produto_nome' => [
                 'type' => 'VARCHAR',
                 'constraint' => 255,
@@ -69,6 +80,10 @@ class CriaTabelaCarrinhoTemporario extends Migration
         $this->forge->addKey('id', true);
         $this->forge->addKey('session_id');
         $this->forge->addKey('produto_id');
+        $this->forge->addKey('tamanho_id');
+        
+        // Foreign key
+        $this->forge->addForeignKey('tamanho_id', 'tamanhos', 'id', 'SET NULL', 'CASCADE');
         
         $this->forge->createTable('carrinho_temporario');
     }

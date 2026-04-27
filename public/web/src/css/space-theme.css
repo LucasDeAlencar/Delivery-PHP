@@ -1,0 +1,98 @@
+/* ============================================================
+   Space Burger Dog Do Paulista - Tema Espacial
+   Cor primária: #00557f (azul petróleo espacial)
+   ============================================================ */
+
+/* --- Cor primária: botões --- */
+.btn-primary {
+    color: #fff !important;
+    background-color: #00557f !important;
+    border-color: #00557f !important;
+}
+.btn-primary:hover, .btn-primary:focus {
+    background-color: #003f5e !important;
+    border-color: #003f5e !important;
+    box-shadow: 0 0 12px rgba(0, 85, 127, 0.5) !important;
+}
+
+/* --- Overlay do slider: gradiente espacial --- */
+.owl-carousel.home-slider .slider-item .overlay {
+    background: linear-gradient(
+        135deg,
+        rgba(0, 85, 127, 0.75) 0%,
+        rgba(0, 20, 40, 0.85) 60%,
+        rgba(0, 0, 0, 0.7) 100%
+    ) !important;
+    opacity: 1 !important;
+}
+
+/* --- Subheading: mesma fonte dos títulos h1 (Josefin Sans) com cor de destaque --- */
+.owl-carousel.home-slider .slider-item .slider-text .subheading {
+    font-family: "Josefin Sans", Arial, sans-serif !important;
+    font-size: 22px !important;
+    font-weight: 700 !important;
+    letter-spacing: 3px !important;
+    text-transform: uppercase !important;
+    color: #f8b531 !important;
+}
+
+/* --- Navbar brand: contraste sobre fundo escuro --- */
+.navbar-brand span,
+.navbar-brand small,
+.ftco-navbar-light .navbar-brand,
+.ftco-navbar-light.scrolled .navbar-brand {
+    color: #fff !important;
+}
+
+/* Texto principal "Space Burger Dog Do Paulista" */
+.navbar-brand span.brand-name,
+.navbar-brand .brand-name {
+    color: #00557f !important;
+    font-family: "Josefin Sans", Arial, sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.navbar-brand .brand-sub {
+    font-size: 0.65rem;
+    opacity: 0.85;
+    font-weight: 400;
+    display: block;
+    line-height: 1;
+    color: #f8b531 !important;
+}
+
+/* --- Logo circular na navbar --- */
+.navbar-brand img.logo-space {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 8px;
+    vertical-align: middle;
+    border: 2px solid #00557f;
+    box-shadow: 0 0 8px rgba(0, 85, 127, 0.6);
+}
+
+/* --- Hover dos nav-links: cor primária --- */
+.ftco-navbar-light .navbar-nav > .nav-item > .nav-link:hover {
+    color: #f8b531 !important;
+}
+
+/* --- Cor de destaque em elementos de acento --- */
+.carrinho-counter {
+    background: linear-gradient(135deg, #00557f 0%, #003f5e 100%) !important;
+}
+
+.btn-qty {
+    border-color: #00557f !important;
+    color: #00557f !important;
+}
+.btn-qty:hover {
+    background: #00557f !important;
+    color: #fff !important;
+}
+.qty-valor {
+    color: #00557f !important;
+}

@@ -8,6 +8,7 @@ window.SistemaProduto = {
     extras: [],
     extrasDisponiveis: [],
     carrinho: [],
+    tamanhoSelecionado: null,
 
     init() {
         this.carregarCarrinho();
@@ -20,6 +21,7 @@ window.SistemaProduto = {
 
         this.produto = dados;
         this.extras = [];
+        this.tamanhoSelecionado = null;
 
         if (window.ProdutoExtras) {
             window.ProdutoExtras.limparExtras();
@@ -40,22 +42,39 @@ window.SistemaProduto = {
     },
 
     extrairDados(elemento) {
-        const $el = $(elemento);
+        const $el = $(elemento).closest('[data-produto-id]').length
+            ? $(elemento).closest('[data-produto-id]')
+            : $(elemento).find('[data-produto-id]').first();
+
+        let tamanhos = [];
+        try { tamanhos = JSON.parse($el.attr('data-tamanhos') || '[]'); } catch(e) {}
+
         return {
-            id: $el.data('produto-id'),
-            nome: $el.data('produto-nome'),
-            preco: parseFloat($el.data('produto-preco')),
-            imagem: $el.data('produto-imagem'),
-            categoria: $el.data('produto-categoria'),
-            descricao: $el.data('produto-descricao') || ''
+            id: $el.attr('data-produto-id'),
+            nome: $el.attr('data-produto-nome'),
+            preco: parseFloat($el.attr('data-produto-preco')),
+            imagem: $el.attr('data-produto-imagem'),
+            categoria: $el.attr('data-produto-categoria'),
+            descricao: $el.attr('data-produto-descricao') || '',
+            com_tamanho: $el.attr('data-com-tamanho') == '1' ? 1 : 0,
+            tamanhos: tamanhos
         };
     },
 
     preencherModal(dados) {
         $('#modal-produto-nome').text(dados.nome);
-        $('#modal-produto-preco')
-            .text(`R$ ${dados.preco.toFixed(2).replace('.', ',')}`)
-            .attr('data-valor-base', dados.preco);
+
+        const comTamanho = dados.com_tamanho == 1 && dados.tamanhos && dados.tamanhos.length > 0;
+        if (comTamanho) {
+            // Esconde a linha de preço unitário e mostra badge compacto
+            $('#modal-produto-preco').closest('.col-6').hide();
+            $('#modal-produto-preco').text('').attr('data-valor-base', 0);
+        } else {
+            $('#modal-produto-preco').closest('.col-6').show();
+            $('#modal-produto-preco')
+                .text(`R$ ${dados.preco.toFixed(2).replace('.', ',')}`)
+                .attr('data-valor-base', dados.preco);
+        }
 
         $('#modal-produto-categoria').text(dados.categoria);
         $('#modal-produto-descricao').text(dados.descricao);
@@ -65,6 +84,33 @@ window.SistemaProduto = {
         $('#observacoes').val('');
         $('#extras-selecionados-resumo').hide();
         $('#modal-produto-preco-extras').text('Sem extras');
+
+        // Configurar seletor de tamanhos
+        this.tamanhoSelecionado = null;
+        if (comTamanho) {
+            const $opcoes = $('#tamanhos-opcoes').empty();
+            dados.tamanhos.forEach(t => {
+                const preco = parseFloat(t.preco).toFixed(2).replace('.', ',');
+                const $btn = $(`<button type="button" class="btn btn-sm btn-tamanho" data-nome="${t.nome}" data-preco="${t.preco}">
+                    ${t.nome} — R$ ${preco}
+                </button>`);
+                $btn.on('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    $('.btn-tamanho').removeClass('active');
+                    $(e.currentTarget).addClass('active');
+                    this.tamanhoSelecionado = { id: t.id || null, nome: t.nome, preco: parseFloat(t.preco) };
+                    $('#modal-produto-preco').text(`R$ ${this.tamanhoSelecionado.preco.toFixed(2).replace('.', ',')}`).attr('data-valor-base', this.tamanhoSelecionado.preco);
+                    $('#aviso-tamanho').addClass('d-none');
+                    this.atualizarTotal();
+                });
+                $opcoes.append($btn);
+            });
+            $('#container-tamanhos').show();
+            $('#aviso-tamanho').addClass('d-none');
+        } else {
+            $('#container-tamanhos').hide();
+        }
 
         this.atualizarTotal();
     },
@@ -115,7 +161,13 @@ window.SistemaProduto = {
     },
 
     atualizarTotal() {
-        const precoBase = this.produto?.preco || 0;
+        const comTamanho = this.produto?.com_tamanho == 1 && this.produto?.tamanhos?.length > 0;
+        if (comTamanho && !this.tamanhoSelecionado) {
+            $('#modal-total').text('—');
+            return;
+        }
+
+        const precoBase = parseFloat($('#modal-produto-preco').attr('data-valor-base')) || 0;
         const quantidade = parseInt($('#quantidade').val()) || 1;
         
         let extrasSelecionados = [];
@@ -135,6 +187,19 @@ window.SistemaProduto = {
         // Recarregar carrinho do localStorage antes de adicionar
         this.carregarCarrinho();
 
+        // Validar tamanho obrigatório
+        const comTamanho = this.produto.com_tamanho == 1 && this.produto.tamanhos?.length > 0;
+        if (comTamanho && !this.tamanhoSelecionado) {
+            $('#aviso-tamanho').removeClass('d-none');
+            $('#container-tamanhos').get(0)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Piscar os botões para chamar atenção
+            $('#tamanhos-opcoes .btn-tamanho').css('border-color', '#dc3545').delay(400).queue(function(next) {
+                $(this).css('border-color', '#0055ff'); next();
+                $(this).css('margin_left', '20px'); next();
+            });
+            return;
+        }
+
         // Validar extras obrigatórios
         if (window.ProdutoExtras && typeof window.ProdutoExtras.validarSelecao === 'function') {
             if (!window.ProdutoExtras.validarSelecao()) {
@@ -147,13 +212,18 @@ window.SistemaProduto = {
             extrasSelecionados = window.ProdutoExtras.getExtrasSelecionados();
         }
 
+        // Preço final: tamanho tem prioridade sobre preço base
+        const precoFinal = this.tamanhoSelecionado ? this.tamanhoSelecionado.preco : this.produto.preco;
+
         const item = {
             id: this.produto.id,
             nome: this.produto.nome,
-            preco: this.produto.preco,
+            preco: precoFinal,
             quantidade: parseInt($('#quantidade').val()) || 1,
             observacoes: $('#observacoes').val() || '',
             extras: extrasSelecionados,
+            tamanho: this.tamanhoSelecionado ? { id: this.tamanhoSelecionado.id, nome: this.tamanhoSelecionado.nome, preco: this.tamanhoSelecionado.preco } : null,
+            tamanho_id: this.tamanhoSelecionado?.id || null,
             total: this.calcularTotalItem(extrasSelecionados)
         };
 
@@ -175,14 +245,15 @@ window.SistemaProduto = {
     calcularTotalItem(extras = null, quantidade = null) {
         const qtd = quantidade !== null ? quantidade : (parseInt($('#quantidade').val()) || 1);
         const extrasUsar = extras !== null ? extras : (window.ProdutoExtras && typeof window.ProdutoExtras.getExtrasSelecionados === 'function' ? window.ProdutoExtras.getExtrasSelecionados() : []);
-        
+        const precoBase = this.tamanhoSelecionado ? this.tamanhoSelecionado.preco : (this.produto?.preco || 0);
         const totalExtras = extrasUsar.reduce((t, e) => t + (e.preco * e.quantidade), 0);
-        return (this.produto.preco + totalExtras) * qtd;
+        return (precoBase + totalExtras) * qtd;
     },
 
     gerarChave(item) {
         const extrasKey = item.extras.map(e => `${e.id}:${e.quantidade}`).sort().join(',');
-        return `${item.id}_${item.observacoes}_${extrasKey}`;
+        const tamanhoKey = item.tamanho ? item.tamanho.nome : '';
+        return `${item.id}_${tamanhoKey}_${item.observacoes}_${extrasKey}`;
     },
 
     fecharModal() {

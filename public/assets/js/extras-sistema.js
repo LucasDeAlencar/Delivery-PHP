@@ -3,12 +3,13 @@
  * Gerencia seleção de extras com localStorage
  */
 
-window.ProdutoExtras = {
-    produtoAtual: null,
-    extrasDisponiveis: [],
-    extrasSelecionados: [],
-    obrigatorioExtras: 0,
-    maxExtras: 0,
+ window.ProdutoExtras = {
+     produtoAtual: null,
+     extrasDisponiveis: [],
+     extrasSelecionados: [],
+     obrigatorioExtras: 0,
+     maxExtras: 0,
+     termoPesquisa: '',
 
     /**
      * Carrega extras de um produto
@@ -59,107 +60,146 @@ window.ProdutoExtras = {
         }
     },
 
-    /**
-     * Abre modal de extras
-     */
-    abrirModalExtras() {
-        
-        // Mostrar loading
-        $('#extras-loading').show();
-        $('#extras-lista').hide();
-        $('#extras-vazio').hide();
-        
-        // Abrir modal
-        $('#modalExtras').modal('show');
-        
-        // Renderizar após abrir
-        setTimeout(() => this.renderizarExtras(), 200);
-    },
+     /**
+      * Abre modal de extras
+      */
+     abrirModalExtras() {
+         
+         // Mostrar loading
+         $('#extras-loading').show();
+         $('#extras-lista').hide();
+         $('#extras-vazio').hide();
+         
+         // Limpar pesquisa anterior
+         $('#pesquisa-extras').val('');
+         $('#limpar-pesquisa').hide();
+         this.termoPesquisa = '';
+         
+         // Configurar evento de pesquisa (se ainda não estiver configurado)
+         if (!$('#pesquisa-extras').data('evento-configurado')) {
+             $('#pesquisa-extras').on('input', (e) => {
+                 const termo = e.target.value.trim().toLowerCase();
+                 this.termoPesquisa = termo;
+                 this.renderizarExtras();
+                 
+                 // Mostrar/ocultar botão limpar
+                 if (termo.length > 0) {
+                     $('#limpar-pesquisa').show();
+                 } else {
+                     $('#limpar-pesquisa').hide();
+                 }
+             });
+             $('#pesquisa-extras').data('evento-configurado', true);
+         }
+         
+         // Abrir modal
+         $('#modalExtras').modal('show');
+         
+         // Renderizar após abrir
+         setTimeout(() => this.renderizarExtras(), 200);
+     },
 
-    /**
-     * Renderiza lista de extras
-     */
-    renderizarExtras() {
-        const container = $('#extras-container');
-        container.empty();
+     /**
+      * Renderiza lista de extras
+      */
+     renderizarExtras() {
+         const container = $('#extras-container');
+         container.empty();
 
-        if (this.extrasDisponiveis.length === 0) {
-            $('#extras-loading').hide();
-            $('#extras-vazio').show();
-            $('#extras-lista').show();
-            return;
-        }
+         // Filtrar extras pelo termo de pesquisa
+         const extrasFiltrados = this.termoPesquisa 
+             ? this.extrasDisponiveis.filter(extra => 
+                 extra.nome.toLowerCase().includes(this.termoPesquisa) ||
+                 (extra.descricao && extra.descricao.toLowerCase().includes(this.termoPesquisa))
+               )
+             : this.extrasDisponiveis;
 
-        // Aviso de obrigatórios e limite máximo
-        let avisoTexto = '';
-        if (this.obrigatorioExtras > 0) {
-            avisoTexto = `Selecione pelo menos ${this.obrigatorioExtras} extra(s).`;
-        }
-        if (this.maxExtras > 0) {
-            if (avisoTexto) avisoTexto += ' ';
-            avisoTexto += `Máximo permitido: ${this.maxExtras} extras.`;
-        }
-        
-        if (avisoTexto) {
-            $('#texto-aviso-obrigatorio').text(avisoTexto);
-            $('#aviso-obrigatorio').show();
-        } else {
-            $('#aviso-obrigatorio').hide();
-        }
+         if (extrasFiltrados.length === 0 && this.extrasDisponiveis.length > 0) {
+             // Mostrou mensagem de nenhum resultado na pesquisa
+             container.html('<p class="text-center text-muted py-4">Nenhum extra encontrado para "<strong>' + this.termoPesquisa + '</strong>"</p>');
+             $('#extras-loading').hide();
+             $('#extras-lista').show();
+             $('#extras-vazio').hide();
+             return;
+         }
 
-        // Renderizar cada extra
-        this.extrasDisponiveis.forEach(extra => {
-            const selecionado = this.extrasSelecionados.find(e => e.id == extra.id);
-            const quantidade = selecionado ? selecionado.quantidade : 0;
-            const isSelected = quantidade > 0;
-            
-            let html = '';
-            
-            if (extra.multitude == 1) {
-                // Extra com quantidade
-                html = `
-                    <div class="extra-item ${isSelected ? 'selected' : ''}" data-id="${extra.id}">
-                        <div class="extra-info">
-                            <span class="extra-nome">${extra.nome}</span>
-                            ${extra.descricao ? `<small class="extra-desc">${extra.descricao}</small>` : ''}
-                        </div>
-                        <div class="extra-preco">
-                            ${parseFloat(extra.preco) > 0 ? `+R$ ${parseFloat(extra.preco).toFixed(2).replace('.', ',')}` : 'Grátis'}
-                        </div>
-                        <div class="extra-controles">
-                            <button type="button" class="btn-qty btn-menos" onclick="ProdutoExtras.diminuirQtd(${extra.id})">-</button>
-                            <span class="qty-valor" id="qty-${extra.id}">${quantidade}</span>
-                            <button type="button" class="btn-qty btn-mais" onclick="ProdutoExtras.aumentarQtd(${extra.id})">+</button>
-                        </div>
-                    </div>
-                `;
-            } else {
-                // Extra checkbox
-                html = `
-                    <div class="extra-item ${isSelected ? 'selected' : ''}" data-id="${extra.id}">
-                        <div class="extra-check">
-                            <input type="checkbox" id="chk-${extra.id}" ${isSelected ? 'checked' : ''} 
-                                   onchange="ProdutoExtras.toggleExtra(${extra.id})">
-                        </div>
-                        <div class="extra-info">
-                            <label for="chk-${extra.id}" class="extra-nome">${extra.nome}</label>
-                            ${extra.descricao ? `<small class="extra-desc">${extra.descricao}</small>` : ''}
-                        </div>
-                        <div class="extra-preco">
-                            ${parseFloat(extra.preco) > 0 ? `+R$ ${parseFloat(extra.preco).toFixed(2).replace('.', ',')}` : 'Grátis'}
-                        </div>
-                    </div>
-                `;
-            }
-            
-            container.append(html);
-        });
+         if (this.extrasDisponiveis.length === 0) {
+             $('#extras-loading').hide();
+             $('#extras-vazio').show();
+             $('#extras-lista').show();
+             return;
+         }
 
-        this.atualizarContador();
-        
-        $('#extras-loading').hide();
-        $('#extras-lista').show();
-    },
+         // Aviso de obrigatórios e limite máximo
+         let avisoTexto = '';
+         if (this.obrigatorioExtras > 0) {
+             avisoTexto = `Selecione pelo menos ${this.obrigatorioExtras} extra(s).`;
+         }
+         if (this.maxExtras > 0) {
+             if (avisoTexto) avisoTexto += ' ';
+             avisoTexto += `Máximo permitido: ${this.maxExtras} extras.`;
+         }
+         
+         if (avisoTexto) {
+             $('#texto-aviso-obrigatorio').text(avisoTexto);
+             $('#aviso-obrigatorio').show();
+         } else {
+             $('#aviso-obrigatorio').hide();
+         }
+
+         // Renderizar cada extra
+         extrasFiltrados.forEach(extra => {
+             const selecionado = this.extrasSelecionados.find(e => e.id == extra.id);
+             const quantidade = selecionado ? selecionado.quantidade : 0;
+             const isSelected = quantidade > 0;
+             
+             let html = '';
+             
+             if (extra.multitude == 1) {
+                 // Extra com quantidade
+                 html = `
+                     <div class="extra-item ${isSelected ? 'selected' : ''}" data-id="${extra.id}">
+                         <div class="extra-info">
+                             <span class="extra-nome">${extra.nome}</span>
+                             ${extra.descricao ? `<small class="extra-desc">${extra.descricao}</small>` : ''}
+                         </div>
+                         <div class="extra-preco">
+                             ${parseFloat(extra.preco) > 0 ? `+R$ ${parseFloat(extra.preco).toFixed(2).replace('.', ',')}` : 'Grátis'}
+                         </div>
+                         <div class="extra-controles">
+                             <button type="button" class="btn-qty btn-menos" onclick="ProdutoExtras.diminuirQtd(${extra.id})">-</button>
+                             <span class="qty-valor" id="qty-${extra.id}">${quantidade}</span>
+                             <button type="button" class="btn-qty btn-mais" onclick="ProdutoExtras.aumentarQtd(${extra.id})">+</button>
+                         </div>
+                     </div>
+                 `;
+             } else {
+                 // Extra checkbox
+                 html = `
+                     <div class="extra-item ${isSelected ? 'selected' : ''}" data-id="${extra.id}">
+                         <div class="extra-check">
+                             <input type="checkbox" id="chk-${extra.id}" ${isSelected ? 'checked' : ''} 
+                                    onchange="ProdutoExtras.toggleExtra(${extra.id})">
+                         </div>
+                         <div class="extra-info">
+                             <label for="chk-${extra.id}" class="extra-nome">${extra.nome}</label>
+                             ${extra.descricao ? `<small class="extra-desc">${extra.descricao}</small>` : ''}
+                         </div>
+                         <div class="extra-preco">
+                             ${parseFloat(extra.preco) > 0 ? `+R$ ${parseFloat(extra.preco).toFixed(2).replace('.', ',')}` : 'Grátis'}
+                         </div>
+                     </div>
+                 `;
+             }
+             
+             container.append(html);
+         });
+
+         this.atualizarContador();
+         
+         $('#extras-loading').hide();
+         $('#extras-lista').show();
+     },
 
     /**
      * Toggle extra checkbox
@@ -398,23 +438,30 @@ window.ProdutoExtras = {
     }
 };
 
-// Inicializar eventos quando o documento estiver pronto
-$(document).ready(function() {
-    // Botão para abrir modal de extras
-    $('#btn-selecionar-extras').on('click', function() {
-        window.ProdutoExtras.abrirModalExtras();
-    });
+ // Inicializar eventos quando o documento estiver pronto
+ $(document).ready(function() {
+     // Botão para abrir modal de extras
+     $('#btn-selecionar-extras').on('click', function() {
+         window.ProdutoExtras.abrirModalExtras();
+     });
 
-    // Botão para confirmar seleção de extras
-    $('#btn-confirmar-extras').on('click', function() {
-        window.ProdutoExtras.confirmarExtras();
-    });
+     // Botão para confirmar seleção de extras
+     $('#btn-confirmar-extras').on('click', function() {
+         window.ProdutoExtras.confirmarExtras();
+     });
 
-    // Limpar extras ao fechar modal de compra
-    $('#modalCompra').on('hidden.bs.modal', function() {
-        window.ProdutoExtras.limparExtras();
-    });
+     // Limpar pesquisa e extras ao fechar modal de extras
+     $('#modalExtras').on('hidden.bs.modal', function() {
+         $('#pesquisa-extras').val('');
+         $('#limpar-pesquisa').hide();
+         window.ProdutoExtras.termoPesquisa = '';
+     });
 
-    console.log('🎯 Sistema de extras inicializado');
-});
+     // Limpar extras ao fechar modal de compra
+     $('#modalCompra').on('hidden.bs.modal', function() {
+         window.ProdutoExtras.limparExtras();
+     });
+
+     console.log('🎯 Sistema de extras inicializado');
+ });
 

@@ -162,7 +162,7 @@
     <div class="container">
         <!-- Cabeçalho -->
         <div class="header">
-            <div class="logo"><?= !empty($dadosCorporativos['nome_fantasia']) ? esc($dadosCorporativos['nome_fantasia']) : 'Delicias MV' ?></div>
+            <div class="logo"><?= !empty($dadosCorporativos['nome_fantasia']) ? esc($dadosCorporativos['nome_fantasia']) : 'Space Burger Dog Do Paulista' ?></div>
             <div class="header-info">
                 <?= !empty($dadosCorporativos['telefone']) ? esc($dadosCorporativos['telefone']) : 'Tel: (00) 00000-0000' ?>
                 <?= !empty($dadosCorporativos['endereco']) ? '<br>' . esc($dadosCorporativos['endereco']) : '' ?>
@@ -266,7 +266,7 @@
         <!-- Rodapé -->
         <div class="footer">
             <div class="footer-destaque">Obrigado pela preferência!</div>
-            <div><?= !empty($dadosCorporativos['nome_fantasia']) ? esc($dadosCorporativos['nome_fantasia']) : 'Delicias MV' ?> - Volte sempre!</div>
+            <div><?= !empty($dadosCorporativos['nome_fantasia']) ? esc($dadosCorporativos['nome_fantasia']) : 'Space Burger Dog Do Paulista' ?> - Volte sempre!</div>
         </div>
     </div>
 </body>

@@ -18,7 +18,7 @@
     .card-estatistica h3 {
         font-size: 2rem;
         font-weight: 700;
-        color: #f8b531;
+        color: #0055ff;
         margin: 0;
     }
     .card-estatistica h6 {
@@ -41,16 +41,78 @@
     }
     .table { min-width: 800px; margin-bottom: 0; }
     .table thead th {
-        color: #f8b531;
+        color: #0055ff;
         font-weight: 600;
         text-transform: uppercase;
         font-size: 0.75rem;
-        border-bottom: 2px solid #f8b531;
+        border-bottom: 2px solid #0055ff;
         padding: 0.75rem;
         white-space: nowrap;
     }
     .table tbody td { padding: 0.75rem; vertical-align: middle; }
     .table tbody tr:hover { background: rgba(248, 181, 49, 0.1); }
+    
+    /* Responsivo */
+    @media (max-width: 768px) {
+        .container-fluid { padding: 10px !important; }
+        .card-estatistica { margin-bottom: 10px; }
+        .card-estatistica h3 { font-size: 1.5rem; }
+        .card-estatistica h6 { font-size: 0.65rem; }
+        
+        .d-flex.justify-content-between { flex-direction: column !important; align-items: stretch !important; gap: 10px; }
+        .d-flex.gap-2 { flex-wrap: wrap; }
+        
+        .btn-sm { padding: 4px 8px; font-size: 0.7rem; }
+        
+        .pesquisa-pedido { width: 100% !important; }
+        
+        .filtro-status { font-size: 0.65rem; padding: 4px 8px; }
+        
+        .table-responsive { margin: 0 -10px; padding: 0 10px; }
+        .table { min-width: 500px; font-size: 0.8rem; }
+        .table thead th, .table tbody td { padding: 0.5rem; font-size: 0.75rem; }
+        
+        .pedido-codigo { font-size: 0.85rem; }
+        .cliente-nome { font-size: 0.8rem; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .valor-valor { font-weight: 700; }
+        
+        .badge { font-size: 0.6rem; padding: 2px 5px; }
+        
+        .acoes-botoes { display: flex; flex-direction: column; gap: 3px; }
+        .acoes-botoes .btn { padding: 3px 6px; font-size: 0.65rem; }
+        
+        .stat-card { font-size: 0.8rem; }
+        
+        .cabecalho-mobile { display: flex; flex-direction: column; gap: 10px; }
+        .cabecalho-mobile .d-flex.gap-2 { justify-content: space-between; }
+        
+        .filtros-mobile { display: flex; flex-wrap: wrap; gap: 5px; }
+        .filtros-mobile .btn { flex: 1 1 auto; text-align: center; min-width: 60px; }
+    }
+    
+    @media (max-width: 576px) {
+        h4 { font-size: 1.1rem !important; }
+        
+        .card { margin-bottom: 10px; }
+        .card-body { padding: 10px !important; }
+        
+        .table { min-width: 400px; }
+        
+        .mobile-card { 
+            display: block !important; 
+            background: #2a2a2a; 
+            border: 1px solid #444; 
+            border-radius: 8px; 
+            padding: 10px; 
+            margin-bottom: 10px; 
+        }
+        .mobile-card .row { margin: 0; }
+        .mobile-card .col-1, .mobile-card .col-2, .mobile-card .col-3, .mobile-card .col-4, 
+        .mobile-card .col-5, .mobile-card .col-6, .mobile-card .col-7, .mobile-card .col-8, 
+        .mobile-card .col-9, .mobile-card .col-10, .mobile-card .col-11, .mobile-card .col-12 {
+            padding: 2px 5px;
+        }
+    }
     
     .status-select {
         background: #2d2d2d;
@@ -63,7 +125,7 @@
         min-width: 120px;
     }
     .status-select:focus {
-        border-color: #f8b531;
+        border-color: #0055ff;
         outline: none;
     }
     
@@ -74,9 +136,9 @@
         margin: 2px;
     }
     .filtro-status.active {
-        background: #f8b531 !important;
+        background: #0055ff !important;
         color: #1a1a1a !important;
-        border-color: #f8b531 !important;
+        border-color: #0055ff !important;
     }
     
     @keyframes pulseNew {
@@ -175,6 +237,27 @@
         .suporte-info-header { flex-direction: column !important; align-items: flex-start !important; }
         .suporte-info-header button { width: 100%; }
     }
+    .pesquisa-pedido {
+        background: #2a2a2a;
+        border: 2px solid #555;
+        color: #fff;
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-size: 0.85rem;
+        width: 250px;
+    }
+    .pesquisa-pedido:focus {
+        border-color: #0055ff;
+        outline: none;
+    }
+    .pesquisa-pedido.por-id { color: #ffc107; }
+    .pesquisa-pedido.por-codigo { color: #28a745; }
+    .pesquisa-pedido.por-mesa { color: #17a2b8; }
+    .pesquisa-pedido.por-valor-maior { color: #2ecc71; }
+    .pesquisa-pedido.por-valor-menor { color: #e74c3c; }
+    .pesquisa-pedido.por-valor { color: #9b59b6; }
+    .pesquisa-pedido.por-hora { color: #f39c12; }
+    .pesquisa-pedido.por-data { color: #1abc9c; }
 </style>
 <?php echo $this->endSection(); ?>
 
@@ -184,14 +267,24 @@
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center flex-wrap">
             <div>
-                <h4 style="color: #f8b531; font-weight: 700; margin: 0;">
+                <h4 style="color: #0055ff; font-weight: 700; margin: 0;">
                     <i class="fas fa-shopping-cart me-2"></i> Pedidos
                 </h4>
                 <small style="color: #999;">Atualização automática a cada 10s</small>
             </div>
-            <span class="badge bg-success" style="padding: 6px 12px; font-size: 0.75rem;">
-                <i class="fas fa-sync-alt me-1" id="icone-sync"></i> Auto-refresh
-            </span>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-success" style="padding: 6px 12px; font-size: 0.75rem;">
+                    <i class="fas fa-sync-alt me-1" id="icone-sync"></i> Auto-refresh
+                </span>
+                <a href="<?= site_url('admin/pedidos/csv') ?>" class="btn btn-sm btn-outline-success" style="padding: 5px 10px; font-size: 0.75rem;">
+                    <i class="fas fa-file-csv me-1"></i> <?= ($isAdmin ?? false) ? 'Relação CSV' : 'CSV do Dia' ?>
+                </a>
+                <?php if ($isAdmin): ?>
+                <button type="button" class="btn btn-sm btn-outline-danger" style="padding: 5px 10px; font-size: 0.75rem;" onclick="limparPedidos()">
+                    <i class="fas fa-trash-alt me-1"></i> Limpar Pedidos
+                </button>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 </div>
@@ -233,8 +326,8 @@
             <div class="card-body py-2">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h6 class="mb-1">Entregues</h6>
-                        <h3 id="stat-entregues"><?= $estatisticas['entregues'] ?? 0 ?></h3>
+                        <h6 class="mb-1">Finalizados</h6>
+                        <h3 id="stat-finalizados"><?= $estatisticas['finalizados'] ?? 0 ?></h3>
                     </div>
                     <div class="icon-circle" style="background: #28a745;">
                         <i class="fas fa-check-double text-white"></i>
@@ -319,7 +412,7 @@ foreach ($suportes_pendentes as $suporte) {
                 <div class="suporte-grupo" style="border-bottom: 1px solid #444; padding: 15px 0;">
                     <div class="suporte-header" style="display: flex; justify-content: space-between; align-items: start; gap: 15px;">
                         <div style="flex: 1; min-width: 0;">
-                            <p style="margin: 0; color: #f8b531; cursor: pointer; word-wrap: break-word;" onclick="toggleSuporte('<?= $codigo ?>')">
+                            <p style="margin: 0; color: #0055ff; cursor: pointer; word-wrap: break-word;" onclick="toggleSuporte('<?= $codigo ?>')">
                                 <i class="fas fa-chevron-down" id="icon-<?= $codigo ?>"></i>
                                 <strong>Pedido:</strong> <?= esc($codigo) ?> | 
                                 <strong>Cliente:</strong> <?= esc($grupo['cliente_nome']) ?> 
@@ -330,7 +423,7 @@ foreach ($suportes_pendentes as $suporte) {
                             <div id="detalhes-<?= $codigo ?>" style="display: none; margin-top: 15px;">
                                 <div style="background: #3a3a3a; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
                                     <div class="suporte-info-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
-                                        <h6 style="color: #f8b531; margin: 0;">Mensagens:</h6>
+                                        <h6 style="color: #0055ff; margin: 0;">Mensagens:</h6>
                                         <button class="btn btn-warning btn-sm" onclick="carregarInfoPedido('<?= $codigo ?>', <?= $grupo['pedido_id'] ?>)" id="btn-info-<?= $codigo ?>">
                                             <i class="fas fa-info-circle"></i> <span class="d-none d-sm-inline">Ver Informações do Cliente</span><span class="d-inline d-sm-none">Info</span>
                                         </button>
@@ -409,7 +502,7 @@ function carregarInfoPedido(codigo, pedidoId) {
                     
                     let htmlItens = '';
                     if (itens.length > 0) {
-                        htmlItens = '<div style="margin-top: 15px;"><h6 style="color: #f8b531; margin-bottom: 10px;">Itens do Pedido:</h6>';
+                        htmlItens = '<div style="margin-top: 15px;"><h6 style="color: #0055ff; margin-bottom: 10px;">Itens do Pedido:</h6>';
                         itens.forEach(item => {
                             const precoUnitario = parseFloat(item.preco_unitario) || 0;
                             const quantidade = parseInt(item.quantidade) || 1;
@@ -425,7 +518,7 @@ function carregarInfoPedido(codigo, pedidoId) {
                                 <div style="background: #222; padding: 8px; border-radius: 5px; margin-bottom: 8px; font-size: 13px;">
                                     <div style="display: flex; justify-content: space-between;">
                                         <span>${quantidade}x ${item.produto_nome || item.nome_produto || 'Produto'}</span>
-                                        <span style="color: #f8b531;">R$ ${precoItem.toFixed(2).replace('.', ',')}</span>
+                                        <span style="color: #0055ff;">R$ ${precoItem.toFixed(2).replace('.', ',')}</span>
                                     </div>
                                     ${precoUnitario > 0 ? `<div style="color: #666; font-size: 11px;">(R$ ${precoUnitario.toFixed(2).replace('.', ',')} cada)</div>` : ''}
                                     ${htmlExtras ? `<div style="margin-top: 5px;">${htmlExtras}</div>` : ''}
@@ -478,7 +571,7 @@ function getStatusColor(status) {
         'confirmado': 'info',
         'preparando': 'primary',
         'saiu_entrega': 'info',
-        'entregue': 'success',
+        'finalizado': 'success',
         'cancelado': 'danger'
     };
     return colors[status] || 'secondary';
@@ -510,7 +603,7 @@ function resolverTodosSuporte(codigo) {
         <div class="card">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 style="color: #f8b531; margin: 0;"><i class="fas fa-list me-2"></i> Lista de Pedidos</h5>
+                    <h5 style="color: #0055ff; margin: 0;"><i class="fas fa-list me-2"></i> Lista de Pedidos</h5>
                     <button class="btn btn-sm btn-outline-warning" onclick="location.reload()">
                         <i class="fas fa-sync-alt"></i> Atualizar
                     </button>
@@ -518,13 +611,29 @@ function resolverTodosSuporte(codigo) {
 
                 <!-- Filtros -->
                 <div class="mb-3">
-                    <div class="btn-group btn-group-sm flex-wrap">
-                        <button type="button" class="btn btn-outline-secondary filtro-status active" data-status="todos">Todos</button>
-                        <button type="button" class="btn btn-outline-warning filtro-status" data-status="pendente">Pendentes</button>
-                        <button type="button" class="btn btn-outline-info filtro-status" data-status="confirmado">Confirmados</button>
-                        <button type="button" class="btn btn-outline-success filtro-status" data-status="entregue">Entregues</button>
-                        <button type="button" class="btn btn-outline-danger filtro-status" data-status="cancelado">Cancelados</button>
-                        <button type="button" class="btn btn-outline-secondary filtro-status" data-status="inativo">Inativos</button>
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div class="btn-group btn-group-sm flex-wrap">
+                            <button type="button" class="btn btn-outline-secondary filtro-status active" data-status="todos">Todos</button>
+                            <button type="button" class="btn btn-outline-warning filtro-status" data-status="pendente">Pendentes</button>
+                            <button type="button" class="btn btn-outline-info filtro-status" data-status="confirmado">Confirmados</button>
+                            <button type="button" class="btn btn-outline-success filtro-status" data-status="finalizado">Finalizados</button>
+                            <button type="button" class="btn btn-outline-danger filtro-status" data-status="cancelado">Cancelados</button>
+                            <button type="button" class="btn btn-outline-secondary filtro-status" data-status="inativo">Inativos</button>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-search" style="color: #999;"></i>
+                            <input type="text" id="campo-pesquisa" class="pesquisa-pedido" placeholder="Pesquisar..." autocomplete="off">
+                            <small class="text-muted" style="font-size: 0.7rem;">
+                                <span style="color: #ffc107;">##</span> ID &nbsp;
+                                <span style="color: #28a745;">$$</span> Código &nbsp;
+                                <span style="color: #2ecc71;">&gt;&gt;</span> Maior &nbsp;
+                                <span style="color: #e74c3c;">&lt;&lt;</span> Menor &nbsp;
+                                <span style="color: #17a2b8;">@M</span> Mesa &nbsp;
+                                <span style="color: #9b59b6;">@V</span> Valor &nbsp;
+                                <span style="color: #f39c12;">@H</span> Hora &nbsp;
+                                <span style="color: #1abc9c;">@D</span> Data
+                            </small>
+                        </div>
                     </div>
                 </div>
                 
@@ -536,7 +645,7 @@ function resolverTodosSuporte(codigo) {
                 <?php endif; ?>
 
                 <!-- Tabela -->
-                <div class="table-responsive">
+                <div class="table-responsive desktop-tabela">
                     <table class="table table-bordered" id="tabela-pedidos">
                         <thead>
                             <tr>
@@ -544,6 +653,7 @@ function resolverTodosSuporte(codigo) {
                                 <th>Código</th>
                                 <th>Cliente</th>
                                 <th>Telefone</th>
+                                <th>Mesa</th>
                                 <th>Valor</th>
                                 <th>Status</th>
                                 <th>Data</th>
@@ -559,9 +669,9 @@ function resolverTodosSuporte(codigo) {
                                     $statusPedido = strtolower(trim($pedido->status ?? 'pendente'));
                                     $isNovo = $dataPedido >= $cincoMinAtras && $statusPedido === 'pendente';
                                     $isInativo = $statusPedido === 'inativo';
-                                    $isEntregue = $statusPedido === 'entregue';
+                                    $isFinalizado = $statusPedido === 'finalizado';
                                     $isCancelado = $statusPedido === 'cancelado';
-                                    $podeAlterar = !$isInativo && !$isEntregue && !$isCancelado;
+                                    $podeAlterar = !$isInativo && !$isFinalizado && !$isCancelado;
                                     
                                     // Cancelados e inativos têm dados ocultos
                                     $ocultarDados = $isInativo || $isCancelado;
@@ -582,12 +692,24 @@ function resolverTodosSuporte(codigo) {
                                     if ($isCancelado) $rowClass .= ' pedido-cancelado';
                                     
                                     // Cor do código - cinza para inativos, vermelho para cancelados
-                                    $corCodigo = $isInativo ? '#888' : ($isCancelado ? '#dc3545' : '#f8b531');
+                                    $corCodigo = $isInativo ? '#888' : ($isCancelado ? '#dc3545' : '#0055ff');
+                                    
+                                    // Mesa
+                                    $db = \Config\Database::connect();
+                                    $mesaPedido = !empty($pedido->mesa_id)
+                                        ? $db->table('mesas')->where('id', $pedido->mesa_id)->get()->getRow()
+                                        : null;
+                                    $mesaTexto = $mesaPedido ? 'Mesa ' . $mesaPedido->numero : ((!empty($pedido->local_retirada) && $pedido->local_retirada === 'balcao') ? 'Balcão' : '—');
                                     ?>
                                     <tr class="<?= $rowClass ?>" 
                                         data-status="<?= $statusPedido ?>" 
                                         data-id="<?= $pedido->id ?>"
-                                        data-criado="<?= $pedido->criado_em ?>">
+                                        data-codigo="<?= strtolower($pedido->codigo) ?>"
+                                        data-criado="<?= $pedido->criado_em ?>"
+                                        data-mesa="<?= $mesaPedido ? (int)$mesaPedido->numero : 0 ?>"
+                                        data-valor="<?= $pedido->valor_total ?>"
+                                        data-hora="<?= date('H:i', strtotime($pedido->criado_em)) ?>"
+                                        data-data="<?= date('d/m/Y', strtotime($pedido->criado_em)) ?>">
                                         <td><span style="color: <?= $corCodigo ?>; font-weight: 600;">#<?= $pedido->id ?></span></td>
                                         <td>
                                             <strong style="color: <?= $corCodigo ?>; font-family: monospace;"><?= esc($codigoExibir) ?></strong>
@@ -595,7 +717,7 @@ function resolverTodosSuporte(codigo) {
                                             <?php if ($isInativo): ?><span class="badge-inativo">INATIVO</span><?php endif; ?>
                                             <?php if ($isCancelado): ?><span class="badge-cancelado"><i class="fas fa-times-circle me-1"></i>CANCELADO</span><?php endif; ?>
                                         </td>
-                                        <td>
+                                        <td class="cliente-nome">
                                             <?php if ($ocultarDados): ?>
                                                 <span class="<?= $isCancelado ? 'status-cancelado-text' : 'status-inativo-text' ?>">---</span>
                                             <?php else: ?>
@@ -603,7 +725,8 @@ function resolverTodosSuporte(codigo) {
                                             <?php endif; ?>
                                         </td>
                                         <td><?= esc($pedido->telefone_cliente) ?></td>
-                                        <td>
+                                        <td><?= $mesaTexto ?></td>
+                                        <td class="valor-valor">
                                             <?php if ($ocultarDados): ?>
                                                 <span class="<?= $isCancelado ? 'status-cancelado-text' : 'status-inativo-text' ?>">---</span>
                                             <?php else: ?>
@@ -615,8 +738,8 @@ function resolverTodosSuporte(codigo) {
                                                 <span class="badge-inativo"><i class="fas fa-ban me-1"></i>Inativo</span>
                                             <?php elseif ($isCancelado): ?>
                                                 <span class="badge-cancelado"><i class="fas fa-times me-1"></i>Cancelado</span>
-                                            <?php elseif ($isEntregue): ?>
-                                                <span class="badge bg-success"><i class="fas fa-check-double me-1"></i>Entregue</span>
+                                            <?php elseif ($isFinalizado): ?>
+                                                <span class="badge bg-success"><i class="fas fa-check-double me-1"></i>Finalizado</span>
                                             <?php elseif ($statusPedido === 'pendente'): ?>
                                                 <select class="status-select" data-pedido-id="<?= $pedido->id ?>">
                                                     <option value="pendente" selected>⏳ Pendente</option>
@@ -626,14 +749,14 @@ function resolverTodosSuporte(codigo) {
                                             <?php elseif ($statusPedido === 'confirmado'): ?>
                                                 <select class="status-select" data-pedido-id="<?= $pedido->id ?>">
                                                     <option value="confirmado" selected>✅ Confirmado</option>
-                                                    <option value="entregue">✔️ Entregue</option>
+                                                    <option value="finalizado">✔️ Finalizado</option>
                                                     <option value="cancelado">❌ Cancelado</option>
                                                 </select>
                                             <?php else: ?>
                                                 <select class="status-select" data-pedido-id="<?= $pedido->id ?>">
                                                     <option value="pendente">⏳ Pendente</option>
                                                     <option value="confirmado">✅ Confirmado</option>
-                                                    <option value="entregue">✔️ Entregue</option>
+                                                    <option value="finalizado">✔️ Finalizado</option>
                                                     <option value="cancelado">❌ Cancelado</option>
                                                 </select>
                                             <?php endif; ?>
@@ -665,6 +788,111 @@ function resolverTodosSuporte(codigo) {
                         </tbody>
                     </table>
                 </div>
+                
+                <!-- Versão Mobile: Cards -->
+                <div class="mobile-cards d-none">
+                    <?php if (!empty($pedidos)): ?>
+                        <?php foreach ($pedidos as $pedido): ?>
+                            <?php 
+                            $dataPedido = strtotime($pedido->criado_em);
+                            $cincoMinAtras = time() - (5 * 60);
+                            $statusPedido = strtolower(trim($pedido->status ?? 'pendente'));
+                            $isNovo = $dataPedido >= $cincoMinAtras && $statusPedido === 'pendente';
+                            $isInativo = $statusPedido === 'inativo';
+                            $isFinalizado = $statusPedido === 'finalizado';
+                            $isCancelado = $statusPedido === 'cancelado';
+                            $podeAlterar = !$isInativo && !$isFinalizado && !$isCancelado;
+                            $ocultarDados = $isInativo || $isCancelado;
+                            
+                            if ($isInativo) {
+                                $codigoExibir = $pedido->codigo . '-INATIVO';
+                            } elseif ($isCancelado) {
+                                $codigoExibir = $pedido->codigo . '-CANCELADO';
+                            } else {
+                                $codigoExibir = $pedido->codigo;
+                            }
+                            
+                            $rowClass = 'pedido-row';
+                            if ($isNovo) $rowClass .= ' pedido-novo';
+                            if ($isInativo) $rowClass .= ' pedido-inativo';
+                            if ($isCancelado) $rowClass .= ' pedido-cancelado';
+                            
+                            $corCodigo = $isInativo ? '#888' : ($isCancelado ? '#dc3545' : '#0055ff');
+                            
+                            $db = \Config\Database::connect();
+                            $mesaPedido = !empty($pedido->mesa_id)
+                                ? $db->table('mesas')->where('id', $pedido->mesa_id)->get()->getRow()
+                                : null;
+                            $mesaTexto = $mesaPedido ? 'Mesa ' . $mesaPedido->numero : ((!empty($pedido->local_retirada) && $pedido->local_retirada === 'balcao') ? 'Balcão' : '');
+                            ?>
+                            <div class="<?= $rowClass ?> mobile-card" 
+                                data-status="<?= $statusPedido ?>" 
+                                data-id="<?= $pedido->id ?>"
+                                data-codigo="<?= strtolower($pedido->codigo) ?>"
+                                data-criado="<?= $pedido->criado_em ?>">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <strong style="color: <?= $corCodigo ?>;">#<?= $pedido->id ?> - <?= esc($codigoExibir) ?></strong>
+                                        <?php if ($isNovo): ?><span class="badge-novo">NOVO</span><?php endif; ?>
+                                        <?php if ($isInativo): ?><span class="badge-inativo">INATIVO</span><?php endif; ?>
+                                        <?php if ($isCancelado): ?><span class="badge-cancelado">CANCELADO</span><?php endif; ?>
+                                    </div>
+                                    <strong class="text-success">R$ <?= number_format($pedido->valor_total, 2, ',', '.') ?></strong>
+                                </div>
+                                <div class="mb-1"><i class="fas fa-user me-1"></i><?= esc($pedido->nome_cliente) ?></div>
+                                <div class="mb-1"><i class="fas fa-phone me-1"></i><?= esc($pedido->telefone_cliente) ?></div>
+                                <?php if ($mesaTexto): ?>
+                                <div class="mb-1"><i class="fas fa-chair me-1"></i><?= $mesaTexto ?></div>
+                                <?php endif; ?>
+                                <div class="mb-2"><i class="fas fa-clock me-1"></i><?= date('d/m H:i', strtotime($pedido->criado_em)) ?></div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <?php if ($isInativo): ?>
+                                            <span class="badge-inativo">Inativo</span>
+                                        <?php elseif ($isCancelado): ?>
+                                            <span class="badge-cancelado">Cancelado</span>
+                                        <?php elseif ($isFinalizado): ?>
+                                            <span class="badge bg-success">Finalizado</span>
+                                        <?php elseif ($statusPedido === 'pendente'): ?>
+                                            <select class="status-select" data-pedido-id="<?= $pedido->id ?>">
+                                                <option value="pendente" selected>Pendente</option>
+                                                <option value="confirmado">Confirmado</option>
+                                                <option value="cancelado">Cancelado</option>
+                                            </select>
+                                        <?php elseif ($statusPedido === 'confirmado'): ?>
+                                            <select class="status-select" data-pedido-id="<?= $pedido->id ?>">
+                                                <option value="confirmado" selected>Confirmado</option>
+                                                <option value="finalizado">Finalizado</option>
+                                                <option value="cancelado">Cancelado</option>
+                                            </select>
+                                        <?php else: ?>
+                                            <select class="status-select" data-pedido-id="<?= $pedido->id ?>">
+                                                <option value="pendente">Pendente</option>
+                                                <option value="confirmado">Confirmado</option>
+                                                <option value="finalizado">Finalizado</option>
+                                                <option value="cancelado">Cancelado</option>
+                                            </select>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="acoes-botoes">
+                                        <?php if (!$ocultarDados): ?>
+                                            <a href="<?= site_url("admin/pedidos/{$pedido->id}") ?>" class="btn btn-info btn-sm"><i class="fas fa-eye"></i></a>
+                                            <a href="<?= site_url("admin/pedidos/imprimir/{$pedido->id}") ?>" class="btn btn-secondary btn-sm" target="_blank"><i class="fas fa-print"></i></a>
+                                            <?php if ($podeAlterar): ?>
+                                                <a href="<?= site_url("admin/pedidos/cancelar/{$pedido->id}") ?>" class="btn btn-danger btn-sm" onclick="return confirm('Cancelar?')"><i class="fas fa-times"></i></a>
+                                            <?php endif; ?>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="text-center py-4">
+                            <i class="fas fa-inbox fa-2x mb-2" style="color: #444;"></i>
+                            <p style="color: #666; margin: 0;">Nenhum pedido</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
     </div>
@@ -683,9 +911,22 @@ const INTERVALO = 10000;
 const TEMPO_NOVO = 5 * 60 * 1000;
 let suporteAberto = false;
 
+// Recupera IDs de cancelamentos já notificados do sessionStorage
+let canceladosNotificados = JSON.parse(sessionStorage.getItem('canceladosNotificados') || '[]');
+
 
 
 $(document).ready(function() {
+    // Alternar entre tabela e cards conforme tamanho da tela
+    function alternarVisualizacao() {
+        const isMobile = window.innerWidth < 768;
+        $('.desktop-tabela').toggleClass('d-none', isMobile);
+        $('.mobile-cards').toggleClass('d-none', !isMobile);
+    }
+    
+    alternarVisualizacao();
+    $(window).on('resize', alternarVisualizacao);
+    
     // Auto-refresh
     setInterval(function() {
         $('#icone-sync').addClass('fa-spin');
@@ -735,18 +976,106 @@ $(document).ready(function() {
         });
     });
     
-    // Filtros
-    $('.filtro-status').on('click', function() {
-        const status = $(this).data('status');
-        $('.filtro-status').removeClass('active');
-        $(this).addClass('active');
+     // Filtros
+     let statusAtual = 'todos';
+     
+     $('.filtro-status').on('click', function() {
+         statusAtual = $(this).data('status');
+         $('.filtro-status').removeClass('active');
+         $(this).addClass('active');
+         
+         filtrarPedidos();
+     });
+     
+     function filtrarPedidos() {
+         const termo = $('#campo-pesquisa').val().trim();
+         // Lê status do botão ativo (garante sincronização)
+         const statusFiltro = $('.filtro-status.active').data('status') || 'todos';
+         
+         $('.pedido-row').each(function() {
+             const linha = $(this);
+             let mostrar = true;
+             
+             // Filtro de status
+             if (statusFiltro !== 'todos' && linha.data('status') !== statusFiltro) {
+                 mostrar = false;
+             }
+             
+             // Filtro de pesquisa
+             if (mostrar && termo) {
+                 let encontrado = false;
+                 
+                 if (termo.startsWith('##')) {
+                     const idBusca = termo.replace('##', '').trim();
+                     encontrado = String(linha.data('id')).includes(idBusca);
+                 } else if (termo.startsWith('$$')) {
+                     const codBusca = termo.replace('$$', '').trim().toLowerCase();
+                     encontrado = (linha.data('codigo') || '').toLowerCase().includes(codBusca);
+                 } else if (termo.startsWith('@M')) {
+                     const mesaBusca = termo.replace('@M', '').trim();
+                     const mesaLinha = linha.data('mesa');
+                     encontrado = String(mesaLinha || '').includes(mesaBusca);
+                 } else if (termo.startsWith('>>')) {
+                     const valorMin = parseFloat(termo.replace('>>', '').trim().replace(',', '.'));
+                     const valorLinha = parseFloat(linha.data('valor')) || 0;
+                     encontrado = !isNaN(valorMin) && valorLinha > valorMin;
+                 } else if (termo.startsWith('<<')) {
+                     const valorMax = parseFloat(termo.replace('<<', '').trim().replace(',', '.'));
+                     const valorLinha = parseFloat(linha.data('valor')) || 0;
+                     encontrado = !isNaN(valorMax) && valorLinha < valorMax;
+                 } else if (termo.startsWith('@V')) {
+                     const valorBusca = termo.replace('@V', '').trim();
+                     const valorLinha = String(Math.floor(parseFloat(linha.data('valor')) || 0));
+                     encontrado = valorLinha.includes(valorBusca);
+                 } else if (termo.startsWith('@H')) {
+                     const horaBusca = termo.replace('@H', '').trim();
+                     const horaLinha = linha.data('hora') || '';
+                     if (horaBusca.includes(':')) {
+                         encontrado = horaLinha === horaBusca;
+                     } else {
+                         encontrado = horaLinha.startsWith(horaBusca + ':');
+                     }
+                 } else if (termo.startsWith('@D')) {
+                     const dataBusca = termo.replace('@D', '').trim();
+                     const dataLinha = linha.data('data') || '';
+                     encontrado = dataLinha === dataBusca;
+                 } else {
+                     const texto = linha.text().toLowerCase();
+                     encontrado = texto.includes(termo.toLowerCase());
+                 }
+                 
+                 mostrar = encontrado;
+             }
+             
+             linha.toggle(mostrar);
+         });
+     }
+    
+    $('#campo-pesquisa').on('input', function() {
+        const termo = $(this).val().trim();
         
-        if (status === 'todos') {
-            $('.pedido-row').show();
-        } else {
-            $('.pedido-row').hide();
-            $(`.pedido-row[data-status="${status}"]`).show();
+        // Atualiza cor
+        $(this).removeClass('por-id por-codigo por-mesa por-valor-maior por-valor-menor por-valor por-hora por-data');
+        if (termo.startsWith('##')) {
+            $(this).addClass('por-id');
+        } else if (termo.startsWith('$$')) {
+            $(this).addClass('por-codigo');
+        } else if (termo.startsWith('@M')) {
+            $(this).addClass('por-mesa');
+        } else if (termo.startsWith('>>')) {
+            $(this).addClass('por-valor-maior');
+        } else if (termo.startsWith('<<')) {
+            $(this).addClass('por-valor-menor');
+        } else if (termo.startsWith('@V')) {
+            $(this).addClass('por-valor');
+        } else if (termo.startsWith('@H')) {
+            $(this).addClass('por-hora');
+        } else if (termo.startsWith('@D')) {
+            $(this).addClass('por-data');
         }
+        
+        // Filtra
+        filtrarPedidos();
     });
     
     // Testar som
@@ -763,19 +1092,51 @@ $(document).ready(function() {
 function verificarNovosPedidos() {
     $.get('<?= site_url('admin/pedidos/verificar-novos') ?>/' + ultimoPedidoId, function(response) {
         if (response.success) {
+            let recarregar = false;
+            let mensagem = '';
+            let tipoNotificacao = 'info';
+            
             // Novos pedidos
             if (response.novos_pedidos && response.novos_pedidos.length > 0) {
                 tocarSom();
-                mostrarNotificacao('🆕 ' + response.novos_pedidos.length + ' novo(s) pedido(s)!', 'warning');
+                mensagem += '🆕 ' + response.novos_pedidos.length + ' novo(s) pedido(s)! ';
+                tipoNotificacao = 'warning';
                 ultimoPedidoId = response.novos_pedidos[0].id;
-                setTimeout(() => location.reload(), 2000);
-                return;
+                recarregar = true;
+            }
+            
+            // Pedidos cancelados pelo cliente (apenas se não notificados)
+            if (response.pedidos_cancelados && response.pedidos_cancelados.length > 0) {
+                // Filtrar apenas cancelamentos não notificados
+                let novosCancelamentos = response.pedidos_cancelados.filter(p => {
+                    return !canceladosNotificados.includes(p.id);
+                });
+                
+                if (novosCancelamentos.length > 0) {
+                    tocarSom();
+                    mensagem += '❌ ' + novosCancelamentos.length + ' pedido(s) cancelado(s) pelo cliente! ';
+                    tipoNotificacao = 'danger';
+                    recarregar = true;
+                    
+                    // Marcar como notificados e salvar no sessionStorage
+                    novosCancelamentos.forEach(p => {
+                        if (!canceladosNotificados.includes(p.id)) {
+                            canceladosNotificados.push(p.id);
+                        }
+                    });
+                    sessionStorage.setItem('canceladosNotificados', JSON.stringify(canceladosNotificados));
+                }
             }
             
             // Houve alterações de status (pedidos viraram inativos)
             if (response.recarregar) {
-                mostrarNotificacao('🔄 Atualizando lista...', 'info');
-                setTimeout(() => location.reload(), 1000);
+                mensagem += '🔄 Alterações detectadas. ';
+                recarregar = true;
+            }
+            
+            if (recarregar) {
+                mostrarNotificacao(mensagem, tipoNotificacao);
+                setTimeout(() => location.reload(), 2000);
                 return;
             }
             
@@ -783,7 +1144,7 @@ function verificarNovosPedidos() {
             if (response.estatisticas) {
                 $('#stat-pendentes').text(response.estatisticas.pendentes || 0);
                 $('#stat-confirmados').text(response.estatisticas.confirmados || 0);
-                $('#stat-entregues').text(response.estatisticas.entregues || 0);
+                $('#stat-finalizados').text(response.estatisticas.finalizados || 0);
                 $('#stat-cancelados').text(response.estatisticas.cancelados || 0);
                 $('#stat-inativos').text(response.estatisticas.inativos || 0);
             }
@@ -804,20 +1165,56 @@ function verificarBadgesExpirados() {
 function tocarSom() {
     try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        [0, 0.2, 0.4].forEach((t, i) => {
+        const agora = ctx.currentTime;
+        
+        // Som de sino (bell) - similar ao Saipos
+        // Harmônicos: fundamental + oitavas + quinta
+        const frequenciaBase = 1200;
+        const harmonicos = [1, 2, 3, 4.2, 5.4]; // Harmônicos do sino
+        const volumes = [0.6, 0.4, 0.25, 0.15, 0.1]; // Decaimento dos harmônicos
+        
+        harmonicos.forEach((multiplicador, i) => {
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
             osc.connect(gain);
             gain.connect(ctx.destination);
-            osc.frequency.value = i % 2 === 0 ? 1200 : 900;
-            osc.type = 'sine';
-            const now = ctx.currentTime + t;
+            osc.frequency.value = frequenciaBase * multiplicador;
+            osc.type = 'sine'; // Sino usa onda senoidal
+            
+            const now = agora;
+            const decay = 1.5 + (i * 0.3); // Cada harmônico dura mais
+            
             gain.gain.setValueAtTime(0, now);
-            gain.gain.linearRampToValueAtTime(0.3, now + 0.01);
-            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+            gain.gain.linearRampToValueAtTime(volumes[i], now + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + decay);
+            
             osc.start(now);
-            osc.stop(now + 0.4);
+            osc.stop(now + decay + 0.1);
         });
+        
+        // Segundo sino (quinta acima) para reforçar
+        const freq2 = 1800;
+        const harm2 = [1, 2, 3];
+        const vol2 = [0.4, 0.25, 0.15];
+        
+        setTimeout(() => {
+            const t = ctx.currentTime;
+            harm2.forEach((mult, i) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = freq2 * mult;
+                osc.type = 'sine';
+                
+                gain.gain.setValueAtTime(0, t);
+                gain.gain.linearRampToValueAtTime(vol2[i], t + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 1.2);
+                
+                osc.start(t);
+                osc.stop(t + 1.3);
+            });
+        }, 200);
     } catch(e) { console.warn('Som falhou:', e); }
 }
 
@@ -860,6 +1257,27 @@ function verificarNovosSuportes() {
             }
             totalSuportesAnterior = pendentes;
         }
+    });
+}
+
+function limparPedidos() {
+    if (!confirm('ATENÇÃO: Isso irán APAGAR TODOS os pedidos definitivamente. Continuar?')) return;
+    if (!confirm('Tem certeza? Esta ação não pode ser desfeita.')) return;
+    
+    fetch('<?= site_url('admin/pedidos/limpar') ?>', {
+        method: 'POST'
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.sucesso) {
+            alert(data.msg);
+            location.reload();
+        } else {
+            alert('Erro: ' + data.msg);
+        }
+    })
+    .catch(err => {
+        alert('Erro ao limpar pedidos.');
     });
 }
 

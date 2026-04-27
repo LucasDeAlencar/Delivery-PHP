@@ -11,7 +11,7 @@
 
     <style>
         body {
-            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('<?= base_url('web/src/images/bg_1.jpg') ?>');
+            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('<?= base_url('web/src/images/burger-1.jpg') ?>');
             background-size: cover;
             background-position: center;
             min-height: 100vh;
@@ -32,7 +32,7 @@
             margin-bottom: 2rem;
         }
         .login-header .brand {
-            color: #f8b531;
+            color: #0055ff;
             font-size: 2rem;
             font-weight: bold;
         }
@@ -44,7 +44,7 @@
             margin-bottom: 1.5rem;
         }
         .form-label {
-            color: #f8b531;
+            color: #0055ff;
             font-weight: 600;
             margin-bottom: 0.5rem;
             display: block;
@@ -62,15 +62,15 @@
             color: #888;
         }
         .form-control:focus {
-            border-color: #f8b531;
+            border-color: #0055ff;
             background: #333;
             box-shadow: 0 0 0 0.2rem rgba(248, 181, 49, 0.25);
             color: #fff;
         }
         .btn-login {
-            background: linear-gradient(135deg, #f8b531 0%, #fac56e 100%);
+            background: linear-gradient(135deg, #0055ff 0%, #1a1866 100%);
             border: none;
-            color: #000000;
+            color: #ffffff;
             padding: 15px;
             border-radius: 10px;
             width: 100%;
@@ -80,8 +80,8 @@
             margin-top: 1rem;
         }
         .btn-login:hover {
-            background: linear-gradient(135deg, #e6a42e 0%, #f0b861 100%);
-            color: #000000;
+            background: linear-gradient(135deg, #0c0940 0%, #2520a3 100%);
+            color: #ffffff;
             transform: translateY(-2px);
         }
         .btn-login:disabled {
@@ -123,11 +123,11 @@
             font-weight: 500;
         }
         .login-tab:hover {
-            color: #f8b531;
+            color: #0055ff;
         }
         .login-tab.active {
-            color: #f8b531;
-            border-bottom-color: #f8b531;
+            color: #0055ff;
+            border-bottom-color: #0055ff;
         }
         .login-tab i {
             margin-right: 8px;
@@ -148,7 +148,7 @@
             font-size: 0.9rem;
         }
         .back-link a:hover {
-            color: #f8b531;
+            color: #0055ff;
         }
         .cadastro-link {
             text-align: center;
@@ -156,7 +156,7 @@
             color: #888;
         }
         .cadastro-link a {
-            color: #f8b531;
+            color: #0055ff;
             text-decoration: none;
             font-weight: 600;
         }
@@ -169,7 +169,7 @@
 
     <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
         <div class="container">
-            <a class="navbar-brand" href="<?= base_url('/') ?>"><span class="fas fa-hotdog mr-1"></span>Delicias MV<br><small>O delivery favorito da cidade</small></a>
+            <a class="navbar-brand" href="<?= base_url('/') ?>"><span class="fas fa-hotdog mr-1"></span>Space Burger Dog Do Paulista<br><small>O delivery favorito da cidade</small></a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="oi oi-menu"></span> Menu
             </button>
@@ -189,7 +189,7 @@
         <div class="login-container">
             <div class="login-header">
                 <div class="brand">
-                    <span class="fas fa-hotdog"></span> Delicias MV
+                    <span class="fas fa-hotdog"></span> Space Burger Dog Do Paulista
                 </div>
                 <h4 style="color: #fff; margin: 1rem 0 0.5rem;">Olá, seja bem-vindo(a)!</h4>
                 <p>Por favor, realize o login para continuar</p>

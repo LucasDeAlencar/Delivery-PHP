@@ -69,6 +69,7 @@ class PedidoModel extends Model {
 
     // Callbacks
     protected $beforeInsert = ['gerarCodigo'];
+    protected $afterInsert = ['resetAutoIncrement'];
 
     /**
      * Gera código único para o pedido
@@ -78,6 +79,23 @@ class PedidoModel extends Model {
             // Formato: PED-YYYYMMDD-XXXX
             $data['data']['codigo'] = $this->gerarCodigoUnico();
         }
+        return $data;
+    }
+
+    /**
+     * Reseta o AUTO_INCREMENT da tabela após inserção
+     */
+    protected function resetAutoIncrement($data): array
+    {
+        $table = $this->table;
+        $db = \Config\Database::connect();
+        
+        $query = $db->query("SELECT MAX(id) as max_id FROM $table");
+        $result = $query->getRow();
+        $maxId = $result->max_id ?? 0;
+
+        $db->query("ALTER TABLE $table AUTO_INCREMENT = " . ($maxId + 1));
+
         return $data;
     }
 
@@ -110,9 +128,10 @@ class PedidoModel extends Model {
         // Primeiro processa inativos
         $this->processarInativos();
         
-        return $this->select('pedidos.*, usuarios.nome as usuario_nome, bairros.nome as bairro_nome')
+        return $this->select('pedidos.*, usuarios.nome as usuario_nome, bairros.nome as bairro_nome, mesas.numero as mesa_numero')
                     ->join('usuarios', 'usuarios.id = pedidos.usuario_id', 'left')
                     ->join('bairros', 'bairros.id = pedidos.bairro_id', 'left')
+                    ->join('mesas', 'mesas.id = pedidos.mesa_id', 'left')
                     ->orderBy('pedidos.criado_em', 'DESC')
                     ->limit($limit)
                     ->findAll();
@@ -122,9 +141,10 @@ class PedidoModel extends Model {
      * Busca pedido por ID com informações relacionadas
      */
     public function buscaPedidoPorId($id) {
-        return $this->select('pedidos.*, usuarios.nome as usuario_nome, usuarios.email as usuario_email, bairros.nome as bairro_nome')
+        return $this->select('pedidos.*, usuarios.nome as usuario_nome, usuarios.email as usuario_email, bairros.nome as bairro_nome, mesas.numero as mesa_numero')
                     ->join('usuarios', 'usuarios.id = pedidos.usuario_id', 'left')
                     ->join('bairros', 'bairros.id = pedidos.bairro_id', 'left')
+                    ->join('mesas', 'mesas.id = pedidos.mesa_id', 'left')
                     ->where('pedidos.id', $id)
                     ->first();
     }
@@ -157,7 +177,7 @@ class PedidoModel extends Model {
      */
     public function atualizarStatus($pedidoId, $novoStatus) {
         $novoStatus = strtolower(trim($novoStatus));
-        $statusValidos = ['pendente', 'confirmado', 'entregue', 'cancelado'];
+        $statusValidos = ['pendente', 'confirmado', 'finalizado', 'cancelado'];
         
         if (!in_array($novoStatus, $statusValidos)) {
             log_message('error', "Status inválido: {$novoStatus}");
@@ -204,12 +224,12 @@ class PedidoModel extends Model {
         }
     }
     
-    /**
-     * Verifica se a transição de status é permitida
-     * Fluxo: pendente -> confirmado -> entregue
-     * Cancelar é permitido de pendente ou confirmado
-     * Não pode voltar atrás (confirmado não volta para pendente)
-     */
+     /**
+      * Verifica se a transição de status é permitida
+      * Fluxo: pendente -> confirmado -> finalizado
+      * Cancelar é permitido de pendente ou confirmado
+      * Não pode voltar atrás (confirmado não volta para pendente)
+      */
     public function transicaoPermitida($statusAtual, $novoStatus) {
         // Normalizar status - tratar null/vazio como 'pendente'
         $statusAtual = strtolower(trim($statusAtual ?? ''));
@@ -220,8 +240,8 @@ class PedidoModel extends Model {
         
         $transicoesPermitidas = [
             'pendente' => ['confirmado', 'cancelado'],
-            'confirmado' => ['entregue', 'cancelado'],
-            'entregue' => [], // Não pode mudar
+            'confirmado' => ['finalizado', 'cancelado'],
+            'finalizado' => [], // Não pode mudar
             'cancelado' => [], // Não pode mudar
             'inativo' => [], // Não pode mudar
         ];
@@ -240,7 +260,7 @@ class PedidoModel extends Model {
             'total_pedidos' => $this->countAllResults(false),
             'pendentes' => $this->where('status', 'pendente')->countAllResults(false),
             'confirmados' => $this->where('status', 'confirmado')->countAllResults(false),
-            'entregues' => $this->where('status', 'entregue')->countAllResults(false),
+            'finalizados' => $this->where('status', 'finalizado')->countAllResults(false),
             'cancelados' => $this->where('status', 'cancelado')->countAllResults(false),
             'inativos' => $this->where('status', 'inativo')->countAllResults(false),
             'valor_total_hoje' => $this->selectSum('valor_total')
@@ -284,8 +304,8 @@ class PedidoModel extends Model {
     public function podeAlterar($pedido) {
         // Usar o getter da Entity que já normaliza o status
         $status = $pedido->status; // Getter retorna 'pendente' se vazio/null
-        // Inativos, entregues e cancelados não podem ser alterados
-        if (in_array($status, ['inativo', 'entregue', 'cancelado'])) {
+        // Inativos, finalizados e cancelados não podem ser alterados
+        if (in_array($status, ['inativo', 'finalizado', 'cancelado'])) {
             return false;
         }
         return true;
@@ -297,9 +317,10 @@ class PedidoModel extends Model {
     public function buscaPedidosDoDia($limit = 100) {
         $this->processarInativos();
         
-        return $this->select('pedidos.*, usuarios.nome as usuario_nome, bairros.nome as bairro_nome')
+        return $this->select('pedidos.*, usuarios.nome as usuario_nome, bairros.nome as bairro_nome, mesas.numero as mesa_numero')
                     ->join('usuarios', 'usuarios.id = pedidos.usuario_id', 'left')
                     ->join('bairros', 'bairros.id = pedidos.bairro_id', 'left')
+                    ->join('mesas', 'mesas.id = pedidos.mesa_id', 'left')
                     ->where('DATE(pedidos.criado_em)', date('Y-m-d'))
                     ->orderBy('pedidos.criado_em', 'DESC')
                     ->limit($limit)
@@ -317,7 +338,7 @@ class PedidoModel extends Model {
             'total_pedidos' => $this->where('DATE(criado_em)', $hoje)->countAllResults(false),
             'pendentes' => $this->where('status', 'pendente')->where('DATE(criado_em)', $hoje)->countAllResults(false),
             'confirmados' => $this->where('status', 'confirmado')->where('DATE(criado_em)', $hoje)->countAllResults(false),
-            'entregues' => $this->where('status', 'entregue')->where('DATE(criado_em)', $hoje)->countAllResults(false),
+            'finalizados' => $this->where('status', 'finalizado')->where('DATE(criado_em)', $hoje)->countAllResults(false),
             'cancelados' => $this->where('status', 'cancelado')->where('DATE(criado_em)', $hoje)->countAllResults(false),
             'inativos' => $this->where('status', 'inativo')->where('DATE(criado_em)', $hoje)->countAllResults(false),
             'valor_total_hoje' => $this->selectSum('valor_total')
@@ -336,6 +357,24 @@ class PedidoModel extends Model {
                 ->orderBy('pedidos.id', 'ASC') // Ordem crescente para processar um a um
                 ->findAll();
 }
+
+    /**
+     * Busca pedidos cancelados recentemente (nos últimos 5 minutos)
+     * Usado para detectar cancelamentos feitos pelo cliente
+     */
+    public function buscarCanceladosRecentes() {
+        return $this->select('pedidos.*, usuarios.nome as usuario_nome, bairros.nome as bairro_nome')
+                    ->join('usuarios', 'usuarios.id = pedidos.usuario_id', 'left')
+                    ->join('bairros', 'bairros.id = pedidos.bairro_id', 'left')
+                    ->where('pedidos.status', 'cancelado')
+                    ->groupStart()
+                        ->where('pedidos.inativo_em >=', date('Y-m-d H:i:s', strtotime('-5 minutes')))
+                        ->orWhere('pedidos.atualizado_em >=', date('Y-m-d H:i:s', strtotime('-5 minutes')))
+                    ->groupEnd()
+                    ->where('pedidos.deletado_em IS NULL')
+                    ->orderBy('pedidos.id', 'ASC')
+                    ->findAll();
+    }
     
     /**
      * Cria um novo pedido com seus itens

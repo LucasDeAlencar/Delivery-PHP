@@ -125,6 +125,95 @@ t<?php echo $this->extend('layout/principal_web'); ?>
         font-size: 16px !important;
     }
 
+    /* Botões de Tamanho - Layout responsivo com max 3 por linha */
+    #tamanhos-opcoes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    .btn-tamanho {
+        flex: 1 1 calc(33.333% - 8px);
+        min-width: 120px;
+        max-width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding: 6px 12px;
+        font-size: 0.85rem;
+        /* Override Bootstrap outline-warning colors */
+        border: 2px solid #0055ff !important;
+        color: #0055ff !important;
+        background: transparent !important;
+        transition: all 0.2s ease;
+    }
+
+    /* Força cor azul mesmo se for btn-outline-warning */
+    .btn-tamanho.btn-outline-warning {
+        border-color: #0055ff !important;
+        color: #0055ff !important;
+    }
+
+    .btn-tamanho:hover {
+        background: rgba(0, 85, 255, 0.1) !important;
+        transform: translateY(-1px);
+        border-color: #0055ff !important;
+        color: #0055ff !important;
+    }
+
+    .btn-tamanho.active {
+        background: #0055ff !important;
+        color: #fff !important;
+        font-weight: 700 !important;
+        border-color: #0055ff !important;
+    }
+
+    /* Responsividade dos botões de tamanho */
+    @media (max-width: 576px) {
+        .btn-tamanho {
+            flex: 1 1 calc(50% - 8px);
+            min-width: 100px;
+            font-size: 0.8rem;
+            padding: 5px 10px;
+        }
+    }
+
+    @media (max-width: 380px) {
+        .btn-tamanho {
+            flex: 1 1 100%;
+            min-width: auto;
+        }
+    }
+
+    /* Campo de pesquisa de extras */
+    #pesquisa-extras {
+        color: #fff;
+        font-size: 0.9rem;
+    }
+    
+    #pesquisa-extras::placeholder {
+        color: #aaa;
+    }
+    
+    #pesquisa-extras:focus {
+        outline: none;
+        box-shadow: none;
+    }
+    
+    .input-group-text {
+        color: #aaa;
+    }
+    
+    #limpar-pesquisa {
+        opacity: 0.7;
+        transition: opacity 0.2s;
+    }
+    
+    #limpar-pesquisa:hover {
+        opacity: 1;
+    }
+
     /* Modal Fechado - Responsivo */
     #modalFechado .modal-dialog {
         max-width: 400px;
@@ -223,14 +312,14 @@ t<?php echo $this->extend('layout/principal_web'); ?>
             const modalHtml = `
     <div class="modal fade" id="modalFechado" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
         <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content" style="background: #1a1a1a; border: 2px solid #f8b531; border-radius: 15px;">
+            <div class="modal-content" style="background: #1a1a1a; border: 2px solid #0055ff; border-radius: 15px;">
                 <div class="modal-header" style="border-bottom: 1px solid #333; padding: 12px;">
                     <h5 class="modal-title text-warning" style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 1rem; width: 100%; text-align: center; margin: 0;">
                         <i class="fas fa-clock mr-2"></i>Restaurante Fechado
                     </h5>
                 </div>
                 <div class="modal-body text-center" style="padding: 20px;">
-                    <i class="fas fa-store-slash" style="color: #f8b531; font-size: 2.2rem; margin-bottom: 15px; display: block;"></i>
+                    <i class="fas fa-store-slash" style="color: #0055ff; font-size: 2.2rem; margin-bottom: 15px; display: block;"></i>
                     <p class="text-light" style="line-height: 1.4; margin-bottom: 10px; font-size: 0.95rem;">${mensagem}</p>
                     <p class="text-muted" style="margin-bottom: 0; font-size: 0.8rem;">Você pode ver o cardápio, mas não aceitamos pedidos agora.</p>
                 </div>

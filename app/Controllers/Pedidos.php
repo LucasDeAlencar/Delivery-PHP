@@ -98,17 +98,19 @@ class Pedidos extends BaseController
                 // Usar precoUnitario se existir (já inclui extras), senão usar preco
                 $precoUnitario = $item->precoUnitario ?? $item->preco ?? 0;
                 
-                $itemId = $this->pedidoItemModel->insert([
-                    'pedido_id' => $pedidoId,
-                    'produto_id' => $item->id,
-                    'produto_nome' => $item->nome,
-                    'quantidade' => $item->quantidade,
-                    'preco_unitario' => $precoUnitario,
-                    'preco_total' => $precoUnitario * $item->quantidade,
-                    'observacoes' => $item->observacoes ?? null,
-                    'criado_em' => date('Y-m-d H:i:s'),
-                    'atualizado_em' => date('Y-m-d H:i:s')
-                ]);
+                 $itemId = $this->pedidoItemModel->insert([
+                     'pedido_id' => $pedidoId,
+                     'produto_id' => $item->id,
+                     'produto_nome' => $item->nome,
+                     'quantidade' => $item->quantidade,
+                     'preco_unitario' => $precoUnitario,
+                     'preco_total' => $precoUnitario * $item->quantidade,
+                     'observacoes' => $item->observacoes ?? null,
+                     'tamanho_nome' => isset($item->tamanho) && isset($item->tamanho->nome) ? $item->tamanho->nome : ($item->tamanho_nome ?? null),
+                     'tamanho_preco' => isset($item->tamanho) && isset($item->tamanho->preco) ? $item->tamanho->preco : ($item->tamanho_preco ?? null),
+                     'criado_em' => date('Y-m-d H:i:s'),
+                     'atualizado_em' => date('Y-m-d H:i:s')
+                 ]);
                 
                 // Salvar extras do item
                 if ($itemId && isset($item->extras) && is_array($item->extras) && count($item->extras) > 0) {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Delicias MV | <?php echo $this->renderSection('titulo') ?></title>
+    <title>Space Burger Dog Do Paulista | <?php echo $this->renderSection('titulo') ?></title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -14,8 +14,8 @@
     
     <style>
         :root {
-            --primary-color: #f8b531;
-            --secondary-color: #fac56e;
+            --primary-color: #0055ff;
+            --secondary-color: #1a1866;
             --dark-bg: #1a1a1a;
             --darker-bg: #2d2d2d;
             --text-light: #ffffff;
@@ -131,14 +131,14 @@
         
         /* Botão Primary (Editar) */
         .btn-primary {
-            background: #f8b531;
+            background: #0055ff;
             color: #1a1a1a;
-            border-color: #f8b531;
+            border-color: #0055ff;
         }
         
         .btn-primary:hover {
-            background: #e6a52d;
-            border-color: #e6a52d;
+            background: #0c0940;
+            border-color: #0c0940;
             color: #000;
         }
         
@@ -560,7 +560,7 @@
     <div class="sidebar">
         <div class="logo">
             <i class="fas fa-hotdog me-2"></i>
-            Delicias MV
+            Space Burger Dog Do Paulista
         </div>
         
         <nav class="nav flex-column">
@@ -615,10 +615,15 @@
             </a>
             
             <?php if ($isAdmin): ?>
-            <!-- Venda Específica - Apenas Admin -->
             <a class="nav-link <?= strpos(current_url(), 'venda-especifica') !== false ? 'active' : '' ?>" href="<?= site_url('admin/venda-especifica') ?>">
-                <i class="fas fa-plus-circle"></i>
+                <i class="fas fa-plus-circle"></i> 
                 Venda Específica
+            </a>
+                        
+            <!-- Mesas - Apenas Admin -->
+            <a class="nav-link <?= strpos(current_url(), 'mesas') !== false ? 'active' : '' ?>" href="<?= site_url('admin/mesas') ?>">
+                <i class="fas fa-chair"></i> 
+                Mesas
             </a>
             
             <!-- Dados Corporativos - Apenas Admin -->
@@ -662,7 +667,7 @@
                     <i class="fas fa-bars fa-lg"></i>
                 </button>
                 
-                <span class="navbar-brand text-warning d-lg-none">Delicias MV</span>
+                <span class="navbar-brand text-warning d-lg-none">Space Burger Dog Do Paulista</span>
                 
                 <div class="navbar-nav ms-auto">
                     <a class="nav-link text-light" href="<?= site_url('/') ?>" target="_blank">

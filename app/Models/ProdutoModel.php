@@ -21,7 +21,8 @@ class ProdutoModel extends Model {
         'imagem',
         'preco',
         'obrigatorio_extras',
-        'max_extras'
+        'max_extras',
+        'com_tamanho'
     ];
     // Dates
     protected $useTimestamps = true;
@@ -33,7 +34,7 @@ class ProdutoModel extends Model {
         'nome' => 'required|min_length[3]|max_length[120]',
         'categoria_id' => 'required|integer',
         'ingredientes' => 'permit_empty',
-        'preco' => 'required|numeric',
+        "com_tamanho" => "permit_empty|integer",
         'imagem' => 'permit_empty',
     ];
     protected $validationMessages = [
@@ -55,6 +56,7 @@ class ProdutoModel extends Model {
     // Callbacks
     protected $beforeInsert = ['geraSlug'];
     protected $beforeUpdate = ['geraSlug'];
+    protected $afterInsert = ['resetAutoIncrement'];
 
     /**
      * Gera o slug automaticamente antes de inserir/atualizar
@@ -63,6 +65,23 @@ class ProdutoModel extends Model {
         if (isset($data['data']['nome'])) {
             $data['data']['slug'] = mb_url_title($data['data']['nome'], '-', true);
         }
+        return $data;
+    }
+
+    /**
+     * Reseta o AUTO_INCREMENT da tabela após inserção
+     */
+    protected function resetAutoIncrement($data): array
+    {
+        $table = $this->table;
+        $db = \Config\Database::connect();
+        
+        $query = $db->query("SELECT MAX(id) as max_id FROM $table");
+        $result = $query->getRow();
+        $maxId = $result->max_id ?? 0;
+
+        $db->query("ALTER TABLE $table AUTO_INCREMENT = " . ($maxId + 1));
+
         return $data;
     }
 
@@ -139,6 +158,7 @@ class ProdutoModel extends Model {
             'ativo' => $dadosProduto['ativo'] ?? 0,
             'obrigatorio_extras' => $dadosProduto['obrigatorio_extras'] ?? 0,
             'max_extras' => $dadosProduto['max_extras'] ?? 0,
+            'com_tamanho' => isset($dadosProduto['com_tamanho']) ? 1 : 0,
         ];
 
         // Verifica se já existe um produto com o mesmo nome
@@ -204,6 +224,7 @@ class ProdutoModel extends Model {
             'ativo' => $dadosProduto['ativo'] ?? 0,
             'obrigatorio_extras' => $dadosProduto['obrigatorio_extras'] ?? 0,
             'max_extras' => $dadosProduto['max_extras'] ?? 0,
+            'com_tamanho' => isset($dadosProduto['com_tamanho']) ? 1 : 0,
         ];
 
         // Adiciona imagem apenas se foi fornecida

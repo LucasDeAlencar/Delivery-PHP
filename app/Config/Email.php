@@ -6,15 +6,15 @@ use CodeIgniter\Config\BaseConfig;
 
 class Email extends BaseConfig
 {
-    public string $fromEmail  = 'bimdasbalas@gmail.com';
-    public string $fromName   = 'Delivery MV';
+    public string $fromEmail  = 'spacedogburger078@gmail.com';
+    public string $fromName   = 'Space Burger Dog Do Paulista';
     public string $recipients = '';
     public string $userAgent = 'CodeIgniter';
     public string $protocol = 'smtp';
     public string $mailPath = '/usr/sbin/sendmail';
     public string $SMTPHost = 'smtp.gmail.com';
-    public string $SMTPUser = 'deliverymv017@gmail.com';
-    public string $SMTPPass = 'mbyw vupe kuql kxxk';
+    public string $SMTPUser = 'spacedogburger078@gmail.com';
+    public string $SMTPPass = 'fwkf mwxv ahuc pleo';
     public int $SMTPPort = 587;
     public int $SMTPTimeout = 30;
     public bool $SMTPKeepAlive = false;

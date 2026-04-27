@@ -106,7 +106,7 @@ class Pedidos extends BaseController {
         }
 
         // Validar status permitidos
-        $statusPermitidos = ['pendente', 'confirmado', 'entregue', 'cancelado'];
+        $statusPermitidos = ['pendente', 'confirmado', 'finalizado', 'cancelado'];
         if (!in_array($novoStatus, $statusPermitidos)) {
             return $this->response->setJSON([
                 'success' => false,
@@ -159,6 +159,9 @@ class Pedidos extends BaseController {
         $resultado = $this->pedidoModel->atualizarStatus($pedidoId, $novoStatus);
 
         if ($resultado) {
+            if (in_array($novoStatus, ['finalizado', 'cancelado'])) {
+                $this->liberarMesa((int) $pedidoId);
+            }
             return $this->response->setJSON([
                 'success' => true,
                 'message' => 'Status atualizado com sucesso!'
@@ -190,6 +193,17 @@ class Pedidos extends BaseController {
     }
 
     /**
+     * Libera a mesa associada ao pedido, se houver
+     */
+    private function liberarMesa(int $pedidoId): void
+    {
+        $db = \Config\Database::connect();
+        $db->table('mesas')
+            ->where('pedido_id', $pedidoId)
+            ->update(['ocupado' => 0, 'pedido_id' => null, 'updated_at' => date('Y-m-d H:i:s')]);
+    }
+
+    /**
      * Cancela um pedido
      */
     public function cancelar($id) {
@@ -200,14 +214,15 @@ class Pedidos extends BaseController {
                             ->with('erro', 'Pedido não encontrado.');
         }
 
-        if ($pedido->status === 'entregue') {
+        if ($pedido->status === 'finalizado') {
             return redirect()->to('admin/pedidos')
-                            ->with('erro', 'Não é possível cancelar um pedido já entregue.');
+                            ->with('erro', 'Não é possível cancelar um pedido já finalizado.');
         }
 
         $resultado = $this->pedidoModel->atualizarStatus($id, 'cancelado');
 
         if ($resultado) {
+            $this->liberarMesa($id);
             return redirect()->to('admin/pedidos')
                             ->with('sucesso', 'Pedido cancelado com sucesso!');
         } else {
@@ -276,6 +291,53 @@ class Pedidos extends BaseController {
         return view('Admin/Pedidos/imprimir', $data);
     }
 
+    /**
+     * Exporta pedidos para CSV
+     */
+    public function exportarCsv() {
+        $usuarioLogado = service('autenticacao')->pegaUsuarioLogado();
+        $isAdmin = $usuarioLogado->is_admin == 1;
+        
+        if ($isAdmin) {
+            $pedidos = $this->pedidoModel->buscaPedidosCompletos(500);
+            $filename = 'pedidos_todos_' . date('Ymd_His') . '.csv';
+        } else {
+            $pedidos = $this->pedidoModel->buscaPedidosDoDia(500);
+            $filename = 'pedidos_dia_' . date('Ymd') . '.csv';
+        }
+        
+        $csvData = [];
+        $csvData[] = ['Código', 'Data', 'Cliente', 'Telefone', 'Endereço', 'Bairro', 'Mesa', 'Status', 'Forma Pagamento', 'Valor Produtos', 'Valor Entrega', 'Total'];
+        
+        foreach ($pedidos as $p) {
+            $csvData[] = [
+                $p->codigo,
+                date('d/m/Y H:i', strtotime($p->criado_em)),
+                $p->nome_cliente,
+                $p->telefone_cliente,
+                $p->endereco_entrega,
+                $p->bairro_nome ?? '',
+                $p->mesa_numero ?? '',
+                $p->status,
+                $p->forma_pagamento,
+                number_format($p->valor_produtos, 2, ',', '.'),
+                number_format($p->valor_entrega, 2, ',', '.'),
+                number_format($p->valor_total, 2, ',', '.')
+            ];
+        }
+        
+        $csvContent = '';
+        
+        foreach ($csvData as $linha) {
+            $csvContent .= implode(';', $linha) . "\n";
+        }
+        
+        return $this->response
+            ->setHeader('Content-Type', 'text/csv; charset=utf-8')
+            ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
+            ->setBody($csvContent);
+    }
+
     public function verificarNovos($ultimoId = null) {
         // Se não passar ID, assume 0
         $ultimoId = (int) $ultimoId;
@@ -289,6 +351,10 @@ class Pedidos extends BaseController {
 
         // Busca novos pedidos e estatísticas atualizadas
         $novosPedidos = $this->pedidoModel->recuperarNovosPedidos($ultimoId);
+        
+        // Verificar pedidos cancelados recentemente (nos últimos 5 minutos)
+        // Isso captura cancelamentos feitos pelo cliente
+        $pedidosCancelados = $this->pedidoModel->buscarCanceladosRecentes();
         
         // Estatísticas baseadas no tipo de usuário
         if ($isAdmin) {
@@ -304,8 +370,36 @@ class Pedidos extends BaseController {
         return $this->response->setJSON([
             'success' => true,
             'novos_pedidos' => array_values($novosPedidos),
+            'pedidos_cancelados' => $pedidosCancelados,
             'estatisticas' => $estatisticas,
             'recarregar' => $alterados > 0
         ]);
+    }
+
+    /**
+     * Limpa todos os pedidos (apenas admin)
+     */
+    public function limparPedidos() {
+        $usuarioLogado = service('autenticacao')->pegaUsuarioLogado();
+        
+        if ($usuarioLogado->is_admin != 1) {
+            return $this->response->setJSON(['sucesso' => false, 'msg' => 'Acesso negado.']);
+        }
+        
+        $db = \Config\Database::connect();
+        
+        try {
+            $db->query('SET FOREIGN_KEY_CHECKS = 0');
+            $db->table('pedidos_itens')->truncate();
+            $db->table('pedidos')->truncate();
+            $db->query('SET FOREIGN_KEY_CHECKS = 1');
+            
+            $db->table('mesas')->update(['ocupado' => 0, 'pedido_id' => null]);
+            
+            return $this->response->setJSON(['sucesso' => true, 'msg' => 'Pedidos limpos com sucesso.']);
+        } catch (\Exception $e) {
+            $db->query('SET FOREIGN_KEY_CHECKS = 1');
+            return $this->response->setJSON(['sucesso' => false, 'msg' => 'Erro ao limpar pedidos.']);
+        }
     }
 }

@@ -74,6 +74,7 @@ window.CarrinhoMenu = {
     
     adicionar(produto) {
         // Calcular preço com extras
+        // Calcular preço com extras
         let precoUnitario = produto.preco;
         if (produto.extras && produto.extras.length > 0) {
             const totalExtras = produto.extras.reduce((total, extra) => {
@@ -84,12 +85,24 @@ window.CarrinhoMenu = {
         
         const itemExistente = this.itens.find(item => 
             item.id === produto.id && 
+            JSON.stringify(item.tamanho) === JSON.stringify(produto.tamanho || null) &&
             JSON.stringify(item.extras) === JSON.stringify(produto.extras)
         );
         
         if (itemExistente) {
             itemExistente.quantidade += produto.quantidade;
-            itemExistente.totalCalculado = precoUnitario * itemExistente.quantidade;
+            // Recalcular total considerando tamanho
+            const precoBase = produto.tamanho ? produto.tamanho.preco : produto.preco;
+            const totalExtras = produto.extras ? produto.extras.reduce((total, extra) => {
+                return total + (parseFloat(extra.preco) * parseInt(extra.quantidade));
+            }, 0) : 0;
+            itemExistente.totalCalculado = (precoBase + totalExtras) * itemExistente.quantidade;
+            tamanho: produto.tamanho || null,
+            extras: produto.extras || [],
+            totalCalculado: (precoBase + totalExtras) * produto.quantidade
+        } else {
+                return total + (parseFloat(extra.preco) * parseInt(extra.quantidade));
+            }, 0) : 0;
         } else {
             this.itens.push({
                 id: produto.id,

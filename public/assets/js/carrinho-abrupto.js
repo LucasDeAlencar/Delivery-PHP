@@ -89,20 +89,26 @@ window.Carrinho = {
             preco: parseFloat(produto.preco) || 0,
             quantidade: parseInt(produto.quantidade) || 1,
             observacoes: String(produto.observacoes || ''),
+            extras: Array.isArray(produto.extras) ? produto.extras : [],
+            tamanho: produto.tamanho || null,
+            tamanho_id: produto.tamanho_id || null,
             total: 0
         };
         
-        // Calcular total
-        produtoLimpo.total = produtoLimpo.preco * produtoLimpo.quantidade;
+        // Calcular total incluindo extras
+        const totalExtras = produtoLimpo.extras.reduce((sum, e) => sum + (parseFloat(e.preco) * (parseInt(e.quantidade) || 1)), 0);
+        produtoLimpo.total = (produtoLimpo.preco + totalExtras) * produtoLimpo.quantidade;
         
-        // Criar chave única baseada em ID + observações para diferenciar produtos
-        const chaveUnica = `${produtoLimpo.id}_${produtoLimpo.observacoes}`;
+        // Criar chave única baseada em ID + tamanho + observações para diferenciar produtos
+        const chaveTamanho = produtoLimpo.tamanho ? produtoLimpo.tamanho.nome : '';
+        const chaveUnica = `${produtoLimpo.id}_${chaveTamanho}_${produtoLimpo.observacoes}`;
         
         
-        // Verificar se produto já existe com mesmas observações
-        const itemExistente = this.itens.find(item => 
-            `${item.id}_${item.observacoes}` === chaveUnica
-        );
+        // Verificar se produto já existe com mesmas observações e tamanho
+        const itemExistente = this.itens.find(item => {
+            const itemChaveTamanho = item.tamanho ? item.tamanho.nome : '';
+            return `${item.id}_${itemChaveTamanho}_${item.observacoes}` === chaveUnica;
+        });
         
         if (itemExistente) {
             itemExistente.quantidade += produtoLimpo.quantidade;

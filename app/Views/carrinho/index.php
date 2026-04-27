@@ -41,6 +41,9 @@
                                     </div>
                                     <div class="col-6">
                                         <h6 class="mb-1"><?= esc($item['produto_nome']) ?></h6>
+                                        <?php if (!empty($item['tamanho_nome'])): ?>
+                                            <small class="text-info"><i class="fas fa-ruler"></i> <?= esc($item['tamanho_nome']) ?></small><br>
+                                        <?php endif; ?>
                                         <?php if (!empty($item['observacoes'])): ?>
                                             <small class="text-muted"><?= esc($item['observacoes']) ?></small>
                                         <?php endif; ?>

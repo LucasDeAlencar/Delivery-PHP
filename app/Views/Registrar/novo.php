@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <title>Cadastrar - Restaurante</title>
+    <title>Cadastrar - Delivery</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" rel="stylesheet">
@@ -11,7 +11,7 @@
 
     <style>
         body {
-            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('<?= base_url('web/src/images/bg_1.jpg') ?>');
+            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('<?= base_url('web/src/images/burger-1.jpg') ?>');
             background-size: cover;
             background-position: center;
             min-height: 100vh;
@@ -116,7 +116,7 @@
             color: #888;
         }
         .login-link a {
-            color: #f8b531;
+            color: #0055ff;
             text-decoration: none;
             font-weight: 600;
         }
@@ -170,7 +170,7 @@
 
     <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
         <div class="container">
-            <a class="navbar-brand" href="<?= base_url('/') ?>"><span class="fas fa-hotdog mr-1"></span>Delicias MV<br><small>O delivery favorito da cidade</small></a>
+            <a class="navbar-brand" href="<?= base_url('/') ?>"><span class="fas fa-hotdog mr-1" style="color: #0055ff !important "></span>Space Burger Dog Do Paulista<br><small style="color: #0055ff !important; margin-top: 4px">O delivery favorito da cidade</small></a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="oi oi-menu"></span> Menu
             </button>
@@ -190,7 +190,7 @@
         <div class="register-container">
             <div class="register-header">
                 <div class="brand">
-                    <span class="fas fa-user-plus"></span> Delicias MV
+                    <span class="fas fa-user-plus"></span> Space Burger Dog Do Paulista
                 </div>
                 <h4 style="color: #fff; margin: 1rem 0 0.5rem;">Crie sua conta!</h4>
                 <p>Preencha os dados abaixo para se cadastrar</p>
@@ -240,7 +240,7 @@
             <div id="etapa-codigo" class="hidden">
                 <div class="text-center mb-3">
                     <p style="color: #ccc;">Enviamos um código de 6 caracteres para <strong id="email-verificado" style="color: #28a745;"></strong></p>
-                    <p style="color: #888; font-size: 0.9rem;">Tempo restante: <span id="tempo-restante" style="color: #f8b531;">5:00</span></p>
+                    <p style="color: #888; font-size: 0.9rem;">Tempo restante: <span id="tempo-restante" style="color: #0055ff;">5:00</span></p>
                 </div>
                 
                 <div class="form-group">
@@ -374,7 +374,7 @@
             </div>
 
             <div class="login-link" style="margin-top: 1rem;">
-                <a href="<?= site_url('/') ?>">
+                <a href="<?= site_url('/') ?>" id="link-voltar-site">
                     <i class="fas fa-arrow-left mr-1"></i>Voltar ao site
                 </a>
             </div>
@@ -399,6 +399,94 @@
             const inputCodigo = document.getElementById('codigo');
             const inputEmail = document.getElementById('email');
 
+            // FUNÇÕES DE PERSISTÊNCIA LOCALSTORAGE
+            function salvarEstado(etapa, email) {
+                const estado = {
+                    etapa: etapa,
+                    email: email,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem('registro_estado', JSON.stringify(estado));
+            }
+
+            function limparEstado() {
+                localStorage.removeItem('registro_estado');
+            }
+
+            function carregarEstado() {
+                const estadoSalvo = localStorage.getItem('registro_estado');
+                return estadoSalvo ? JSON.parse(estadoSalvo) : null;
+            }
+
+            // Verifica se o estado já está na etapa atual (evita salvamentos duplicados)
+            function getEtapaAtual() {
+                const estado = carregarEstado();
+                return estado ? estado.etapa : 1;
+            }
+
+            // Verificar se há estado salvo e se ainda é válido no servidor
+            async function restaurarSessaoSalva() {
+                const estado = carregarEstado();
+                if (!estado || !estado.email) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch('<?= site_url('registar/verificarSessao') ?>', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({
+                            '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
+                        })
+                    });
+                    const data = await response.json();
+
+                    if (data.sucesso) {
+                        // Sessão ainda ativa no servidor
+                        emailAtual = estado.email;
+                        document.getElementById('email-verificado').textContent = emailAtual;
+
+                        if (estado.etapa >= 2) {
+                            // Mostrar etapa de código
+                            document.getElementById('etapa-verificacao').classList.add('hidden');
+                            document.getElementById('etapa-codigo').classList.remove('hidden');
+                            updateSteps(2);
+
+                            // Calcular tempo restante
+                            const tempoDecorrido = Math.floor((Date.now() - estado.timestamp) / 1000);
+                            const tempoRestante = Math.max(0, 300 - tempoDecorrido);
+
+                            if (tempoRestante > 0) {
+                                iniciarTimer(tempoRestante);
+                                inputCodigo.focus();
+                            } else {
+                                // Expirado
+                                limparEstado();
+                                alert('Código expirado. Preencha o email novamente.');
+                                location.reload();
+                            }
+                        }
+
+                        if (estado.etapa >= 3) {
+                            // Código já verificado, mostrar formulário de cadastro
+                            document.getElementById('etapa-codigo').classList.add('hidden');
+                            document.getElementById('etapa-cadastro').classList.remove('hidden');
+                            updateSteps(3);
+                            document.getElementById('email-cadastro').value = emailAtual;
+                            document.getElementById('nome').focus();
+                        }
+                    } else {
+                        // Sessão expirou no servidor, limpar localStorage
+                        limparEstado();
+                    }
+                } catch (error) {
+                    console.error('Erro ao restaurar sessão:', error);
+                }
+            }
+
             // Atualizar steps
             function updateSteps(step) {
                 document.getElementById('step1').className = step >= 1 ? 'step active' : 'step';
@@ -411,7 +499,7 @@
             // Etapa 1: Verificar Email
             formVerificacao.addEventListener('submit', function(e) {
                 e.preventDefault();
-                
+
                 const email = inputEmail.value.trim();
                 if (!email) {
                     alert('Por favor, digite um e-mail');
@@ -443,7 +531,7 @@
                     if (data.sucesso) {
                         emailAtual = email;
                         document.getElementById('email-verificado').textContent = email;
-                        
+
                         if (data.codigo_dev) {
                             document.getElementById('codigo-dev-valor').textContent = data.codigo_dev;
                             document.getElementById('codigo-dev').style.display = 'block';
@@ -454,6 +542,11 @@
                         updateSteps(2);
                         iniciarTimer();
                         inputCodigo.focus();
+
+                        // SALVAR ESTADO APENAS SE NÃO ESTIVER JÁ NA ETAPA 2
+                        if (getEtapaAtual() < 2) {
+                            salvarEstado(2, emailAtual);
+                        }
                     } else {
                         alert('Erro ao enviar código: ' + data.msg);
                         btnVerificarEmail.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>ENVIAR CÓDIGO';
@@ -471,7 +564,7 @@
             // Etapa 2: Verificar Código
             btnVerificarCodigo.addEventListener('click', function() {
                 const codigo = inputCodigo.value.trim();
-                
+
                 if (codigo.length !== 6) {
                     alert('Digite o código de 6 caracteres');
                     return;
@@ -495,13 +588,18 @@
                 .then(data => {
                     if (data.sucesso) {
                         clearInterval(intervalTimer);
-                        
+
                         document.getElementById('email-cadastro').value = emailAtual;
-                        
+
                         document.getElementById('etapa-codigo').classList.add('hidden');
                         document.getElementById('etapa-cadastro').classList.remove('hidden');
                         updateSteps(3);
                         document.getElementById('nome').focus();
+
+                        // SALVAR ESTADO APENAS SE NÃO ESTIVER JÁ NA ETAPA 3
+                        if (getEtapaAtual() < 3) {
+                            salvarEstado(3, emailAtual);
+                        }
                     } else {
                         alert('Erro: ' + data.msg);
                         btnVerificarCodigo.innerHTML = '<i class="fas fa-check mr-2"></i>VERIFICAR CÓDIGO';
@@ -517,21 +615,22 @@
             });
 
             // Timer de 5 minutos
-            function iniciarTimer() {
-                let tempoRestante = 300;
+            function iniciarTimer(tempoInicial) {
+                let tempoRestante = tempoInicial || 300;
                 const timerElement = document.getElementById('tempo-restante');
-                
+
                 intervalTimer = setInterval(() => {
                     const minutos = Math.floor(tempoRestante / 60);
                     const segundos = tempoRestante % 60;
                     timerElement.textContent = `${minutos}:${segundos.toString().padStart(2, '0')}`;
-                    
+
                     if (tempoRestante <= 0) {
                         clearInterval(intervalTimer);
                         alert('Código expirado. Preencha o email novamente.');
+                        limparEstado();
                         location.reload();
                     }
-                    
+
                     tempoRestante--;
                 }, 1000);
             }
@@ -539,7 +638,7 @@
             // Reenviar código
             btnReenviarCodigo.addEventListener('click', function() {
                 if (!podeReenviar) return;
-                
+
                 podeReenviar = false;
                 btnReenviarCodigo.disabled = true;
                 btnReenviarCodigo.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Enviando...';
@@ -559,7 +658,7 @@
                 .then(data => {
                     if (data.sucesso) {
                         btnReenviarCodigo.innerHTML = '<i class="fas fa-check mr-1"></i>Enviado!';
-                        
+
                         if (data.codigo_dev) {
                             document.getElementById('codigo-dev-valor').textContent = data.codigo_dev;
                             document.getElementById('codigo-dev').style.display = 'block';
@@ -571,14 +670,14 @@
                         setTimeout(() => {
                             btnReenviarCodigo.style.display = 'none';
                             document.getElementById('timer-reenvio').style.display = 'block';
-                            
+
                             let segundosRestantes = 30;
                             const spanSegundos = document.getElementById('segundos-restantes');
-                            
+
                             timerReenvio = setInterval(() => {
                                 spanSegundos.textContent = segundosRestantes;
                                 segundosRestantes--;
-                                
+
                                 if (segundosRestantes < 0) {
                                     clearInterval(timerReenvio);
                                     document.getElementById('timer-reenvio').style.display = 'none';
@@ -621,6 +720,7 @@
             if (formCadastro) {
                 formCadastro.addEventListener('submit', function(e) {
                     console.log('Formulário de cadastro enviado');
+                    limparEstado(); // Limpar estado salvo
                     const btnCadastrar = document.getElementById('btnCadastrar');
                     btnCadastrar.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>CADASTRANDO...';
                     btnCadastrar.disabled = true;
@@ -677,6 +777,26 @@
             inputCodigo.addEventListener('input', function(e) {
                 e.target.value = e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
             });
+
+            // Botão "Voltar ao site" - limpa localStorage antes de navegar
+            const linkVoltarSite = document.getElementById('link-voltar-site');
+            if (linkVoltarSite) {
+                linkVoltarSite.addEventListener('click', function(e) {
+                    e.preventDefault(); // Previne navegação imediata
+                    limparEstado(); // Limpa todo o estado do registro
+                    // Navega após limpeza
+                    window.location.href = this.href;
+                });
+            }
+
+            // Ao finalizar cadastro (redirecionamento), limpar localStorage
+            formCadastro.addEventListener('submit', function(e) {
+                // O servidor redirecionará após criar, mas vamos limpar o estado
+                limparEstado();
+            });
+
+            // Restaurar sessão salva ao carregar a página
+            restaurarSessaoSalva();
         });
     </script>
 

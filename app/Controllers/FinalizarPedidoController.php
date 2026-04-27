@@ -47,6 +47,8 @@ class FinalizarPedidoController extends Controller
                     'Retirada no local',
                 'forma_pagamento' => $dadosPedido['forma_pagamento'],
                 'tipo_entrega' => $dadosPedido['tipo_entrega'],
+                'mesa_id' => $dadosPedido['tipo_entrega'] === 'retirada' ? ($dadosPedido['mesa_id'] ?? null) : null,
+                'local_retirada' => $dadosPedido['tipo_entrega'] === 'retirada' ? ($dadosPedido['local_retirada'] ?? 'balcao') : null,
                 'troco_para' => $dadosPedido['troco_para'] ?? null,
                 'valor_produtos' => $valorProdutos,
                 'valor_entrega' => $valorEntrega,
@@ -68,6 +70,8 @@ class FinalizarPedidoController extends Controller
                     'preco_unitario' => $item['preco'],
                     'preco_total' => $item['total'],
                     'observacoes' => $item['observacoes'] ?? '',
+                    'tamanho_nome' => $item['tamanho']['nome'] ?? null,
+                    'tamanho_preco' => $item['tamanho']['preco'] ?? null,
                     'criado_em' => date('Y-m-d H:i:s')
                 ];
 
@@ -91,6 +95,15 @@ class FinalizarPedidoController extends Controller
 
             // Limpar carrinho temporário
             $db->table('carrinho_temporario')->where('session_id', $sessionID)->delete();
+
+            // Ocupar mesa se for retirada em mesa
+            if ($dadosPedido['tipo_entrega'] === 'retirada' && !empty($dadosPedido['mesa_id'])) {
+                $db->table('mesas')->where('id', $dadosPedido['mesa_id'])->update([
+                    'ocupado' => 1,
+                    'pedido_id' => $pedidoId,
+                    'updated_at' => date('Y-m-d H:i:s')
+                ]);
+            }
 
             $db->transComplete();
 
@@ -174,7 +187,11 @@ class FinalizarPedidoController extends Controller
         $mensagem .= "\n📦 *ITENS:*\n";
         
         foreach ($itens as $item) {
-            $mensagem .= "• {$item['quantidade']}x {$item['nome']} - R$ " . number_format($item['total'], 2, ',', '.') . "\n";
+            $mensagem .= "• {$item['quantidade']}x {$item['nome']}";
+            if (!empty($item['tamanho']['nome'])) {
+                $mensagem .= " ({$item['tamanho']['nome']})";
+            }
+            $mensagem .= " - R$ " . number_format($item['total'], 2, ',', '.') . "\n";
             
             if (!empty($item['extras'])) {
                 foreach ($item['extras'] as $extra) {
@@ -277,7 +294,12 @@ class FinalizarPedidoController extends Controller
         // Atualizar status para cancelado
         $db->table('pedidos')
             ->where('codigo', $codigo)
-            ->update(['status' => 'cancelado', 'atualizado_em' => date('Y-m-d H:i:s')]);
+            ->update(['status' => 'cancelado', 'atualizado_em' => date('Y-m-d H:i:s'), 'inativo_em' => date('Y-m-d H:i:s')]);
+
+        // Liberar mesa associada
+        $db->table('mesas')
+            ->where('pedido_id', $pedido['id'])
+            ->update(['ocupado' => 0, 'pedido_id' => null, 'updated_at' => date('Y-m-d H:i:s')]);
 
         return $this->response->setJSON([
             'success' => true,

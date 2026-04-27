@@ -1,13 +1,9 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # Se o arquivo existir na pasta public, use-o diretamente
-    RewriteCond %{REQUEST_FILENAME} -f
-    RewriteRule ^ - [L]
-
-    # Permitir acesso direto a arquivos de upload
-    RewriteCond %{REQUEST_URI} ^/uploads/ [NC]
-    RewriteRule ^uploads/(.*)$ public/uploads/$1 [L]
+    # Se o arquivo existir na pasta public, use-o então se
+    RewriteCond %{DOCUMENT_ROOT}/public/$1 -f
+    RewriteRule ^(.*)$ public/$1 [L]
 
     # Regra padrão do CodeIgniter para o index.php da raiz
     RewriteCond %{REQUEST_FILENAME} !-f

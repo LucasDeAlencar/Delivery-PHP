@@ -13,11 +13,13 @@ class Produtos extends BaseController {
     private $extraModel;
     private $produtoExtraModel;
 
+    private $tamanhoProdutoModel;
     public function __construct() {
         $this->produtoModel = new \App\Models\ProdutoModel();
         $this->categoriaModel = new \App\Models\CategoriaModel();
         $this->extraModel = new \App\Models\ExtraModel();
         $this->produtoExtraModel = new \App\Models\ProdutoExtraModel();
+        $this->tamanhoProdutoModel = new \App\Models\TamanhoProdutoModel();
     }
 
     public function index() {
@@ -29,7 +31,7 @@ class Produtos extends BaseController {
             ->join('categorias', 'categorias.id = produtos.categoria_id', 'left');
         
         if ($search) {
-            $builder->like('produtos.nome', $search);
+            $builder->like('produtos.nome', $search, 'both', null, true);
         }
         
         if ($categoria_filtro) {
@@ -147,6 +149,10 @@ class Produtos extends BaseController {
 
         // Tenta salvar o produto
         if ($produtoId = $this->produtoModel->criarProduto($dadosProduto)) {
+            // Salva tamanhos se com_tamanho estiver habilitado
+            if (!empty($dadosProduto['com_tamanho']) && !empty($dadosProduto['tamanhos'])) {
+                $this->tamanhoProdutoModel->salvarTamanhosDoProduto($produtoId, $dadosProduto['tamanhos']);
+            }
             return redirect()->to(site_url('admin/produtos'))
                             ->with('sucesso', 'Produto criado com sucesso!');
         }
@@ -184,6 +190,7 @@ class Produtos extends BaseController {
             'titulo' => 'Editando o produto ' . $produto->nome,
             'produto' => $produto,
             'categorias' => $this->categoriaModel->where('ativo', true)->findAll(),
+            'tamanhos_existentes' => $this->tamanhoProdutoModel->buscaPorProduto($produto->id),
         ];
 
         return view('Admin/Produtos/editar', $data);
@@ -229,6 +236,13 @@ class Produtos extends BaseController {
 
         // Tenta atualizar o produto
         if ($this->produtoModel->atualizarProduto($dadosProduto)) {
+            // Salva tamanhos (substitui todos)
+            if (!empty($dadosProduto['com_tamanho']) && !empty($dadosProduto['tamanhos'])) {
+                $this->tamanhoProdutoModel->salvarTamanhosDoProduto($id, $dadosProduto['tamanhos']);
+            } else {
+                // Se com_tamanho foi desmarcado, remove todos os tamanhos
+                $this->tamanhoProdutoModel->where('produto_id', $id)->delete();
+            }
             return redirect()->to(site_url("admin/produtos/show/$id"))
                             ->with('sucesso', 'Produto atualizado com sucesso!');
         }

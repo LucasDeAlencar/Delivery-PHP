@@ -47,13 +47,27 @@ class FormaPagamentoModel extends Model
 
     // Callbacks
     protected $beforeInsert = [];
-    protected $afterInsert  = [];
+    protected $afterInsert  = ['resetAutoIncrement'];
     protected $beforeUpdate = [];
     protected $afterUpdate  = [];
     protected $beforeFind   = [];
     protected $afterFind    = [];
     protected $beforeDelete = [];
     protected $afterDelete  = [];
+
+    protected function resetAutoIncrement($data): array
+    {
+        $table = $this->table;
+        $db = \Config\Database::connect();
+        
+        $query = $db->query("SELECT MAX(id) as max_id FROM $table");
+        $result = $query->getRow();
+        $maxId = $result->max_id ?? 0;
+
+        $db->query("ALTER TABLE $table AUTO_INCREMENT = " . ($maxId + 1));
+
+        return $data;
+    }
 
     /**
      * Retorna apenas formas de pagamento ativas

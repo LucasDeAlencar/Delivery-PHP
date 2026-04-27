@@ -11,7 +11,7 @@ class ExtraModel extends Model {
     protected $useAutoIncrement = true;
     protected $returnType = 'App\Entities\Extra';
     protected $useSoftDeletes = true;
-    protected $allowedFields = ['nome', 'slug', 'preco', 'ativo', 'multitude', 'descricao', 'atualizado_em'];
+    protected $allowedFields = ['nome', 'slug', 'preco', 'ativo', 'multitude', 'descricao', 'atualizado_em', 'deletado_em'];
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;
     protected array $casts = [];
@@ -45,6 +45,7 @@ class ExtraModel extends Model {
     ];
     protected $beforeUpdate = ['criaSlug'];
     protected $beforeInsert = ['criaSlug'];
+    protected $afterInsert = ['resetAutoIncrement'];
 
     public function criaSlug(array $data) {
         $datetime = new \DateTime('now', new \DateTimeZone('America/Sao_Paulo'));
@@ -53,6 +54,20 @@ class ExtraModel extends Model {
             $data['data']['slug'] = mb_url_title($data['data']['nome'], '-', TRUE);
             $data['data']['atualizado_em'] = $datetime->format('Y-m-d H:i:s');
         }
+
+        return $data;
+    }
+
+    protected function resetAutoIncrement($data): array
+    {
+        $table = $this->table;
+        $db = \Config\Database::connect();
+        
+        $query = $db->query("SELECT MAX(id) as max_id FROM $table");
+        $result = $query->getRow();
+        $maxId = $result->max_id ?? 0;
+
+        $db->query("ALTER TABLE $table AUTO_INCREMENT = " . ($maxId + 1));
 
         return $data;
     }
@@ -69,31 +84,36 @@ class ExtraModel extends Model {
         }
         
         return $this->select('id,nome')
-                ->like('nome', $term)
+                ->like('nome', $term, 'both', null, true)
                 ->withDeleted(true)
                 ->get()
                 ->getResult();
     }
 
-    /**
-     * Busca extras com filtros de pesquisa
-     */
-    public function buscarComFiltros($search = null, $ativo = null) {
-        $builder = $this->withDeleted(true);
-        
-        if ($search) {
-            $builder->groupStart()
-                   ->like('nome', $search)
-                   ->orLike('descricao', $search)
-                   ->groupEnd();
-        }
-        
-        if ($ativo !== null) {
-            $builder->where('ativo', $ativo);
-        }
-        
-        return $builder->orderBy('nome', 'ASC')->findAll();
-    }
+     /**
+      * Busca extras com filtros de pesquisa
+      */
+     public function buscarComFiltros($search = null, $ativo = null) {
+         $builder = $this->withDeleted(true);
+         
+         // Tratar string vazia como null
+         if ($ativo === '') {
+             $ativo = null;
+         }
+         
+         if ($search) {
+             $builder->groupStart()
+                    ->like('nome', $search, 'both', null, true)
+                    ->orLike('descricao', $search, 'both', null, true)
+                    ->groupEnd();
+         }
+         
+         if ($ativo !== null) {
+             $builder->where('ativo', $ativo);
+         }
+         
+         return $builder->orderBy('nome', 'ASC')->findAll();
+     }
 
     /**
      * Associa todos os produtos de uma categoria aos extras selecionados

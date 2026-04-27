@@ -21,12 +21,12 @@ body.modal-open-fix {
     cursor: text !important;
     background-color: #2d2d2d !important;
     color: #ffc135 !important;
-    border-color: #f8b531 !important;
+    border-color: #0055ff !important;
 }
 
 #quantidade:focus {
     outline: none !important;
-    box-shadow: 0 0 0 2px rgba(248, 181, 49, 0.3) !important;
+    box-shadow: 0 0 0 2px rgba(23, 22, 54, 0.3) !important;
 }
 
 /* Botão adicionar ao carrinho */

@@ -118,7 +118,12 @@
             font-size: 9px;
             margin-left: 4px;
             font-style: italic;
-            color: #555;
+            color: #000;
+        }
+
+        .tamanho-info {
+            font-weight: 600;
+            color: #000;
         }
 
         .total-section {
@@ -227,7 +232,7 @@
     <div class="container">
         <!-- Cabeçalho -->
         <div class="header">
-            <div class="logo">Delicias MV</div>
+            <div class="logo">Space Burger Dog Do Paulista</div>
             <div class="header-info">Tel: (11) 9999-9999</div>
         </div>
 
@@ -237,6 +242,16 @@
             <div class="pedido-data"><?= date('d/m/Y H:i', strtotime($pedido->criado_em)) ?></div>
             <span class="status-badge"><?= strtoupper(str_replace('_', ' ', $pedido->status)) ?></span>
         </div>
+
+        <!-- Mesa -->
+        <?php if (!empty($pedido->mesa_id)): ?>
+        <div class="section">
+            <div class="label">MESA</div>
+            <div class="content">
+                <?= esc($pedido->mesa_numero ?? $pedido->mesa_id) ?>
+            </div>
+        </div>
+        <?php endif; ?>
 
         <!-- Cliente -->
         <div class="section">
@@ -261,31 +276,39 @@
             </div>
         </div>
 
-        <!-- Itens -->
-        <div class="section">
-            <div class="label">ITENS</div>
-            <?php foreach ($itens as $item): ?>
-                <div class="item">
-                    <div class="item-linha">
-                        <span class="item-nome"><?= $item->quantidade ?>x <?= esc($item->produto_nome) ?></span>
-                        <span>R$ <?= number_format($item->preco_total, 2, ',', '.') ?></span>
-                    </div>
-                    <?php if (!empty($item->extras)): ?>
-                        <?php foreach ($item->extras as $extra): ?>
-                            <div class="item-obs">
-                                + <?= esc($extra->extra_nome) ?><?= $extra->quantidade > 1 ? ' x' . $extra->quantidade : '' ?>
-                                <?php if ($extra->extra_preco > 0): ?>
-                                    (+R$ <?= number_format($extra->extra_preco * $extra->quantidade, 2, ',', '.') ?>)
-                                <?php endif; ?>
-                            </div>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                    <?php if (!empty($item->observacoes)): ?>
-                        <div class="item-obs">* <?= esc($item->observacoes) ?></div>
-                    <?php endif; ?>
-                </div>
-            <?php endforeach; ?>
-        </div>
+         <!-- Itens -->
+         <div class="section">
+             <div class="label">ITENS</div>
+             <?php foreach ($itens as $item): ?>
+                 <div class="item">
+                     <div class="item-linha">
+                         <span class="item-nome"><?= $item->quantidade ?>x <?= esc($item->produto_nome) ?></span>
+                         <span>R$ <?= number_format($item->preco_total, 2, ',', '.') ?></span>
+                     </div>
+                     <?php if (!empty($item->tamanho_nome)): ?>
+                         <div class="item-obs" style="font-weight: 600;">
+                             <i class="fas fa-ruler-combined"></i> <?= esc($item->tamanho_nome) ?>
+                             <?php if (!empty($item->tamanho_preco) && $item->tamanho_preco > 0): ?>
+                                 - R$ <?= number_format($item->tamanho_preco, 2, ',', '.') ?>
+                             <?php endif; ?>
+                         </div>
+                     <?php endif; ?>
+                     <?php if (!empty($item->extras)): ?>
+                         <?php foreach ($item->extras as $extra): ?>
+                             <div class="item-obs">
+                                 + <?= esc($extra->extra_nome) ?><?= $extra->quantidade > 1 ? ' x' . $extra->quantidade : '' ?>
+                                 <?php if ($extra->extra_preco > 0): ?>
+                                     (+R$ <?= number_format($extra->extra_preco * $extra->quantidade, 2, ',', '.') ?>)
+                                 <?php endif; ?>
+                             </div>
+                         <?php endforeach; ?>
+                     <?php endif; ?>
+                     <?php if (!empty($item->observacoes)): ?>
+                         <div class="item-obs">* <?= esc($item->observacoes) ?></div>
+                     <?php endif; ?>
+                 </div>
+             <?php endforeach; ?>
+         </div>
 
         <!-- Observações do Pedido -->
         <?php if (!empty($pedido->observacoes)): ?>
@@ -328,7 +351,7 @@
         <!-- Rodapé -->
         <div class="footer">
             <div class="footer-destaque">Obrigado pela preferência!</div>
-            <div>Delicias MV - Volte sempre!</div>
+            <div>Space Burger Dog Do Paulista - Volte sempre!</div>
         </div>
 
         <!-- Botões -->

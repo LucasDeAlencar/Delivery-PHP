@@ -21,6 +21,7 @@ class MedidaModel extends Model {
     
     protected $beforeUpdate = ['execRegulador'];
     protected $beforeInsert = ['execRegulador'];
+    protected $afterInsert = ['resetAutoIncrement'];
     
     public function execRegulador(array $data) {
         // Define o timezone para São Paulo nos timestamps
@@ -31,6 +32,20 @@ class MedidaModel extends Model {
             $data['data']['atualizado_em'] = $datetime->format('Y-m-d H:i:s');
         }
         
+        return $data;
+    }
+
+    protected function resetAutoIncrement($data): array
+    {
+        $table = $this->table;
+        $db = \Config\Database::connect();
+        
+        $query = $db->query("SELECT MAX(id) as max_id FROM $table");
+        $result = $query->getRow();
+        $maxId = $result->max_id ?? 0;
+
+        $db->query("ALTER TABLE $table AUTO_INCREMENT = " . ($maxId + 1));
+
         return $data;
     }
     

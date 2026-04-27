@@ -41,6 +41,8 @@
                                      data-produto-descricao="<?= esc($produto->descricao ?? '') ?>"
                                      data-produto-imagem="<?= !empty($produto->imagem) ? base_url('uploads/produtos/' . esc($produto->imagem)) : '' ?>"
                                      data-produto-ativo="<?= $produto->ativo ? '1' : '0' ?>"
+                                     data-com-tamanho="<?= !empty($produto->com_tamanho) ? '1' : '0' ?>"
+                                     data-tamanhos="<?= !empty($produto->tamanhos) ? esc(json_encode(array_map(fn($t) => ['id' => $t->id, 'nome' => $t->nome, 'preco' => $t->preco], $produto->tamanhos))) : '[]' ?>"
                                      style="cursor: <?= $produto->ativo ? 'pointer' : 'default' ?>; pointer-events: <?= $produto->ativo ? 'auto' : 'none' ?>;">
                                     <div class="content">
                                         <div class="filter_item_img">
@@ -80,7 +82,12 @@
                                             <?php endif; ?>
                                             <?php if (!empty($produto->preco)): ?>
                                                 <div class="price-info mt-2">
-                                                    <strong class="text-warning">R$ <?= number_format($produto->preco, 2, ',', '.') ?></strong>
+                                                    <?php if (!empty($produto->com_tamanho) && !empty($produto->tamanhos)): ?>
+                                                        <small class="text-muted">A partir de </small>
+                                                        <strong class="text-warning">R$ <?= number_format(min(array_column((array)$produto->tamanhos, 'preco')), 2, ',', '.') ?></strong>
+                                                    <?php else: ?>
+                                                        <strong class="text-warning">R$ <?= number_format($produto->preco, 2, ',', '.') ?></strong>
+                                                    <?php endif; ?>
                                                 </div>
                                             <?php endif; ?>
                                             <div class="category-badge">
@@ -148,13 +155,13 @@
                                     <div class="col-6">
                                         <label for="quantidade" class="font-weight-bold text-light" style="font-family: 'Poppins', sans-serif; font-size: 0.9rem;">Quantidade:</label>
                                         <div style="display: flex; max-width: 100%; width: 120px;">
-                                            <button class="btn btn-outline-warning" type="button" id="btn-diminuir" style="border-color: #f8b531; color: #f8b531; border-right: none; padding: 8px 12px;">
+                                            <button class="btn btn-outline-warning" type="button" id="btn-diminuir" style="border-color: #0055ff; color: #0055ff; border-right: none; padding: 8px 12px;">
                                                 -
                                             </button>
                                             <input type="number" class="form-control text-center bg-dark text-light" 
                                                    id="quantidade" value="1" min="1" max="99"
-                                                   style="border-color: #f8b531; border-left: none; border-right: none; color: #ffc135 !important;">
-                                            <button class="btn btn-outline-warning" type="button" id="btn-aumentar" style="border-color: #f8b531; color: #f8b531; border-left: none; padding: 8px 12px;">
+                                                   style="border-color: #0055ff; border-left: none; border-right: none; color: #ffc135 !important;">
+                                            <button class="btn btn-outline-warning" type="button" id="btn-aumentar" style="border-color: #0055ff; color: #0055ff; border-left: none; padding: 8px 12px;">
                                                 +
                                             </button>
                                         </div>
@@ -173,7 +180,7 @@
 
                             <!-- Botão de Extras -->
                             <div class="mb-3" id="container-btn-extras" style="display: none;">
-                                <button type="button" class="btn btn-outline-warning btn-block" id="btn-selecionar-extras" style="border: 2px solid #f8b531; color: #f8b531; font-weight: 600; transition: all 0.3s ease; padding: 10px;">
+                                <button type="button" class="btn btn-outline-warning btn-block" id="btn-selecionar-extras" style="border: 2px solid #0055ff; color: #0055ff; font-weight: 600; transition: all 0.3s ease; padding: 10px;">
                                     <i class="fas fa-plus-circle mr-2"></i>
                                     <span id="texto-btn-extras">Selecionar Extras</span>
                                     <span id="badge-obrigatorio" class="badge badge-danger ml-2" style="display: none;">*Obrigatório</span>
@@ -186,6 +193,15 @@
                                     <small class="text-muted d-block" id="valor-extras-resumo">+ R$ 0,00</small>
                                 </div>
                                 <small class="text-danger d-block mt-1" id="aviso-extra-obrigatorio-modal" style="display: none;"></small>
+                            </div>
+
+                            <!-- Seletor de Tamanho (visível apenas para produtos com tamanho) -->
+                            <div class="mb-2" id="container-tamanhos" style="display:none;">
+                                <label class="font-weight-bold text-light mb-1" style="font-size: 0.85rem;">
+                                    <i class="fas fa-ruler mr-1"></i> Tamanho: <span class="text-danger">*</span>
+                                </label>
+                                <div id="tamanhos-opcoes" style="display:flex;flex-wrap:wrap;"></div>
+                                <small class="text-danger d-none mt-1" id="aviso-tamanho"><i class="fas fa-exclamation-circle mr-1"></i>Selecione um tamanho para continuar.</small>
                             </div>
 
                             <!-- Observações -->
@@ -212,7 +228,7 @@
                     <button type="button" class="btn btn-secondary" data-dismiss="modal" style="background: #333; border: 1px solid #555; color: #ccc; font-family: 'Poppins', sans-serif; font-weight: 500; padding: 12px 20px; font-size: 0.9rem; flex: 1;">
                         <i class="fas fa-times mr-2"></i>Cancelar
                     </button>
-                    <button type="button" class="btn btn-warning" id="btn-adicionar-carrinho" style="background: linear-gradient(135deg, #f8b531 0%, #fac56e 100%); border: none; color: #000; font-weight: 600; font-family: 'Poppins', sans-serif; padding: 12px 20px; font-size: 0.9rem; flex: 1;">
+                    <button type="button" class="btn btn-warning" id="btn-adicionar-carrinho" style="background: linear-gradient(135deg, #0055ff 0%, #1a1866 100%); border: none; color: #fff; font-weight: 600; font-family: 'Poppins', sans-serif; padding: 12px 20px; font-size: 0.9rem; flex: 1;">
                         <i class="flaticon-pizza-1 mr-2"></i>Adicionar
                     </button>
                 </div>
@@ -241,7 +257,28 @@
                     </div>
 
                     <div id="extras-lista" style="display: none;">
-                        <div id="aviso-obrigatorio" class="alert alert-warning" style="display: none; background: rgba(248, 181, 49, 0.1); border: 1px solid #f8b531; color: #f8b531;">
+                        <!-- Campo de Pesquisa -->
+                        <div class="mb-3">
+                            <div class="input-group" style="background: #2d2d2d; border-radius: 8px; padding: 2px;">
+                                <span class="input-group-text" style="background: transparent; border: none; color: #aaa;">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" 
+                                       id="pesquisa-extras" 
+                                       class="form-control" 
+                                       placeholder="Pesquisar extra..." 
+                                       style="background: transparent; border: none; color: #fff; outline: none;">
+                                <button type="button" 
+                                        class="btn btn-link p-0 m-0" 
+                                        id="limpar-pesquisa" 
+                                        style="display: none; color: #aaa; border: none; background: transparent;"
+                                        onclick="document.getElementById('pesquisa-extras').value=''; ProdutoExtras.pesquisar(''); this.style.display='none';">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="aviso-obrigatorio" class="alert alert-warning" style="display: none; background: rgba(248, 181, 49, 0.1); border: 1px solid #0055ff; color: #0055ff;">
                             <i class="fas fa-exclamation-triangle mr-2"></i>
                             <span id="texto-aviso-obrigatorio"></span>
                         </div>
@@ -264,7 +301,7 @@
                             <button type="button" class="btn btn-secondary" data-dismiss="modal" style="background: #333; border: 1px solid #555;">
                                 Cancelar
                             </button>
-                            <button type="button" class="btn btn-warning" id="btn-confirmar-extras" style="background: linear-gradient(135deg, #f8b531 0%, #fac56e 100%); border: none; color: #000; font-weight: 600;">
+                            <button type="button" class="btn btn-warning" id="btn-confirmar-extras" style="background: linear-gradient(135deg, #0055ff 0%, #1a1866 100%); border: none; color: #fff; font-weight: 600;">
                                 <i class="fas fa-check mr-2"></i>Confirmar
                             </button>
                         </div>
@@ -309,7 +346,7 @@
     }
 
     .btn-outline-warning:hover {
-        background: #f8b531 !important;
+        background: #0055ff !important;
         color: #000 !important;
         transform: scale(1.05);
     }
@@ -324,7 +361,7 @@
     }
 
     .form-control:focus {
-        border-color: #f8b531 !important;
+        border-color: #0055ff !important;
         box-shadow: 0 0 0 0.2rem rgba(248, 181, 49, 0.25) !important;
         background: #2d2d2d !important;
         color: #fff !important;
@@ -362,7 +399,7 @@
     /* Notificação estilo dark */
     .notificacao-popup {
         background: #2d2d2d !important;
-        border: 1px solid #f8b531 !important;
+        border: 1px solid #0055ff !important;
         color: #fff !important;
         box-shadow: 0 5px 20px rgba(248, 181, 49, 0.3) !important;
         font-family: 'Poppins', sans-serif;
@@ -370,7 +407,7 @@
 
     /* Efeito de foco no textarea */
     #observacoes:focus {
-        border-color: #f8b531 !important;
+        border-color: #0055ff !important;
         background: #2d2d2d !important;
     }
 

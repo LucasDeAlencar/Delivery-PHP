@@ -40,13 +40,17 @@ function criarPopupCarrinho() {
                         <h4>Forma de Recebimento:</h4>
                         <div class="opcoes-radio">
                             <label>
-                                <input type="radio" name="tipoEntrega" value="retirada" onchange="calcularTotal()">
+                                <input type="radio" name="tipoEntrega" value="retirada" onchange="calcularTotal(); verificarMesas()">
                                 <span>Retirada na Loja</span>
                             </label>
                             <label>
                                 <input type="radio" name="tipoEntrega" value="entrega" onchange="calcularTotal()">
                                 <span>Entrega</span>
                             </label>
+                        </div>
+                        <div id="opcoes-retirada" class="mt-3" style="display: none;">
+                            <h5>Escolha o local de retirada:</h5>
+                            <div id="lista-locais-retirada" class="opcoes-radio"></div>
                         </div>
                     </div>
                     
@@ -218,7 +222,7 @@ function criarPopupStatusPedido(pedido) {
         'confirmado': 'Pedido Confirmado',
         'preparando': 'Em Preparação',
         'saiu_entrega': 'Saiu para Entrega',
-        'entregue': 'Entregue',
+        'finalizado': 'Finalizado',
         'cancelado': 'Cancelado'
     };
     
@@ -227,7 +231,7 @@ function criarPopupStatusPedido(pedido) {
         'confirmado': '#17a2b8',
         'preparando': '#fd7e14',
         'saiu_entrega': '#6f42c1',
-        'entregue': '#28a745',
+        'finalizado': '#28a745',
         'cancelado': '#dc3545'
     };
     
@@ -254,7 +258,7 @@ function criarPopupStatusPedido(pedido) {
                         <p><strong>Data:</strong> ${new Date(pedido.criado_em).toLocaleString('pt-BR')}</p>
                     </div>
                     
-                    ${pedido.status === 'entregue' || pedido.status === 'cancelado' ? 
+                    ${pedido.status === 'finalizado' || pedido.status === 'cancelado' ? 
                         '<button onclick="finalizarAcompanhamento()" class="btn btn-warning" style="margin-top: 20px;">Fazer Novo Pedido</button>' : 
                         '<p style="color: #ccc; margin-top: 20px;">Acompanhe o status do seu pedido aqui</p>'
                     }
@@ -393,6 +397,82 @@ function verificarTaxaEntrega() {
     });
 }
 
+let locaisRetiradaCarregados = false;
+let locaisRetirada = null;
+
+function verificarMesas() {
+    const tipoEntrega = $('input[name="tipoEntrega"]:checked').val();
+    const opcoesDiv = $('#opcoes-retirada');
+    
+    if (tipoEntrega !== 'retirada') {
+        opcoesDiv.hide();
+        localStorage.removeItem('local_retirada');
+        return;
+    }
+    
+    if (locaisRetiradaCarregados) {
+        opcoesDiv.show();
+        return;
+    }
+    
+    $.ajax({
+        url: '/api/mesas',
+        method: 'GET',
+        dataType: 'json',
+        xhrFields: { withCredentials: true },
+        success: function(response) {
+            if (response.sucesso) {
+                locaisRetirada = response;
+                locaisRetiradaCarregados = true;
+                exibirLocaisRetirada(response);
+                opcoesDiv.show();
+            }
+        },
+        error: function() {
+            opcoesDiv.hide();
+        }
+    });
+}
+
+function exibirLocaisRetirada(data) {
+    const container = $('#lista-locais-retirada');
+    let html = '';
+    
+    // Balcão
+    html += `
+        <label class="local-retirada-item">
+            <input type="radio" name="localRetirada" value="balcao" checked>
+            <div class="local-info">
+                <i class="fas fa-store"></i>
+                <span>${data.balcao.nome}</span>
+                <span class="badge bg-success">Disponível</span>
+            </div>
+        </label>
+    `;
+    
+    // Mesas
+    if (data.mesas && data.mesas.length > 0) {
+        data.mesas.forEach(mesa => {
+            const ocupado = mesa.ocupado ? 'occupied' : 'available';
+            const badge = mesa.ocupado ? '<span class="badge bg-warning">Ocupada</span>' : '<span class="badge bg-success">Livre</span>';
+            const disabled = mesa.ocupado ? 'disabled' : '';
+            
+            html += `
+                <label class="local-retirada-item ${disabled}">
+                    <input type="radio" name="localRetirada" value="mesa_${mesa.id}" ${disabled}>
+                    <div class="local-info">
+                        <i class="fas fa-chair"></i>
+                        <span>Mesa ${mesa.numero}</span>
+                        ${badge}
+                    </div>
+                </label>
+            `;
+        });
+    }
+    
+    container.html(html);
+}
+
 function mostrarAvisoEntrega(mensagem) {
     let aviso = $('#aviso-entrega');
     if (aviso.length === 0) {
@@ -495,10 +575,13 @@ function finalizarCompra() {
         return;
     }
     
+    const localRetirada = $('input[name="localRetirada"]:checked')?.val() || 'balcao';
+    
     const pedido = {
         email: email,
         itens: carrinho,
         tipo_entrega: tipoEntrega,
+        local_retirada: localRetirada,
         subtotal: subtotal,
         taxa_entrega: taxaEntrega,
         total: total

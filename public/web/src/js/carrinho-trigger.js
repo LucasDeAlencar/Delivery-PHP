@@ -73,7 +73,7 @@ $(document).ready(function() {
             'confirmado': 'Pedido Confirmado',
             'preparando': 'Em Preparação',
             'saiu_entrega': 'Saiu para Entrega',
-            'entregue': 'Entregue',
+            'finalizado': 'Finalizado',
             'cancelado': 'Cancelado'
         };
         
@@ -82,7 +82,7 @@ $(document).ready(function() {
             'confirmado': '#17a2b8',
             'preparando': '#fd7e14',
             'saiu_entrega': '#6f42c1',
-            'entregue': '#28a745',
+            'finalizado': '#28a745',
             'cancelado': '#dc3545'
         };
         
@@ -108,7 +108,7 @@ $(document).ready(function() {
                         <p><strong>Data:</strong> ${new Date(pedido.criado_em).toLocaleString('pt-BR')}</p>
                     </div>
                     
-                    ${pedido.status === 'entregue' || pedido.status === 'cancelado' ? 
+                    ${pedido.status === 'finalizado' || pedido.status === 'cancelado' ? 
                         '<button onclick="finalizarAcompanhamento()" style="padding: 12px 20px; background: #f8b531; color: black; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 20px;">Fazer Novo Pedido</button>' : 
                         '<p style="color: #ccc; margin-top: 20px;">Acompanhe o status do seu pedido aqui</p>'
                     }

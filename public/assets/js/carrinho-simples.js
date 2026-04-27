@@ -21,8 +21,8 @@ window.CarrinhoSimples = {
                 if (response.success) {
                     const status = response.pedido.status;
                     
-                    // Se pedido foi entregue ou cancelado, remover do localStorage
-                    if (status === 'entregue' || status === 'cancelado') {
+                    // Se pedido foi finalizado ou cancelado, remover do localStorage
+                    if (status === 'finalizado' || status === 'cancelado') {
                         localStorage.removeItem('pedido_em_andamento');
                         if (callback) callback(false);
                         return;
@@ -96,7 +96,7 @@ window.CarrinhoSimples = {
             'confirmado': 'Pedido Confirmado',
             'preparando': 'Preparando seu Pedido',
             'saiu_entrega': 'Saiu para Entrega',
-            'entregue': 'Entregue',
+            'finalizado': 'Finalizado',
             'cancelado': 'Cancelado'
         };
 
@@ -105,7 +105,7 @@ window.CarrinhoSimples = {
             'confirmado': '✅',
             'preparando': '👨‍🍳',
             'saiu_entrega': '🚚',
-            'entregue': '✅',
+            'finalizado': '✅',
             'cancelado': '❌'
         };
 
@@ -161,7 +161,7 @@ window.CarrinhoSimples = {
                         </button>
                         ${pedido.status === 'pendente' ? 
                             `<button onclick="CarrinhoSimples.cancelarPedido('${pedido.codigo}')" style="flex: 1; padding: 12px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; min-width: 150px;">Cancelar Pedido</button>` :
-                            pedido.status === 'entregue' || pedido.status === 'cancelado' ? 
+                            pedido.status === 'finalizado' || pedido.status === 'cancelado' ? 
                                 `<button onclick="localStorage.removeItem('pedido_em_andamento'); $('#acompanhamento-popup').remove(); location.reload();" style="flex: 1; padding: 12px; background: #f8b531; color: black; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; min-width: 150px;">Fazer Novo Pedido</button>` :
                                 `<button style="flex: 1; padding: 12px; background: #666; color: white; border: none; border-radius: 5px; cursor: not-allowed;" disabled>Aguarde a Entrega</button>`
                         }
@@ -353,12 +353,18 @@ window.CarrinhoSimples = {
                     <i class="fas fa-plus-circle"></i> ${item.extras.map(e => `${e.nome} (${e.quantidade}x)`).join(', ')}
                     (+R$ ${item.extras.reduce((t, e) => t + (e.preco * e.quantidade), 0).toFixed(2).replace('.', ',')})
                 </div>` : '';
+            
+            const tamanhoTexto = item.tamanho ?
+                `<div style="color: #00bcd4; font-size: 12px; margin-top: 3px;">
+                    <i class="fas fa-ruler"></i> Tamanho: <strong>${item.tamanho.nome}</strong>
+                </div>` : "";
 
             html += `
                 <div style="border-bottom: 1px solid #333; padding: 15px 0;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                         <div>
                             <h6 style="margin: 0; color: #f8b531;">${item.nome}</h6>
+                            ${tamanhoTexto}
                             ${extrasTexto}
                             ${item.observacoes ? `<div style="color: #888; font-size: 12px; margin-top: 3px;"><i class="fas fa-comment"></i> ${item.observacoes}</div>` : ''}
                         </div>
@@ -399,6 +405,17 @@ window.CarrinhoSimples = {
                                 <input type="radio" name="tipo_entrega" value="retirada" style="margin: 0;">
                                 <span style="font-size: 12px;"><i class="fas fa-store"></i> Retirada</span>
                             </label>
+                        </div>
+                        <!-- Seleção de Mesa/Balcão (aparece quando retirada é selecionada) -->
+                        <div id="selecao-mesa" style="display: none; margin-top: 5px;">
+                            <h6 style="color: #f8b531; margin-bottom: 8px; font-size: 13px;"><i class="fas fa-chair"></i> Local de Retirada</h6>
+                            <div id="opcoes-mesa" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px;">
+                                <div style="text-align: center; color: #888; font-size: 12px; grid-column: 1/-1; padding: 10px;">
+                                    <div class="spinner-border spinner-border-sm text-warning" role="status"></div>
+                                    Carregando...
+                                </div>
+                            </div>
+                            <div id="paginacao-mesas" style="display:flex; justify-content:center; gap:4px; margin-top:8px; flex-wrap:wrap;"></div>
                         </div>
                     </div>
 
@@ -448,6 +465,78 @@ window.CarrinhoSimples = {
         
         // Configurar eventos
         this.configurarEventos(total);
+    },
+
+    // Carregar mesas disponíveis
+    carregarMesas() {
+        $.ajax({
+            url: '/api/mesas',
+            method: 'GET',
+            success: (response) => {
+                const balcaoHtml = `
+                    <label style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:10px 8px;border:2px solid #0055ff;border-radius:8px;background:rgba(0,85,255,0.15);text-align:center;">
+                        <input type="radio" name="local_retirada" value="balcao" data-mesa-id="" checked style="margin:0;">
+                        <i class="fas fa-store" style="color:#0055ff;font-size:18px;"></i>
+                        <span style="font-size:11px;color:#fff;font-weight:600;">Balcão</span>
+                        <small style="font-size:10px;color:#aaa;">Retirada</small>
+                    </label>`;
+
+                if (!response.sucesso || !response.mesas.length) {
+                    $('#opcoes-mesa').html(balcaoHtml);
+                    $('#paginacao-mesas').empty();
+                    return;
+                }
+
+                const POR_PAGINA = 7;
+                const mesas = response.mesas;
+                let paginaAtual = 1;
+                const totalPaginas = Math.ceil(mesas.length / POR_PAGINA);
+
+                const renderPagina = (pag) => {
+                    paginaAtual = pag;
+                    const inicio = (pag - 1) * POR_PAGINA;
+                    const fatia = mesas.slice(inicio, inicio + POR_PAGINA);
+
+                    let html = balcaoHtml;
+                    fatia.forEach(mesa => {
+                        const ocupada = mesa.ocupado == 1;
+                        const cor = ocupada ? '#dc3545' : '#28a745';
+                        const bg  = ocupada ? 'rgba(220,53,69,0.15)' : 'rgba(40,167,69,0.15)';
+                        html += `
+                            <label style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:${ocupada?'not-allowed':'pointer'};padding:10px 8px;border:2px solid ${cor};border-radius:8px;background:${bg};text-align:center;opacity:${ocupada?'0.6':'1'};">
+                                <input type="radio" name="local_retirada" value="mesa_${mesa.id}" data-mesa-id="${mesa.id}" ${ocupada?'disabled':''} style="margin:0;">
+                                <i class="fas fa-chair" style="color:${cor};font-size:18px;"></i>
+                                <span style="font-size:11px;color:#fff;font-weight:600;">Mesa ${mesa.numero}</span>
+                                <small style="font-size:10px;color:#aaa;">${mesa.capacidade} lugares</small>
+                                <small style="font-size:10px;color:${cor};">${ocupada?'Ocupada':'Livre'}</small>
+                            </label>`;
+                    });
+                    $('#opcoes-mesa').html(html);
+
+                    // Paginação
+                    if (totalPaginas <= 1) { $('#paginacao-mesas').empty(); return; }
+                    const btnStyle = (ativo) =>
+                        `style="padding:3px 9px;border-radius:4px;border:1px solid #555;background:${ativo?'#f8b531':'#333'};color:${ativo?'#000':'#ccc'};cursor:pointer;font-size:12px;"`;
+                    let pags = '';
+                    for (let i = 1; i <= totalPaginas; i++) {
+                        pags += `<button onclick="CarrinhoSimples._mesaPag(${i})" ${btnStyle(i===paginaAtual)}>${i}</button>`;
+                    }
+                    $('#paginacao-mesas').html(pags);
+                };
+
+                this._mesaPag = renderPagina;
+                renderPagina(1);
+            },
+            error: () => {
+                $('#opcoes-mesa').html(`
+                    <label style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:10px 8px;border:2px solid #0055ff;border-radius:8px;background:rgba(0,85,255,0.15);text-align:center;">
+                        <input type="radio" name="local_retirada" value="balcao" data-mesa-id="" checked style="margin:0;">
+                        <i class="fas fa-store" style="color:#0055ff;font-size:18px;"></i>
+                        <span style="font-size:11px;color:#fff;font-weight:600;">Balcão</span>
+                    </label>`);
+                $('#paginacao-mesas').empty();
+            }
+        });
     },
 
     // Carregar formas de pagamento
@@ -510,8 +599,12 @@ window.CarrinhoSimples = {
                 $('#linha-entrega').hide();
                 $('#valor-total').text('R$ ' + subtotal.toFixed(2).replace('.', ','));
                 $('#btn-finalizar').prop('disabled', false).text('Finalizar Pedido');
+                // Mostrar seleção de mesa
+                $('#selecao-mesa').show();
+                CarrinhoSimples.carregarMesas();
             } else {
                 $('#linha-entrega').show();
+                $('#selecao-mesa').hide();
                 CarrinhoSimples.calcularTaxaEntrega(subtotal);
             }
         });
@@ -606,6 +699,37 @@ window.CarrinhoSimples = {
     // Fechar carrinho
     fechar() {
         $('#carrinho-popup').remove();
+    },
+
+    // Adicionar item ao carrinho (fallback quando CarrinhoMenu não disponível)
+    adicionarItem(produto) {
+        const carrinho = JSON.parse(localStorage.getItem('carrinho') || '[]');
+        const chaveTamanho = produto.tamanho ? produto.tamanho.nome : '';
+        const chaveUnica = `${produto.id}_${chaveTamanho}_${produto.observacoes || ''}`;
+        const totalExtras = (produto.extras || []).reduce((s, e) => s + (parseFloat(e.preco) * (parseInt(e.quantidade) || 1)), 0);
+        
+        const existente = carrinho.find(i => {
+            const it = i.tamanho ? i.tamanho.nome : '';
+            return `${i.id}_${it}_${i.observacoes || ''}` === chaveUnica;
+        });
+        
+        if (existente) {
+            existente.quantidade += parseInt(produto.quantidade) || 1;
+            existente.total = (existente.preco + totalExtras) * existente.quantidade;
+        } else {
+            carrinho.push({
+                id: String(produto.id),
+                nome: produto.nome,
+                preco: parseFloat(produto.preco) || 0,
+                quantidade: parseInt(produto.quantidade) || 1,
+                observacoes: produto.observacoes || '',
+                extras: produto.extras || [],
+                tamanho: produto.tamanho || null,
+                tamanho_id: produto.tamanho_id || null,
+                total: (parseFloat(produto.preco) + totalExtras) * (parseInt(produto.quantidade) || 1)
+            });
+        }
+        localStorage.setItem('carrinho', JSON.stringify(carrinho));
     },
 
     // Alterar quantidade
@@ -721,6 +845,24 @@ window.CarrinhoSimples = {
         const taxaEntrega = tipoEntrega === 'entrega' ? 
             parseFloat($('#valor-entrega').text().replace('R$ ', '').replace(',', '.')) || 0 : 0;
 
+        // Coletar mesa/balcão se for retirada
+        let mesaId = null;
+        let localRetirada = null;
+        if (tipoEntrega === 'retirada') {
+            const localSelecionado = $('input[name="local_retirada"]:checked');
+            if (localSelecionado.length) {
+                const valor = localSelecionado.val();
+                if (valor === 'balcao') {
+                    localRetirada = 'balcao';
+                } else {
+                    mesaId = localSelecionado.data('mesa-id') || null;
+                    localRetirada = valor; // ex: mesa_3
+                }
+            } else {
+                localRetirada = 'balcao';
+            }
+        }
+
         const dadosPedido = {
             email: localStorage.getItem('cliente_email'),
             itens: carrinho,
@@ -728,7 +870,9 @@ window.CarrinhoSimples = {
             forma_pagamento: formaPagamento,
             troco_para: formaPagamento === 'dinheiro' ? parseFloat($('#troco_para').val()) : null,
             subtotal: subtotal,
-            taxa_entrega: taxaEntrega
+            taxa_entrega: taxaEntrega,
+            mesa_id: mesaId,
+            local_retirada: localRetirada,
         };
 
         // Desabilitar botão durante processamento

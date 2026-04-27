@@ -41,42 +41,46 @@ $routes->get('carrinho/lista', 'CarrinhoController::lista');
 $routes->get('carrinho/verSessao', 'CarrinhoController::verCarrinhoSessao');
 
 // API do Carrinho (REST)
-$routes->group('api', function ($routes) {
-    $routes->get('carrinho', 'CarrinhoApi::index');
-    $routes->post('carrinho', 'CarrinhoApi::create');
-    $routes->put('carrinho/(:num)', 'CarrinhoApi::update/$1');
-    $routes->delete('carrinho/(:num)', 'CarrinhoApi::delete/$1');
-    $routes->delete('carrinho', 'CarrinhoApi::limpar');
-    $routes->patch('carrinho/(:num)/observacoes', 'CarrinhoApi::atualizarObservacoes/$1');
-    
-    // Formas de pagamento
-    $routes->get('formas-pagamento', 'FormasPagamentoApi::index');
-    
-    // Bairros
-    $routes->get('bairros', 'BairrosApi::index');
-    
-    // Extras de Produtos
-    $routes->get('produto-extras/(:num)', 'ProdutoExtrasApi::getExtrasProduto/$1');
-    
-    // Taxa de Entrega
-    $routes->post('taxa-entrega', 'TaxaEntregaApi::calcular');
-    $routes->post('taxa-entrega-cliente', 'TaxaEntregaClienteApi::calcular');
-    $routes->post('bairro/taxa', 'Api\BairroController::taxa');
-    $routes->post('verificar-entrega', 'EntregaApi::verificarEntrega');
-    
-    // Pedidos
-    $routes->post('finalizar-pedido', 'PedidoApi::finalizarPedido');
-    $routes->post('status-pedido', 'PedidoApi::statusPedido');
-    $routes->get('usuario-atual', 'PedidoApi::usuarioAtual');
-    
-    // Validação de Produtos
-    $routes->post('produtos/validar', 'ProdutosApi::validar');
-    
-    // Configuração de Entrega
-    $routes->post('configuracao-entrega', 'EntregaApi::configuracaoEntrega');
-    $routes->get('configuracao/preco-minimo', 'ConfiguracaoApi::precoMinimo');
-    $routes->post('carrinho-cliente', 'EntregaApi::carrinhoCliente');
-});
+    $routes->group('api', function ($routes) {
+        $routes->get('carrinho', 'CarrinhoApi::index');
+        $routes->post('carrinho', 'CarrinhoApi::create');
+        $routes->put('carrinho/(:num)', 'CarrinhoApi::update/$1');
+        $routes->delete('carrinho/(:num)', 'CarrinhoApi::delete/$1');
+        $routes->delete('carrinho', 'CarrinhoApi::limpar');
+        $routes->patch('carrinho/(:num)/observacoes', 'CarrinhoApi::atualizarObservacoes/$1');
+        
+        // Formas de pagamento
+        $routes->get('formas-pagamento', 'FormasPagamentoApi::index');
+        
+        // Bairros
+        $routes->get('bairros', 'BairrosApi::index');
+        
+        // Extras de Produtos
+        $routes->get('produto-extras/(:num)', 'ProdutoExtrasApi::getExtrasProduto/$1');
+        
+        // Taxa de Entrega
+        $routes->post('taxa-entrega', 'TaxaEntregaApi::calcular');
+        $routes->post('taxa-entrega-cliente', 'TaxaEntregaClienteApi::calcular');
+        $routes->post('bairro/taxa', 'Api\BairroController::taxa');
+        $routes->post('verificar-entrega', 'EntregaApi::verificarEntrega');
+        
+        // Pedidos
+        $routes->post('finalizar-pedido', 'PedidoApi::finalizarPedido');
+        $routes->post('status-pedido', 'PedidoApi::statusPedido');
+        $routes->get('usuario-atual', 'PedidoApi::usuarioAtual');
+        
+        // Validação de Produtos
+        $routes->post('produtos/validar', 'ProdutosApi::validar');
+        
+        // Configuração de Entrega
+        $routes->post('configuracao-entrega', 'EntregaApi::configuracaoEntrega');
+        $routes->get('configuracao/preco-minimo', 'ConfiguracaoApi::precoMinimo');
+        $routes->post('carrinho-cliente', 'EntregaApi::carrinhoCliente');
+        
+        // Mesas
+        $routes->get('mesas', 'Api\Mesas::index');
+        $routes->post('mesas/ocupar', 'Api\Mesas::ocupar');
+    });
 
 // Rotas de Pedidos (público)
 $routes->post('pedidos/criar', 'Pedidos::criar');
@@ -96,6 +100,7 @@ $routes->get('registrar', 'Registrar::index');
 $routes->post('registrar/criar', 'Registrar::criar');
 $routes->post('registrar/enviarCodigo', 'Registrar::enviarCodigo');
 $routes->post('registrar/verificarCodigo', 'Registrar::verificarCodigo');
+$routes->post('registrar/verificarSessao', 'Registrar::verificarSessao');
 $routes->post('registrar/buscar_cep', 'Registrar::buscar_cep');
 
 // Alias para /registar (grafia alternativa)
@@ -103,6 +108,7 @@ $routes->get('registar', 'Registrar::index');
 $routes->post('registar/criar', 'Registrar::criar');
 $routes->post('registar/enviarCodigo', 'Registrar::enviarCodigo');
 $routes->post('registar/verificarCodigo', 'Registrar::verificarCodigo');
+$routes->post('registar/verificarSessao', 'Registrar::verificarSessao');
 $routes->post('registar/buscar_cep', 'Registrar::buscar_cep');
 
 // Rotas do cliente
@@ -241,6 +247,8 @@ $routes->group('admin', function ($routes) {
     $routes->get('pedidos/excluir/(:num)', 'Admin\Pedidos::excluir/$1');
     $routes->post('pedidos/deletar/(:num)', 'Admin\Pedidos::deletar/$1');
     $routes->get('pedidos/imprimir/(:num)', 'Admin\Pedidos::imprimir/$1');
+    $routes->get('pedidos/csv', 'Admin\Pedidos::exportarCsv');
+    $routes->post('pedidos/limpar', 'Admin\Pedidos::limparPedidos');
     
     $routes->get('pedidos/verificar-novos/(:num)', 'Admin\Pedidos::verificarNovos/$1');
     
@@ -258,6 +266,15 @@ $routes->group('admin', function ($routes) {
     // Rotas de Dados Corporativos
     $routes->get('dados-corporativos', 'Admin\DadosCorporativos::index');
     $routes->post('dados-corporativos/atualizar', 'Admin\DadosCorporativos::atualizar');
+    
+    // Rotas de Mesas
+    $routes->get('mesas', 'Admin\Mesas::index');
+    $routes->post('mesas/atualizarConfig', 'Admin\Mesas::atualizarConfig');
+    $routes->post('mesas/criar', 'Admin\Mesas::criar');
+    $routes->post('mesas/criarSerie', 'Admin\Mesas::criarSerie');
+    $routes->post('mesas/atualizar', 'Admin\Mesas::atualizar');
+    $routes->post('mesas/excluir', 'Admin\Mesas::excluir');
+    $routes->post('mesas/liberar', 'Admin\Mesas::liberar');
 });
 
 // Rotas de Suporte (API)

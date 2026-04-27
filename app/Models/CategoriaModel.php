@@ -29,6 +29,21 @@ class CategoriaModel extends Model {
     ];
     protected $beforeUpdate = ['criaSlug'];
     protected $beforeInsert = ['criaSlug'];
+    protected $afterInsert = ['resetAutoIncrement'];
+
+    protected function resetAutoIncrement($data): array
+    {
+        $table = $this->table;
+        $db = \Config\Database::connect();
+        
+        $query = $db->query("SELECT MAX(id) as max_id FROM $table");
+        $result = $query->getRow();
+        $maxId = $result->max_id ?? 0;
+
+        $db->query("ALTER TABLE $table AUTO_INCREMENT = " . ($maxId + 1));
+
+        return $data;
+    }
 
     public function criaSlug(array $data) {
         $datetime = new \DateTime('now', new \DateTimeZone('America/Sao_Paulo'));
@@ -63,7 +78,7 @@ class CategoriaModel extends Model {
         }
         
         return $this->select('id,nome')
-                ->like('nome', $term)
+                ->like('nome', $term, 'both', null, true)
                 ->withDeleted(true)
                 ->get()
                 ->getResult();

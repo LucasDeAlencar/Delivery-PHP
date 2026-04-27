@@ -172,32 +172,34 @@
                                                     <a href="<?= site_url("admin/extras/excluir/$extra->id") ?>" 
                                                        class="btn btn-danger btn-sm" 
                                                        title="Excluir"
-                                                       onclick="return confirm('Tem certeza que deseja excluir a extra <?= esc($extra->nome) ?>?')">
+                                                       onclick="return confirm('Tem certeza que deseja excluir a extra ' + <?= json_encode($extra->nome) ?> + '?')">
                                                         <i class="fas fa-trash"></i>
                                                     </a>
                                                 <?php else: ?>
-                                                    <!-- Botão Restaurar -->
-                                                    <form action="<?= site_url("admin/extras/desfazerExclusao/$extra->id") ?>" 
-                                                          method="post" 
-                                                          style="display: inline;" 
-                                                          onsubmit="return confirm('Tem certeza que deseja restaurar a extra <?= esc($extra->nome) ?>?')">
-                                                        <button type="submit" 
-                                                                class="btn btn-success btn-sm" 
-                                                                title="Restaurar">
-                                                            <i class="fas fa-undo"></i>
-                                                        </button>
-                                                    </form>
-                                                    <!-- Botão Apagar Definitivamente -->
-                                                    <form action="<?= site_url("admin/extras/deletar-definitivamente/$extra->id") ?>" 
-                                                          method="post" 
-                                                          style="display: inline;" 
-                                                          onsubmit="return confirm('ATENÇÃO! Esta ação é IRREVERSÍVEL!\n\nTem certeza que deseja apagar esta extra DEFINITIVAMENTE?');">
-                                                        <button type="submit" 
-                                                                class="btn btn-danger btn-sm" 
-                                                                title="Apagar Definitivamente">
-                                                            <i class="fas fa-trash-alt"></i>
-                                                        </button>
-                                                    </form>
+                                                     <!-- Botão Restaurar -->
+                                                     <form action="<?= site_url("admin/extras/desfazer-exclusao/$extra->id") ?>" 
+                                                           method="post" 
+                                                           style="display: inline;" 
+                                                            onsubmit="return confirm('Tem certeza que deseja restaurar a extra ' + <?= json_encode($extra->nome) ?> + '?')">
+                                                         <?= csrf_field() ?>
+                                                         <button type="submit" 
+                                                                 class="btn btn-success btn-sm" 
+                                                                 title="Restaurar">
+                                                             <i class="fas fa-undo"></i>
+                                                         </button>
+                                                     </form>
+                                                     <!-- Botão Apagar Definitivamente -->
+                                                     <form action="<?= site_url("admin/extras/deletar-definitivamente/$extra->id") ?>" 
+                                                           method="post" 
+                                                           style="display: inline;" 
+                                                           onsubmit="return confirm('ATENÇÃO! Esta ação é IRREVERSÍVEL!\n\nTem certeza que deseja apagar a extra ' + <?= json_encode($extra->nome) ?> + ' DEFINITIVAMENTE?')">
+                                                         <?= csrf_field() ?>
+                                                         <button type="submit" 
+                                                                 class="btn btn-danger btn-sm" 
+                                                                 title="Apagar Definitivamente">
+                                                             <i class="fas fa-trash-alt"></i>
+                                                         </button>
+                                                     </form>
                                                 <?php endif; ?>
                                             </div>
                                         </td>
@@ -216,32 +218,5 @@
         </div>
     </div>
 </div>
-
-<?php echo $this->endSection(); ?>
-
-<!-- Área de Scripts -->
-<?php echo $this->section('scripts'); ?>
-
-<script>
-    $(document).ready(function () {
-        // Adiciona confirmação para exclusão
-        $('.btn-danger').on('click', function(e) {
-            var extraNome = $(this).closest('tr').find('td:nth-child(2)').text();
-            if (!confirm('Tem certeza que deseja excluir a extra "' + extraNome + '"?\nEsta ação ocasionará danos a outros setores associado a esse campo!')) {
-                e.preventDefault();
-                return false;
-            }
-        });
-
-        // Adiciona confirmação para restauração
-        $('form[action*="desfazerExclusao"]').on('submit', function(e) {
-            var extraNome = $(this).closest('tr').find('td:nth-child(2)').text();
-            if (!confirm('Tem certeza que deseja restaurar a extra "' + extraNome + '"?')) {
-                e.preventDefault();
-                return false;
-            }
-        });
-    });
-</script>
 
 <?php echo $this->endSection(); ?>

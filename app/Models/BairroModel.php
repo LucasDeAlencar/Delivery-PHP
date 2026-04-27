@@ -47,6 +47,7 @@ class BairroModel extends Model{
     ];
     protected $beforeUpdate = ['criaSlug'];
     protected $beforeInsert = ['criaSlug'];
+    protected $afterInsert = ['resetAutoIncrement'];
 
     public function criaSlug(array $data) {
         $datetime = new \DateTime('now', new \DateTimeZone('America/Sao_Paulo'));
@@ -65,6 +66,20 @@ class BairroModel extends Model{
             
             $data['data']['atualizado_em'] = $datetime->format('Y-m-d H:i:s');
         }
+
+        return $data;
+    }
+
+    protected function resetAutoIncrement($data): array
+    {
+        $table = $this->table;
+        $db = \Config\Database::connect();
+        
+        $query = $db->query("SELECT MAX(id) as max_id FROM $table");
+        $result = $query->getRow();
+        $maxId = $result->max_id ?? 0;
+
+        $db->query("ALTER TABLE $table AUTO_INCREMENT = " . ($maxId + 1));
 
         return $data;
     }

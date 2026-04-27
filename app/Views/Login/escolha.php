@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <title>Login - Restaurante</title>
+    <title>Login - Delivery</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" rel="stylesheet">
@@ -11,7 +11,7 @@
 
     <style>
         body {
-            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('<?= base_url('web/src/images/bg_1.jpg') ?>');
+            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('<?= base_url('web/src/images/burger-1.jpg') ?>');
             background-size: cover;
             background-position: center;
             min-height: 100vh;
@@ -32,7 +32,7 @@
             margin-bottom: 2.5rem;
         }
         .choice-header .brand {
-            color: #f8b531;
+            color: #0055ff;
             font-size: 2.5rem;
             font-weight: bold;
         }
@@ -69,11 +69,11 @@
             box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
         }
         .btn-entrar {
-            background: linear-gradient(135deg, #f8b531 0%, #fac56e 100%);
+            background: linear-gradient(135deg, #0055ff 0%, #1a1866 100%);
             color: #000;
         }
         .btn-entrar:hover {
-            background: linear-gradient(135deg, #e6a42e 0%, #f0b861 100%);
+            background: linear-gradient(135deg, #0c0940 0%, #f0b861 100%);
             color: #000;
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(248, 181, 49, 0.4);
@@ -104,7 +104,7 @@
 
     <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
         <div class="container">
-            <a class="navbar-brand" href="<?= base_url('/') ?>"><span class="fas fa-hotdog mr-1"></span>Delicias MV<br><small>O delivery favorito da cidade</small></a>
+            <a class="navbar-brand" href="<?= base_url('/') ?>"><span class="fas fa-hotdog mr-1" style="color: #0056ff"></span>Space Burger Dog Do Paulista<br><small style="color: #0056ff; margin-top: 3px">O delivery favorito da cidade</small></a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="oi oi-menu"></span> Menu
             </button>
@@ -124,7 +124,7 @@
         <div class="choice-container">
             <div class="choice-header">
                 <div class="brand">
-                    <span class="fas fa-hotdog"></span> Delicias MV
+                    <span class="fas fa-hotdog"></span> Space Burger Dog Do Paulista
                 </div>
                 <h3>O que você deseja fazer?</h3>
                 <p>Escolha uma das opções abaixo para continuar</p>

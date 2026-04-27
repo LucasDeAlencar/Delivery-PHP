@@ -44,7 +44,7 @@ class Pedido extends Entity {
             'confirmado' => 'Confirmado',
             'preparando' => 'Em Preparação',
             'saiu_entrega' => 'Saiu para Entrega',
-            'entregue' => 'Entregue',
+            'finalizado' => 'Finalizado',
             'cancelado' => 'Cancelado',
             'inativo' => 'Inativo'
         ];
@@ -61,7 +61,7 @@ class Pedido extends Entity {
             'confirmado' => 'badge-info',
             'preparando' => 'badge-primary',
             'saiu_entrega' => 'badge-secondary',
-            'entregue' => 'badge-success',
+            'finalizado' => 'badge-success',
             'cancelado' => 'badge-danger',
             'inativo' => 'badge-secondary'
         ];
@@ -78,7 +78,7 @@ class Pedido extends Entity {
             'confirmado' => 'fas fa-check-circle',
             'preparando' => 'fas fa-utensils',
             'saiu_entrega' => 'fas fa-motorcycle',
-            'entregue' => 'fas fa-check-double',
+            'finalizado' => 'fas fa-check-double',
             'cancelado' => 'fas fa-times-circle',
             'inativo' => 'fas fa-ban'
         ];
@@ -97,6 +97,6 @@ class Pedido extends Entity {
      * Verifica se o pedido pode ser cancelado
      */
     public function podeCancelar(): bool {
-        return !in_array($this->status, ['entregue', 'cancelado']);
+        return !in_array($this->status, ['finalizado', 'cancelado']);
     }
 }

@@ -19,7 +19,9 @@ class PedidoItemModel extends Model {
         'quantidade',
         'preco_unitario',
         'preco_total',
-        'observacoes'
+        'observacoes',
+        'tamanho_nome',
+        'tamanho_preco'
     ];
 
     // Dates

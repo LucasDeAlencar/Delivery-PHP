@@ -8,7 +8,7 @@ Venda Específica
 <div class="container-fluid py-4">
     <div class="row">
         <div class="col-12">
-            <h4 style="color: #f8b531; margin-bottom: 20px;">
+            <h4 style="color: #0055ff; margin-bottom: 20px;">
                 <i class="fas fa-plus-circle"></i> Venda Específica
             </h4>
             <p class="text-muted">Crie vendas para clientes externos (vendas realizadas fora do site)</p>
@@ -19,7 +19,7 @@ Venda Específica
         <!-- Seção Cliente -->
         <div class="col-lg-4 mb-4">
             <div class="card" style="background: #2d2d2d; border: 1px solid #333;">
-                <div class="card-header" style="background: #f8b531; color: #000;">
+                <div class="card-header" style="background: #0055ff; color: #000;">
                     <h5 class="mb-0"><i class="fas fa-user"></i> Cliente</h5>
                 </div>
                 <div class="card-body">
@@ -106,7 +106,7 @@ Venda Específica
             <!-- Tipo de Entrega e Pagamento -->
             <div class="card mt-3" style="background: #2d2d2d; border: 1px solid #333;">
                 <div class="card-body">
-                    <h6 style="color: #f8b531; margin-bottom: 15px;">Tipo de Entrega</h6>
+                    <h6 style="color: #0055ff; margin-bottom: 15px;">Tipo de Entrega</h6>
                     <div class="btn-group w-100 mb-3" role="group">
                         <input type="radio" class="btn-check" name="tipo_entrega" id="entrega" value="entrega" checked>
                         <label class="btn btn-outline-warning" for="entrega">
@@ -134,7 +134,7 @@ Venda Específica
                         </div>
                     </div>
 
-                    <h6 style="color: #f8b531; margin-bottom: 15px; margin-top: 15px;">Forma de Pagamento</h6>
+                    <h6 style="color: #0055ff; margin-bottom: 15px; margin-top: 15px;">Forma de Pagamento</h6>
                     <select class="form-select bg-dark text-light mb-3" id="forma_pagamento">
                         <option value="dinheiro">Dinheiro</option>
                         <option value="pix">PIX</option>
@@ -153,7 +153,7 @@ Venda Específica
         <!-- Seção Produtos -->
         <div class="col-lg-8">
             <div class="card" style="background: #2d2d2d; border: 1px solid #333;">
-                <div class="card-header" style="background: #f8b531; color: #000;">
+                <div class="card-header" style="background: #0055ff; color: #000;">
                     <h5 class="mb-0"><i class="fas fa-hamburger"></i> Produtos</h5>
                 </div>
                 <div class="card-body">
@@ -215,7 +215,7 @@ Venda Específica
                                     <th id="taxa-entrega">R$ 0,00</th>
                                     <th></th>
                                 </tr>
-                                <tr style="background: #f8b531; color: #000;">
+                                <tr style="background: #0055ff; color: #000;">
                                     <th colspan="3">Total</th>
                                     <th id="valor-total">R$ 0,00</th>
                                     <th></th>

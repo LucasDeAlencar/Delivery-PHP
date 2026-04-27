@@ -24,7 +24,7 @@
     
     <style>
         .login-section {
-            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('<?= base_url('web/src/images/bg_1.jpg') ?>');
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('<?= base_url('web/src/images/burger-1.jpg') ?>');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -98,7 +98,7 @@
     <!-- Navbar igual ao da home -->
     <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
 	    <div class="container">
-		      <a class="navbar-brand" href="<?= base_url('/') ?>"><span class="fas fa-hamburger mr-1"></span>Delicias MV<br><small>Os melhores salgados da cidade</small></a>
+		      <a class="navbar-brand" href="<?= base_url('/') ?>"><span class="fas fa-hamburger mr-1"></span>Space Burger Dog Do Paulista<br><small>Hamburgueres & HotDogs</small></a>
 		      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
 		        <span class="oi oi-menu"></span> Menu
 		      </button>

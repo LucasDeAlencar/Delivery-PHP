@@ -268,6 +268,52 @@
                     </div>
                 </div>
 
+                <!-- Checkbox com_tamanho -->
+                <div class="form-group row">
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input type="checkbox"
+                                   class="form-check-input"
+                                   id="com_tamanho"
+                                   name="com_tamanho"
+                                   value="1"
+                                   <?= old('com_tamanho') ? 'checked' : '' ?>>
+                            <label class="form-check-label" for="com_tamanho">
+                                <strong>Produto com tamanhos</strong>
+                            </label>
+                        </div>
+                        <small class="form-text text-muted">
+                            Habilite para definir preços diferentes por tamanho (ex: Pequeno, Médio, Grande).
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Seção de tamanhos (visível quando com_tamanho marcado) -->
+                <div id="tamanhos-section" style="display:none;">
+                    <div class="card border-warning mb-3">
+                        <div class="card-header bg-warning text-dark">
+                            <strong><i class="fas fa-ruler"></i> Preços por Tamanho</strong>
+                            <button type="button" class="btn btn-sm btn-outline-dark float-right" id="btn-add-tamanho">
+                                <i class="fas fa-plus"></i> Adicionar Tamanho
+                            </button>
+                        </div>
+                        <div class="card-body p-2">
+                            <table class="table table-sm mb-0" id="tabela-tamanhos">
+                                <thead>
+                                    <tr>
+                                        <th>Descrição do Tamanho</th>
+                                        <th>Preço</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tamanhos-tbody">
+                                    <!-- linhas adicionadas via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form-group row">
                     <div class="col-12">
                         <label for="ingredientes" class="form-label">Descrição</label>
@@ -412,7 +458,44 @@
                 $(this).removeClass('is-invalid');
             }
         });
-    });
+    
+        // Toggle seção de tamanhos
+        function toggleTamanhos(checked) {
+            if (checked) {
+                $("#tamanhos-section").show();
+                if ($("#tamanhos-tbody tr").length === 0) adicionarLinhaTamanho();
+                $("#preco").prop("disabled", true).prop("required", false).val("0");
+                if (!$("#preco-hidden").length) {
+                    $('<input type="hidden" id="preco-hidden" name="preco" value="0">').insertAfter("#preco");
+                }
+            } else {
+                $("#tamanhos-section").hide();
+                $("#preco").prop("disabled", false).prop("required", true);
+                $("#preco-hidden").remove();
+            }
+        }
+        $("#com_tamanho").change(function() { toggleTamanhos($(this).is(":checked")); });
+        toggleTamanhos($("#com_tamanho").is(":checked"));
+
+        // Adicionar linha de tamanho
+        $("#btn-add-tamanho").click(function() { adicionarLinhaTamanho(); });
+
+        var tamanhoIdx = 0;
+        function adicionarLinhaTamanho(nome, preco) {
+            var i = tamanhoIdx++;
+            var tr = '<tr>' +
+                '<td><input type="text" class="form-control form-control-sm" name="tamanhos[' + i + '][nome]" placeholder="Ex: Pequeno" value="' + (nome || '') + '" required></td>' +
+                '<td><div class="input-group input-group-sm"><span class="input-group-text">R$</span>' +
+                '<input type="text" class="form-control tamanho-preco" name="tamanhos[' + i + '][preco]" placeholder="0,00" value="' + (preco || '') + '" required></div></td>' +
+                '<td><button type="button" class="btn btn-sm btn-danger btn-remove-tamanho"><i class="fas fa-trash"></i></button></td>' +
+                '</tr>';
+            $("#tamanhos-tbody").append(tr);
+        }
+
+        $(document).on("click", ".btn-remove-tamanho", function() {
+            $(this).closest("tr").remove();
+        });
+});
 </script>
 
 <?php echo $this->endSection(); ?>

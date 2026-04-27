@@ -51,6 +51,7 @@ class CarrinhoApi extends ResourceController {
         $sessionID = session_id();
 
         $produtoId = $this->request->getPost('produto_id') ?? $this->request->getJSON()->produto_id ?? null;
+        $tamanhoId = $this->request->getPost('tamanho_id') ?? $this->request->getJSON()->tamanho_id ?? null;
         $quantidade = (int) ($this->request->getPost('quantidade') ?? $this->request->getJSON()->quantidade ?? 1);
         $observacoes = $this->request->getPost('observacoes') ?? $this->request->getJSON()->observacoes ?? '';
 
@@ -69,10 +70,35 @@ class CarrinhoApi extends ResourceController {
             return $this->fail('Produto não encontrado ou inativo', 404);
         }
 
-        // Verificar se já existe no carrinho
+        // Se produto tem tamanho, validar e buscar preço do tamanho
+        $precoUnitario = $produto['preco'];
+        $nomeTamanho = null;
+        
+        if ($produto['com_tamanho']) {
+            if (!$tamanhoId) {
+                return $this->fail('Tamanho é obrigatório para este produto', 400);
+            }
+            
+            $tamanhoProduto = $this->db->table('produtos_tamanhos')
+                    ->where('id', $tamanhoId)
+                    ->where('produto_id', $produtoId)
+                    ->where('ativo', 1)
+                    ->get()
+                    ->getRowArray();
+            
+            if (!$tamanhoProduto) {
+                return $this->fail('Tamanho não disponível para este produto', 400);
+            }
+            
+            $precoUnitario = $tamanhoProduto['preco'];
+            $nomeTamanho = $tamanhoProduto['nome'];
+        }
+
+        // Verificar se já existe no carrinho (mesmo tamanho)
         $itemExistente = $this->db->table('carrinho_temporario')
                 ->where('session_id', $sessionID)
                 ->where('produto_id', $produtoId)
+                ->where('tamanho_id', $tamanhoId)
                 ->where('observacoes', $observacoes)
                 ->get()
                 ->getRowArray();
@@ -80,7 +106,7 @@ class CarrinhoApi extends ResourceController {
         if ($itemExistente) {
             // Atualizar quantidade
             $novaQuantidade = $itemExistente['quantidade'] + $quantidade;
-            $novoTotal = $novaQuantidade * $produto['preco'];
+            $novoTotal = $novaQuantidade * $precoUnitario;
 
             $this->db->table('carrinho_temporario')
                     ->where('id', $itemExistente['id'])
@@ -91,15 +117,17 @@ class CarrinhoApi extends ResourceController {
             ]);
         } else {
             // Inserir novo item
-            $precoTotal = $quantidade * $produto['preco'];
+            $precoTotal = $quantidade * $precoUnitario;
 
             $this->db->table('carrinho_temporario')->insert([
                 'session_id' => $sessionID,
                 'produto_id' => $produtoId,
                 'produto_nome' => $produto['nome'],
+                'tamanho_id' => $tamanhoId,
+                'tamanho_nome' => $nomeTamanho,
                 'produto_imagem' => $produto['imagem'] ?? '',
                 'quantidade' => $quantidade,
-                'preco_unitario' => $produto['preco'],
+                'preco_unitario' => $precoUnitario,
                 'preco_total' => $precoTotal,
                 'observacoes' => $observacoes,
                 'criado_em' => date('Y-m-d H:i:s'),

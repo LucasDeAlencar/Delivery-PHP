@@ -60,6 +60,16 @@ class PedidoApi extends ResourceController
             $db->table('pedidos')->insert($dadosPedido);
             $pedidoId = $db->insertID();
             
+            // Ocupar mesa se selecionada
+            if (!empty($json->local_retirada) && strpos($json->local_retirada, 'mesa_') === 0) {
+                $mesaId = str_replace('mesa_', '', $json->local_retirada);
+                $db->table('mesas')->where('id', $mesaId)->update([
+                    'ocupado' => 1,
+                    'pedido_id' => $pedidoId,
+                    'updated_at' => date('Y-m-d H:i:s')
+                ]);
+            }
+            
             // 2. Salvar itens do pedido
             foreach ($json->itens as $item) {
                 $dadosItem = [

@@ -270,7 +270,7 @@
                                                 <div class="mt-2">
                                                     <img src="<?= base_url('uploads/qrcode_pix/' . $forma->qrcode_image) ?>" 
                                                          alt="QR Code PIX" 
-                                                         style="max-width: 150px; border: 2px solid #f8b531; border-radius: 8px;">
+                                                         style="max-width: 150px; border: 2px solid #0055ff; border-radius: 8px;">
                                                     <div class="mt-1">
                                                         <small class="text-muted">QR Code atual</small>
                                                     </div>
