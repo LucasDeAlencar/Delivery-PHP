@@ -367,6 +367,21 @@
         </div>
     </div>
     <div class="col-6 col-lg mb-2">
+        <div class="card card-estatistica" style="border-left-color: #c47a00; cursor:pointer;" onclick="$('.filtro-status[data-status=em_aberto]').trigger('click')">
+            <div class="card-body py-2">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">Em Aberto</h6>
+                        <h3 id="stat-em-aberto" style="color: #c47a00 !important;"><?= $estatisticas['em_aberto'] ?? 0 ?></h3>
+                    </div>
+                    <div class="icon-circle" style="background: #c47a00;">
+                        <i class="fas fa-folder-open text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg mb-2">
         <div class="card card-estatistica" style="border-left-color: #ff9800; cursor: pointer;" onclick="toggleSuportes()">
             <div class="card-body py-2">
                 <div class="d-flex justify-content-between align-items-center">
@@ -536,7 +551,7 @@ function carregarInfoPedido(codigo, pedidoId) {
                             <div><strong>Telefone:</strong> ${p.telefone_cliente || 'Não informado'}</div>
                             <div><strong>Endereço:</strong> ${p.endereco_entrega || 'Não informado'}</div>
                             <div><strong>Bairro:</strong> ${p.bairro_nome || 'Não informado'}</div>
-                            <div><strong>Status:</strong> <span class="badge bg-${getStatusColor(p.status)}">${p.status}</span></div>
+                            <div><strong>Status:</strong> <span class="badge bg-${getStatusColor(p.status)}" ${p.status==='em_aberto'?'style="background:#c47a00!important;"':''}>${p.status==='em_aberto'?'Em Aberto':p.status}</span></div>
                             <div><strong>Data:</strong> ${new Date(p.criado_em).toLocaleString('pt-BR')}</div>
                             <div><strong>Valor Total:</strong> R$ ${valorTotal.toFixed(2).replace('.', ',')}</div>
                             <div><strong>Pagamento:</strong> ${p.forma_pagamento || 'Não informado'}</div>
@@ -567,12 +582,13 @@ function carregarInfoPedido(codigo, pedidoId) {
 
 function getStatusColor(status) {
     const colors = {
-        'pendente': 'warning',
-        'confirmado': 'info',
-        'preparando': 'primary',
-        'saiu_entrega': 'info',
-        'finalizado': 'success',
-        'cancelado': 'danger'
+        'em_aberto':   'orange',
+        'pendente':    'warning',
+        'confirmado':  'info',
+        'preparando':  'primary',
+        'saiu_entrega':'info',
+        'finalizado':  'success',
+        'cancelado':   'danger'
     };
     return colors[status] || 'secondary';
 }
@@ -619,6 +635,7 @@ function resolverTodosSuporte(codigo) {
                             <button type="button" class="btn btn-outline-success filtro-status" data-status="finalizado">Finalizados</button>
                             <button type="button" class="btn btn-outline-danger filtro-status" data-status="cancelado">Cancelados</button>
                             <button type="button" class="btn btn-outline-secondary filtro-status" data-status="inativo">Inativos</button>
+                            <button type="button" class="btn filtro-status" data-status="em_aberto" style="border-color:#c47a00;color:#c47a00;">Em Aberto</button>
                         </div>
                         <div class="d-flex align-items-center gap-2">
                             <i class="fas fa-search" style="color: #999;"></i>
@@ -740,6 +757,10 @@ function resolverTodosSuporte(codigo) {
                                                 <span class="badge-cancelado"><i class="fas fa-times me-1"></i>Cancelado</span>
                                             <?php elseif ($isFinalizado): ?>
                                                 <span class="badge bg-success"><i class="fas fa-check-double me-1"></i>Finalizado</span>
+                                            <?php elseif ($statusPedido === 'em_aberto'): ?>
+                                                <a href="<?= site_url('admin/venda-especifica') ?>" class="badge text-decoration-none" style="background:#c47a00;font-size:.8rem;padding:5px 8px;">
+                                                    <i class="fas fa-folder-open me-1"></i>Em Aberto
+                                                </a>
                                             <?php elseif ($statusPedido === 'pendente'): ?>
                                                 <select class="status-select" data-pedido-id="<?= $pedido->id ?>">
                                                     <option value="pendente" selected>⏳ Pendente</option>

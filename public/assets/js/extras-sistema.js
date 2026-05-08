@@ -459,7 +459,14 @@
 
      // Limpar extras ao fechar modal de compra
      $('#modalCompra').on('hidden.bs.modal', function() {
-         window.ProdutoExtras.limparExtras();
+         window.ProdutoExtras.extrasSelecionados = [];
+         window.ProdutoExtras.extrasDisponiveis = [];
+         window.ProdutoExtras.produtoAtual = null;
+         window.ProdutoExtras.obrigatorioExtras = 0;
+         window.ProdutoExtras.maxExtras = 0;
+         $('#container-btn-extras').hide();
+         $('#extras-selecionados-resumo').hide();
+         $('#modal-produto-preco-extras').text('Sem extras');
      });
 
      console.log('🎯 Sistema de extras inicializado');

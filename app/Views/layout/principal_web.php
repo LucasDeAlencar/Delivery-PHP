@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-br">
   <head>
-    <title><?= $this->renderSection('titulo') ?> - Restaurante</title>
+    <title><?= $this->renderSection('titulo') ?> - Delivery</title>
     
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no, viewport-fit=cover">
@@ -45,6 +45,10 @@
     
     <!-- Estilos do carrinho navbar -->
     <style>
+        .brand-name { font-size: 1.6rem; }
+        .brand-sub  { font-size: 0.8rem; }
+        .logo-space { font-size: 1.6rem; }
+
         .carrinho-navbar {
             transition: all 0.3s ease;
             margin-left: auto;
@@ -57,23 +61,37 @@
         
         .carrinho-icon-container {
             cursor: pointer;
+            background: rgba(248,181,49,0.12);
+            border: 1.5px solid rgba(248,181,49,0.35);
+            border-radius: 10px;
+            width: 46px;
+            height: 46px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+        .carrinho-icon-container:hover {
+            background: rgba(248,181,49,0.22);
+            border-color: rgba(248,181,49,0.7);
+        }
+        #carrinho-icon {
+            font-size: 20px !important;
         }
         
         .carrinho-counter {
-            top: -8px;
-            right: -8px;
-            background: linear-gradient(135deg, #00557f 0%, #003f5e 100%);
-            color: #fff;
-            font-size: 12px;
+            top: -6px;
+            right: -6px;
+            background: #f8b531;
+            color: #111;
+            font-size: 10px;
             font-weight: 700;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            border: 2px solid #fff;
-            box-shadow: 0 2px 8px rgba(248, 181, 49, 0.4);
-            animation: pulse 2s infinite;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 9px;
             text-align: center;
-            line-height: 20px;
+            line-height: 18px;
+            padding: 0 4px;
         }
         
         @keyframes pulse {
@@ -94,77 +112,78 @@
         
         /* Posicionamento responsivo */
         @media (max-width: 991px) {
-            .container {
+            #ftco-navbar .container {
                 display: flex;
-                justify-content: space-between;
+                flex-wrap: nowrap;
                 align-items: center;
-            }
-            
-            .carrinho-navbar {
-                margin-left: 0;
-                order: 3;
-            }
-            
-            .navbar-toggler {
-                order: 2;
-                margin-left: auto;
-                margin-right: 15px;
-            }
-        }
-        
-        /* Melhor espaçamento para telas pequenas */
-        @media (max-width: 768px) {
-            .navbar-brand {
-                font-size: 14px;
-                margin-right: 5px;
-                flex: 1;
-                max-width: 60%;
-            }
-            
-            .navbar-brand small {
-                font-size: 9px;
-                display: block;
-            }
-            
-            .carrinho-navbar {
-                margin-left: 5px;
-                margin-right: 5px;
-            }
-            
-            .carrinho-link i {
-                font-size: 24px;
-            }
-            
-            .navbar-toggler {
-                padding: 2px 6px;
-                margin-right: 5px;
-            }
-            
-            .container {
                 padding-left: 10px;
                 padding-right: 10px;
             }
+
+            #ftco-navbar .navbar-brand {
+                flex: 1 1 0;
+                min-width: 0;
+                margin-right: 8px;
+            }
+
+            #ftco-navbar .carrinho-navbar {
+                flex-shrink: 0;
+                margin-left: 0;
+                margin-right: 8px;
+                order: 2;
+            }
+
+            #ftco-navbar .navbar-toggler {
+                flex-shrink: 0;
+                order: 3;
+                margin-left: 0;
+                padding: 4px 8px;
+            }
         }
-        
-        @media (max-width: 576px) {
-            .navbar-brand {
-                font-size: 12px;
-                max-width: 50%;
+
+        @media (max-width: 991px) {
+            #ftco-navbar .brand-name {
+                font-size: 1rem !important;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                display: block;
             }
-            
-            .navbar-brand small {
-                font-size: 8px;
+
+            #ftco-navbar .brand-sub {
+                font-size: 0.65rem !important;
             }
-            
-            .carrinho-link i {
-                font-size: 20px;
+
+            #ftco-navbar .logo-space {
+                font-size: 1.2rem !important;
             }
-            
-            .carrinho-counter {
-                font-size: 10px;
-                min-width: 16px;
-                height: 16px;
-                line-height: 16px;
+        }
+
+        @media (max-width: 480px) {
+            #ftco-navbar .brand-name {
+                font-size: 0.85rem !important;
+            }
+
+            #ftco-navbar .brand-sub {
+                display: none !important;
+            }
+
+            #ftco-navbar .logo-space {
+                font-size: 1rem !important;
+                margin-right: 5px !important;
+            }
+
+            #ftco-navbar .carrinho-link i {
+                font-size: 22px !important;
+            }
+
+            #ftco-navbar .carrinho-navbar {
+                margin-right: 6px;
+            }
+
+            #ftco-navbar .navbar-toggler {
+                padding: 3px 6px;
+                font-size: 0.85rem;
             }
         }
     </style>
@@ -175,13 +194,33 @@
     
     <!-- Estilos personalizados -->
     <?= $this->renderSection('estilos') ?>
+
+    <!-- iOS: bloqueia overscroll/bounce na página (fallback para Safari < 16) -->
+    <script>
+    (function() {
+        var isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        if (!isIOS) return;
+        var startY = 0;
+        document.addEventListener('touchstart', function(e) {
+            startY = e.touches[0].clientY;
+        }, { passive: true });
+        document.addEventListener('touchmove', function(e) {
+            var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+            var dy = e.touches[0].clientY - startY;
+            // Bloqueia pull-down quando já está no topo
+            if (scrollTop <= 0 && dy > 0) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+    })();
+    </script>
   </head>
   <body>
   	<nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
 	    <div class="container">
 		      <a class="navbar-brand" href="<?= site_url('/') ?>">
- 		          <i class="fas fa-hamburger logo-space" style="font-size: 1.6rem; color: #f5a623; margin-right: 8px; line-height: 1;"></i>
- 		          <span class="brand-name" style="color: #fff !important; font-size: 1.6rem; line-height: 1.2;">Space Burger Dog Do Paulista<span class="brand-sub" style="font-size: 0.8rem; text-transform: uppercase; display: block; color: #ccc !important">O seu delivery preferido</span></span>
+ 		          <i class="fas fa-hamburger logo-space" style="color: #f5a623; margin-right: 8px; line-height: 1;"></i>
+ 		          <span class="brand-name" style="color: #fff !important; line-height: 1.2;">Space Burger Dog Do Paulista<span class="brand-sub" style="text-transform: uppercase; display: block; color: #ccc !important">O seu delivery preferido</span></span>
 		      </a>
 		      
 		      <!-- Ícone do Carrinho independente -->
@@ -195,7 +234,7 @@
 		          </a>
 		      </div>
 		      
-		      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
+		      <button class="navbar-toggler d-none d-lg-block" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
 		        <span class="oi oi-menu"></span> Menu
 		      </button>
 	      <div class="collapse navbar-collapse" id="ftco-nav">
@@ -212,8 +251,8 @@
     <!-- END nav -->
 
     <!-- Hero Section -->
-    <section class="home-slider owl-carousel img" style="background-image: url('web/src/images/burger-1.jpg');">
-      <div class="slider-item">
+    <section class="home-slider owl-carousel img" style="background-image: url('<?= site_url('web/src/images/burger-1.jpg') ?>');">
+      <div class="slider-item" style="background-image: url('<?= site_url('web/src/images/burger-1.jpg') ?>');">
       	<div class="overlay"></div>
         <div class="container">
           <div class="row slider-text align-items-center" data-scrollax-parent="true">
@@ -224,13 +263,13 @@
               <p><a href="#menu" class="btn btn-primary p-3 px-xl-4 py-xl-3">Fazer Pedido</a> <a href="#about" class="btn btn-white btn-outline-white p-3 px-xl-4 py-xl-3">Ver Home</a></p>
             </div>
             <div class="col-md-6 ftco-animate">
-            	<img src="<?= base_url('web/src/images/ImagemPromocional2.jpeg') ?>" class="img-fluid" alt="Hamburguer Artesanal">
+            	<img src="<?= site_url('web/src/images/ImagemPromocional2.jpeg') ?>" class="img-fluid" alt="Hamburguer Artesanal">
             </div>
           </div>
         </div>
       </div>
 
-      <div class="slider-item">
+      <div class="slider-item" style="background-image: url('<?= site_url('web/src/images/ImagemPromocional8.jpeg') ?>');">
       	<div class="overlay"></div>
         <div class="container">
           <div class="row slider-text align-items-center" data-scrollax-parent="true">
@@ -241,13 +280,13 @@
               <p><a href="#menu" class="btn btn-primary p-3 px-xl-4 py-xl-3">Fazer Pedido</a> <a href="#about" class="btn btn-white btn-outline-white p-3 px-xl-4 py-xl-3">Ver Home</a></p>
             </div>
             <div class="col-md-6 ftco-animate">
-            	<img src="<?= base_url('web/src/images/ImagemPromocional8.jpeg') ?>" class="img-fluid" alt="HotDog Especial">
+            	<img src="<?= site_url('web/src/images/ImagemPromocional8.jpeg') ?>" class="img-fluid" alt="HotDog Especial">
             </div>
           </div>
         </div>
       </div>
 
-      <div class="slider-item" style="background-image: url('web/src/images/ImagemPromocional3.jpeg');">
+      <div class="slider-item" style="background-image: url('<?= site_url('web/src/images/ImagemPromocional3.jpeg') ?>');">
       	<div class="overlay"></div>
         <div class="container">
           <div class="row slider-text justify-content-center align-items-center" data-scrollax-parent="true">
@@ -272,14 +311,14 @@
 	    					<div class="icon"><span class="icon-phone"></span></div>
 	    					<div class="text">
 	    						<h3><?= $dadosCorporativos->numero ?? '(11) 9999-9999' ?></h3>
-	    						<p>Faça seu pedido por telefone</p>
+	    						<p>Precisa de ajuda? Solicite o suporte comercial pelo telefone.</p>
 	    					</div>
 	    				</div>
 	    				<div class="col-md-4 d-flex ftco-animate">
 	    					<div class="icon"><span class="icon-my_location"></span></div>
 	    					<div class="text">
 	    						<h3><?= $dadosCorporativos->endereco ?? 'Rua das Flores, 123' ?></h3>
-	    						<p>Centro - São Paulo - SP</p>
+	    						<p>Ponto de retirada</p>
 	    					</div>
 	    				</div>
 	    				<div class="col-md-4 d-flex ftco-animate">
@@ -352,14 +391,14 @@
     	<div class="container-wrap">
     		<div class="row no-gutters">
 					<div class="col-md-6 ftco-animate">
-						<a href="#" class="gallery img d-flex align-items-center" style="background-image: url('web/src/images/ImagemPromocional4.jpeg');">
+						<a href="#" class="gallery img d-flex align-items-center" style="background-image: url('<?= site_url('web/src/images/ImagemPromocional4.jpeg') ?>');">
 							<div class="icon mb-4 d-flex align-items-center justify-content-center">
     						<span class="icon-search"></span>
     					</div>
 						</a>
 					</div>
 					<div class="col-md-6 ftco-animate">
-						<a href="#" class="gallery img d-flex align-items-center" style="background-image: url('web/src/images/ImagemPromocional9.jpeg');">
+						<a href="#" class="gallery img d-flex align-items-center" style="background-image: url('<?= site_url('web/src/images/ImagemPromocional9.jpeg') ?>');">
 							<div class="icon mb-4 d-flex align-items-center justify-content-center">
     						<span class="icon-search"></span>
     					</div>
@@ -411,7 +450,7 @@
 		    				</div>
 	    				</div>
 	    				<div class="form-group">
-	              <textarea id="mensagemContato" cols="30" rows="3" class="form-control" placeholder="Como podemos ajudá-lo? Descreva sua dúvida ou pedido... *" required></textarea>
+	              <textarea id="mensagemContato" cols="30" rows="3" class="form-control" placeholder="Como podemos lhe ajudar?&#10;Descreva sua dúvida. *" required></textarea>
 	            </div>
 	            <div class="form-group">
 	              <button type="submit" class="btn btn-primary py-3 px-4">
@@ -496,7 +535,7 @@
           <div class="col-lg-3 col-md-6 mb-5 mb-md-5">
             <div class="ftco-footer-widget mb-4">
               <h2 class="ftco-heading-2">Sobre Nós</h2>
-              <p>Restaurante especializado em hamburgueres artesanais e hotdogs especiais, com ingredientes frescos e de qualidade.</p>
+              <p>Somos especializado em hamburgueres artesanais e hotdogs especiais, com ingredientes frescos e de qualidade.</p>
               <ul class="ftco-footer-social list-unstyled float-md-left float-lft mt-5">
                 <li class="ftco-animate"><a href="<?= !empty($dadosCorporativos->whatsapp) ? 'https://wa.me/55' . preg_replace('/\D/', '', $dadosCorporativos->whatsapp) . '?text=Olá! Gostaria de fazer um pedido.' : '#' ?>" target="_blank"><span class="icon-whatsapp"></span></a></li>
                 <li class="ftco-animate"><a href="<?= !empty($dadosCorporativos->facebook) ? 'https://facebook.com/' . $dadosCorporativos->facebook : '#' ?>" target="_blank"><span class="icon-facebook"></span></a></li>
@@ -550,7 +589,6 @@
                 <li><a href="#" class="py-2 d-block">Delivery</a></li>
                 <li><a href="#" class="py-2 d-block">Balcão</a></li>
                 <li><a href="#" class="py-2 d-block">Eventos</a></li>
-                <li><a href="#" class="py-2 d-block">Catering</a></li>
               </ul>
             </div>
           </div>
@@ -561,7 +599,7 @@
 	              <ul>
 	                <li><span class="icon icon-map-marker"></span><span class="text"><?= $dadosCorporativos->endereco ?? 'Rua das Flores, 123 - Centro, São Paulo - SP' ?></span></li>
 	                <li><a href="#"><span class="icon icon-phone"></span><span class="text"><?= $dadosCorporativos->numero ?? '(11) 9999-9999' ?></span></a></li>
-	                <li><a href="#"><span class="icon icon-envelope"></span><span class="text"><?= $dadosCorporativos->email ?? 'contato@nokapricho.com' ?></span></a></li>
+	                <li><a href="#"><span class="icon icon-envelope"></span><span class="text"><?= '&nbsp;' . $dadosCorporativos->email ?? 'contato@nokapricho.com' ?></span></a></li>
 	              </ul>
 	            </div>
             </div>
@@ -754,23 +792,6 @@
         
         // Atualizar ícone a cada 30 segundos
         setInterval(atualizarIconeCarrinho, 30000);
-        
-        // === SISTEMA DE RESTAURAÇÃO DE SCROLL ===
-        // Restaurar posição 0.5 segundos após modal abrir
-        $(document).on('shown.bs.modal', '#modalCompra, #modalExtras', function() {
-            setTimeout(() => {
-                if (window.__scrollPos !== undefined) {
-                    window.scrollTo(0, window.__scrollPos);
-                }
-            }, 500);
-        });
-        
-        // Restaurar posição quando modal fechar
-        $(document).on('hidden.bs.modal', '#modalCompra, #modalExtras', function() {
-            if (window.__scrollPos !== undefined) {
-                window.scrollTo(0, window.__scrollPos);
-            }
-        });
     });
     </script>
     
@@ -782,20 +803,16 @@
             background-color: rgba(0, 0, 0, 0.8) !important;
         }
         
-        /* Evitar scroll automático nos modais */
-        .modal {
-            overflow-y: auto !important;
+        /* Nav inferior sempre acima do backdrop e dos modais */
+        #mobile-bottom-nav {
+            z-index: 1055 !important;
         }
-        .modal.fade .modal-dialog {
-            transform: translateY(0) !important;
+        #mob-user-btn {
+            z-index: 1055 !important;
         }
-        .modal.show .modal-dialog {
-            transform: translateY(0) !important;
-        }
-        .modal-open {
-            padding-right: 0 !important;
-            overflow: auto !important;
-        }
+
+
+        /* Scroll e padding-right controlados via modal-fix.css */
         
         /* Popup denotificação de posição */
         #scroll-popup {
@@ -942,86 +959,22 @@
         }
     </style>
     
-    <!-- Indicador de cliente logado -->
-    <div id="cliente-logado" style="position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.8); color: #00557f; padding: 10px 15px; border-radius: 25px; font-size: 14px; cursor: pointer; z-index: 1000; display: none; border: 1px solid #00557f;">
+    <!-- Indicador de cliente logado (desktop) -->
+    <div id="cliente-logado" style="position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.8); color: #00557f; padding: 10px 15px; border-radius: 25px; font-size: 14px; cursor: pointer; z-index: 1055; display: none; border: 1px solid #00557f;">
         <i class="fas fa-user-circle mr-2"></i>
         <span id="email-cliente"></span>
-        <div id="menu-logout" style="position: absolute; bottom: 100%; right: 0; background: rgba(0,0,0,0.9); border: 1px solid #00557f; border-radius: 8px; padding: 10px; margin-bottom: 5px; display: none; white-space: nowrap;">
-            <a href="#" id="btn-editar" style="color: #00557f; text-decoration: none; font-size: 13px; display: block; margin-bottom: 8px;">
-                <i class="fas fa-edit mr-2"></i>Editar Dados
-            </a>
-            <a href="#" id="btn-logout" style="color: #ff6b6b; text-decoration: none; font-size: 13px;">
-                <i class="fas fa-sign-out-alt mr-2"></i>Sair
-            </a>
-        </div>
+    </div>
+    <!-- Menu logout independente — funciona no mobile e desktop -->
+    <div id="menu-logout" style="position: fixed; bottom: 70px; right: 12px; background: rgba(0,0,0,0.95); border: 1px solid #00557f; border-radius: 8px; padding: 10px; margin-bottom: 5px; display: none; white-space: nowrap; z-index: 1060;">
+        <a href="#" id="btn-editar" style="color: #00557f; text-decoration: none; font-size: 13px; display: block; margin-bottom: 8px;">
+            <i class="fas fa-edit mr-2"></i>Editar Dados
+        </a>
+        <a href="#" id="btn-logout" style="color: #ff6b6b; text-decoration: none; font-size: 13px;">
+            <i class="fas fa-sign-out-alt mr-2"></i>Sair
+        </a>
     </div>
 
     <!-- Modal de Edição de Dados -->
-    <div class="modal fade" id="modalEdicaoCliente" tabindex="-1" role="dialog" aria-labelledby="modalEdicaoLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content" style="background: #1a1a1a; border: 1px solid #333; margin: 10px;">
-                <div class="modal-header" style="border-bottom: 1px solid #333;">
-                    <h5 class="modal-title" id="modalEdicaoLabel" style="color: #00557f;">
-                        <i class="fas fa-edit mr-2"></i>Editar Meus Dados
-                    </h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: #fff;">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body" style="color: #fff; max-height: 60vh; overflow-y: auto;">
-                    <form id="formEdicaoCliente">
-                        <div class="form-group">
-                            <label style="color: #00557f;">Nome Completo *</label>
-                            <input type="text" id="edit-nome" class="form-control" readonly style="background: #1a1a1a; border: 1px solid #444; color: #ccc;">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label style="color: #00557f;">Telefone *</label>
-                            <input type="tel" id="edit-telefone" class="form-control" required style="background: #2d2d2d; border: 1px solid #444; color: #fff;">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label style="color: #00557f;">CEP *</label>
-                            <input type="text" id="edit-cep" class="form-control" required style="background: #2d2d2d; border: 1px solid #444; color: #fff;">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label style="color: #00557f;">Cidade *</label>
-                            <input type="text" id="edit-cidade" class="form-control" readonly placeholder="Campo autopreenchido pelo CEP" style="background: #1a1a1a; border: 1px solid #444; color: #ccc;">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label style="color: #00557f;">Bairro *</label>
-                            <input type="text" id="edit-bairro" class="form-control" readonly placeholder="Campo autopreenchido pelo CEP" style="background: #1a1a1a; border: 1px solid #444; color: #ccc;">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label style="color: #00557f;">Logradouro *</label>
-                            <input type="text" id="edit-endereco" class="form-control" readonly placeholder="Campo autopreenchido pelo CEP" style="background: #1a1a1a; border: 1px solid #444; color: #ccc;">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label style="color: #00557f;">Número</label>
-                            <input type="text" id="edit-numero" class="form-control" style="background: #2d2d2d; border: 1px solid #444; color: #fff;">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label style="color: #00557f;">Complemento</label>
-                            <input type="text" id="edit-complemento" class="form-control" style="background: #2d2d2d; border: 1px solid #444; color: #fff;">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer" style="border-top: 1px solid #333; padding: 10px 15px;">
-                    <div class="d-flex flex-column flex-sm-row w-100">
-                        <button type="button" class="btn btn-secondary mb-2 mb-sm-0 mr-sm-2 flex-fill" data-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn flex-fill" id="btnSalvarEdicao" style="background: #00557f; color: #fff;">
-                            <i class="fas fa-save mr-2"></i>Salvar Alterações
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <script>
         // Verificar se há cliente logado via sessão PHP (apenas no primeiro carregamento após login)
@@ -1045,7 +998,7 @@
                 localStorage.removeItem('codigo_pedido_ativo');
             }
             
-            console.log('Login detectado:', { novo: novoEmailCliente, anterior: emailAnterior, mudou: emailAnterior && emailAnterior.toLowerCase() !== novoEmailCliente.toLowerCase() });
+            
             <?php session()->remove('cliente_email'); ?>
         <?php endif; ?>
 
@@ -1061,10 +1014,17 @@
             const emailSalvo = localStorage.getItem('cliente_email');
             if (emailSalvo) {
                 emailCliente.textContent = emailSalvo;
+                // Desktop: mostrar flutuante
                 clienteLogado.style.display = 'block';
+                // Mobile: mostrar botão na nav inferior
+                const mobBtn = document.getElementById('mob-user-btn');
+                if (mobBtn) {
+                    mobBtn.style.display = 'flex';
+                    document.getElementById('mob-user-label').textContent = emailSalvo.split('@')[0];
+                }
             }
-            
-            // Toggle menu logout
+
+            // Toggle menu logout (desktop — clique no flutuante)
             clienteLogado.addEventListener('click', function(e) {
                 e.stopPropagation();
                 menuLogout.style.display = menuLogout.style.display === 'block' ? 'none' : 'block';
@@ -1105,222 +1065,237 @@
             function abrirModalEdicao() {
                 const email = localStorage.getItem('cliente_email');
                 if (!email) return;
-                
-                // Buscar dados do cliente
+
                 fetch('<?= site_url('cliente/dados') ?>', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({email: email})
+                    headers: {'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},
+                    body: JSON.stringify({email})
                 })
-                .then(response => response.json())
+                .then(r => r.json())
                 .then(data => {
-                    if (data.sucesso) {
-                        // Preencher formulário
-                        document.getElementById('edit-nome').value = data.cliente.nome || '';
-                        document.getElementById('edit-telefone').value = data.cliente.telefone || '';
-                        document.getElementById('edit-cep').value = data.cliente.cep || '';
-                        document.getElementById('edit-cidade').value = data.cliente.Cidade || '';
-                        document.getElementById('edit-bairro').value = data.cliente.Bairro || '';
-                        document.getElementById('edit-endereco').value = data.cliente.Endereco || '';
-                        document.getElementById('edit-numero').value = data.cliente.Numero || '';
-                        document.getElementById('edit-complemento').value = data.cliente.complemento || '';
-                        
-                        $('#modalEdicaoCliente').modal('show');
-                    } else {
-                        alert('Erro ao carregar dados do cliente');
-                    }
+                    if (!data.sucesso) { alert('Erro ao carregar dados do cliente'); return; }
+                    const c = data.cliente;
+
+                    // Remover popup anterior se existir
+                    document.getElementById('edicao-popup')?.remove();
+
+                    const popup = document.createElement('div');
+                    popup.id = 'edicao-popup';
+                    popup.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;padding:0 12px;box-sizing:border-box;';
+                    popup.innerHTML = `
+                        <div style="background:#1a1a1a;width:100%;max-width:500px;max-height:90vh;min-height:0;border-radius:15px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.5);">
+                            <!-- Header -->
+                            <div style="background:linear-gradient(135deg,#2d2d2d,#1a1a1a);border-bottom:1px solid #333;padding:16px 20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative;border-radius:15px 15px 0 0;">
+                                <h5 style="color:#f8b531;font-family:'Poppins',sans-serif;font-weight:600;margin:0;font-size:1rem;">
+                                    <i class="fas fa-edit" style="margin-right:8px;"></i>Editar Meus Dados
+                                </h5>
+                                <button onclick="document.getElementById('edicao-popup').remove()" style="position:absolute;right:16px;background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer;opacity:.7;line-height:1;">&times;</button>
+                            </div>
+                            <!-- Body -->
+                            <div style="flex:1 1 auto;overflow-y:auto;padding:20px;-webkit-overflow-scrolling:touch;">
+                                <form id="formEdicaoCliente">
+                                    <div style="margin-bottom:14px;">
+                                        <label style="color:#00557f;font-size:.85rem;display:block;margin-bottom:4px;">Nome Completo *</label>
+                                        <input type="text" id="edit-nome" class="form-control" readonly style="background:#1a1a1a;border:1px solid #444;color:#ccc;font-size:16px;">
+                                    </div>
+                                    <div style="margin-bottom:14px;">
+                                        <label style="color:#00557f;font-size:.85rem;display:block;margin-bottom:4px;">Telefone *</label>
+                                        <input type="tel" id="edit-telefone" class="form-control" required style="background:#2d2d2d;border:1px solid #444;color:#fff;font-size:16px;">
+                                    </div>
+                                    <div style="margin-bottom:14px;">
+                                        <label style="color:#00557f;font-size:.85rem;display:block;margin-bottom:4px;">CEP *</label>
+                                        <input type="text" id="edit-cep" class="form-control" required style="background:#2d2d2d;border:1px solid #444;color:#fff;font-size:16px;">
+                                    </div>
+                                    <div style="margin-bottom:14px;">
+                                        <label style="color:#00557f;font-size:.85rem;display:block;margin-bottom:4px;">Cidade *</label>
+                                        <input type="text" id="edit-cidade" class="form-control" readonly style="background:#1a1a1a;border:1px solid #444;color:#ccc;font-size:16px;">
+                                    </div>
+                                    <div style="margin-bottom:14px;position:relative;">
+                                        <label style="color:#00557f;font-size:.85rem;display:block;margin-bottom:4px;">Bairro *</label>
+                                        <input type="text" id="edit-bairro" class="form-control" autocomplete="off" style="background:#1a1a1a;border:1px solid #444;color:#ccc;font-size:16px;">
+                                        <div id="edit-bairro-sugestoes" style="position:absolute;z-index:9999;width:100%;background:#2d2d2d;border:1px solid #444;border-radius:0 0 6px 6px;max-height:160px;overflow-y:auto;display:none;"></div>
+                                        <div id="edit-bairro-aviso" style="display:none;color:#ff6b6b;font-size:.78rem;margin-top:3px;"><i class="fas fa-exclamation-triangle"></i> Bairro não encontrado na área de entrega.</div>
+                                    </div>
+                                    <div style="margin-bottom:14px;">
+                                        <label style="color:#00557f;font-size:.85rem;display:block;margin-bottom:4px;">Logradouro *</label>
+                                        <input type="text" id="edit-endereco" class="form-control" style="background:#1a1a1a;border:1px solid #444;color:#ccc;font-size:16px;">
+                                    </div>
+                                    <div style="margin-bottom:14px;">
+                                        <label style="color:#00557f;font-size:.85rem;display:block;margin-bottom:4px;">Número</label>
+                                        <input type="text" id="edit-numero" class="form-control" style="background:#2d2d2d;border:1px solid #444;color:#fff;font-size:16px;">
+                                    </div>
+                                    <div style="margin-bottom:14px;">
+                                        <label style="color:#00557f;font-size:.85rem;display:block;margin-bottom:4px;">Complemento</label>
+                                        <input type="text" id="edit-complemento" class="form-control" style="background:#2d2d2d;border:1px solid #444;color:#fff;font-size:16px;">
+                                    </div>
+                                </form>
+                            </div>
+                            <!-- Footer -->
+                            <div style="background:#1a1a1a;border-top:1px solid #333;padding:14px 20px;flex-shrink:0;display:flex;gap:10px;border-radius:0 0 15px 15px;">
+                                <button onclick="document.getElementById('edicao-popup').remove()" style="flex:1;padding:12px;background:#333;border:1px solid #555;color:#ccc;border-radius:8px;font-weight:600;cursor:pointer;">
+                                    <i class="fas fa-times" style="margin-right:6px;"></i>Cancelar
+                                </button>
+                                <button id="btnSalvarEdicao" style="flex:1;padding:12px;background:linear-gradient(135deg,#0055ff,#1a1866);border:none;color:#fff;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;">
+                                    <i class="fas fa-save" style="margin-right:6px;"></i>Salvar Alterações
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(popup);
+
+                    // Preencher campos
+                    document.getElementById('edit-nome').value        = c.nome || '';
+                    document.getElementById('edit-telefone').value    = c.telefone || '';
+                    document.getElementById('edit-cep').value         = c.cep || '';
+                    document.getElementById('edit-cidade').value      = c.Cidade || '';
+                    document.getElementById('edit-bairro').value      = c.Bairro || '';
+                    document.getElementById('edit-endereco').value    = c.Endereco || '';
+                    document.getElementById('edit-numero').value      = c.Numero || '';
+                    document.getElementById('edit-complemento').value = c.complemento || '';
+
+                    // Carregar bairros da cidade já preenchida
+                    if (c.Cidade) carregarBairrosModal(c.Cidade);
+
+                    // Fechar ao clicar no overlay
+                    popup.addEventListener('click', function(e) {
+                        if (e.target === popup) popup.remove();
+                    });
+
+                    // Salvar
+                    document.getElementById('btnSalvarEdicao').addEventListener('click', function() {
+                        const bairroVal   = document.getElementById('edit-bairro').value.trim();
+                        const enderecoVal = document.getElementById('edit-endereco').value.trim();
+                        const avisoEl     = document.getElementById('edit-bairro-aviso');
+
+                        if (!bairroVal) {
+                            avisoEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> O campo Bairro é obrigatório.';
+                            avisoEl.style.display = 'block';
+                            document.getElementById('edit-bairro').focus();
+                            return;
+                        }
+                        if (!enderecoVal) {
+                            avisoEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> O campo Logradouro é obrigatório.';
+                            avisoEl.style.display = 'block';
+                            document.getElementById('edit-endereco').focus();
+                            return;
+                        }
+                        avisoEl.style.display = 'none';
+
+                        const dados = {
+                            email,
+                            telefone:    document.getElementById('edit-telefone').value,
+                            cep:         document.getElementById('edit-cep').value,
+                            cidade:      document.getElementById('edit-cidade').value,
+                            bairro:      document.getElementById('edit-bairro').value,
+                            endereco:    document.getElementById('edit-endereco').value,
+                            numero:      document.getElementById('edit-numero').value,
+                            complemento: document.getElementById('edit-complemento').value
+                        };
+
+                        fetch('<?= site_url('cliente/atualizar') ?>', {
+                            method: 'POST',
+                            headers: {'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},
+                            body: JSON.stringify(dados)
+                        })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.sucesso) {
+                                document.getElementById('edicao-popup').remove();
+                                alert('Dados atualizados com sucesso!');
+                            } else {
+                                alert('Erro ao salvar: ' + (data.msg || 'Tente novamente'));
+                            }
+                        })
+                        .catch(() => alert('Erro ao salvar dados'));
+                    });
+
+                    // Máscara telefone
+                    document.getElementById('edit-telefone').addEventListener('input', function(e) {
+                        let v = e.target.value.replace(/\D/g, '');
+                        v = v.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+                        if (v.length < 15) v = v.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+                        e.target.value = v;
+                    });
+
+                    // Máscara + busca CEP
+                    document.getElementById('edit-cep').addEventListener('input', function(e) {
+                        let v = e.target.value.replace(/\D/g, '');
+                        if (v.length <= 8) v = v.replace(/(\d{5})(\d{3})/, '$1-$2');
+                        e.target.value = v;
+                        if (v.replace(/\D/g,'').length === 8) buscarCEPModal(v.replace(/\D/g,''));
+                    });
+
+                    // Autocomplete bairro
+                    const editBairroEl    = document.getElementById('edit-bairro');
+                    const editSugestoesEl = document.getElementById('edit-bairro-sugestoes');
+                    editBairroEl.addEventListener('input', function() {
+                        const termo = this.value.trim().toLowerCase();
+                        editSugestoesEl.innerHTML = '';
+                        editSugestoesEl.style.display = 'none';
+                        verificarBairroModal();
+                        if (!termo || !bairrosModal.length) return;
+                        const filtrados = bairrosModal.filter(b => b.toLowerCase().includes(termo)).slice(0, 8);
+                        if (!filtrados.length) return;
+                        filtrados.forEach(b => {
+                            const item = document.createElement('div');
+                            item.textContent = b;
+                            item.style.cssText = 'padding:7px 12px;cursor:pointer;color:#fff;border-bottom:1px solid #444;font-size:.85rem;';
+                            item.addEventListener('mousedown', () => { editBairroEl.value = b; editSugestoesEl.style.display = 'none'; verificarBairroModal(); });
+                            item.addEventListener('mouseover', () => item.style.background = '#3a3a3a');
+                            item.addEventListener('mouseout',  () => item.style.background = '');
+                            editSugestoesEl.appendChild(item);
+                        });
+                        editSugestoesEl.style.display = 'block';
+                    });
+                    editBairroEl.addEventListener('blur', () => setTimeout(() => editSugestoesEl.style.display = 'none', 150));
                 })
-                .catch(error => {
-                    alert('Erro ao carregar dados');
-                });
+                .catch(() => alert('Erro ao carregar dados'));
             }
-            
-            // Salvar edição
-            document.getElementById('btnSalvarEdicao').addEventListener('click', function() {
-                const email = localStorage.getItem('cliente_email');
-                const dados = {
-                    email: email,
-                    telefone: document.getElementById('edit-telefone').value,
-                    cep: document.getElementById('edit-cep').value,
-                    cidade: document.getElementById('edit-cidade').value,
-                    bairro: document.getElementById('edit-bairro').value,
-                    endereco: document.getElementById('edit-endereco').value,
-                    numero: document.getElementById('edit-numero').value,
-                    complemento: document.getElementById('edit-complemento').value
-                };
-                
-                fetch('<?= site_url('cliente/atualizar') ?>', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify(dados)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.sucesso) {
-                        $('#modalEdicaoCliente').modal('hide');
-                        alert('Dados atualizados com sucesso!');
-                    } else {
-                        alert('Erro ao salvar: ' + (data.msg || 'Tente novamente'));
-                    }
-                })
-                .catch(error => {
-                    alert('Erro ao salvar dados');
-                });
-            });
-            
-            // Máscara e busca CEP no modal
-            document.getElementById('edit-telefone').addEventListener('input', function (e) {
-                let value = e.target.value.replace(/\D/g, '');
-                if (value.length <= 11) {
-                    value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-                    if (value.length < 14) {
-                        value = value.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-                    }
-                }
-                e.target.value = value;
-            });
 
-            document.getElementById('edit-cep').addEventListener('input', function (e) {
-                let value = e.target.value.replace(/\D/g, '');
-                if (value.length <= 8) {
-                    value = value.replace(/(\d{5})(\d{3})/, '$1-$2');
-                }
-                e.target.value = value;
-
-                if (value.replace(/\D/g, '').length === 8) {
-                    buscarCEPModal(value.replace(/\D/g, ''));
-                }
-            });
-            
             function buscarCEPModal(cep) {
                 fetch('<?= site_url('login/buscar_cep') ?>', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({cep: cep})
+                    headers: {'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},
+                    body: JSON.stringify({cep})
                 })
-                .then(response => response.json())
+                .then(r => r.json())
                 .then(data => {
                     if (!data.erro) {
-                        document.getElementById('edit-bairro').value = data.bairro || '';
-                        document.getElementById('edit-cidade').value = data.localidade || '';
-                        document.getElementById('edit-endereco').value = data.logradouro || '';
+                        const cidade = data.localidade || '';
+                        document.getElementById('edit-cidade').value = cidade;
+                        const bairroEl   = document.getElementById('edit-bairro');
+                        const enderecoEl = document.getElementById('edit-endereco');
+                        if (data.bairro)     { bairroEl.value = data.bairro; bairroEl.readOnly = true; }
+                        else                 { bairroEl.value = ''; bairroEl.readOnly = false; bairroEl.placeholder = 'Digite seu bairro'; }
+                        if (data.logradouro) { enderecoEl.value = data.logradouro; enderecoEl.readOnly = true; }
+                        else                 { enderecoEl.value = ''; enderecoEl.readOnly = false; enderecoEl.placeholder = 'Digite seu logradouro'; }
+                        verificarBairroModal();
+                        if (cidade) carregarBairrosModal(cidade);
                     }
                 })
-                .catch(error => {});
+                .catch(() => {});
+            }
+
+            let bairrosModal = [];
+            function carregarBairrosModal(cidade) {
+                fetch('<?= site_url('registrar/bairros_cidade') ?>?cidade=' + encodeURIComponent(cidade), {
+                    headers: {'X-Requested-With':'XMLHttpRequest'}
+                })
+                .then(r => r.json())
+                .then(d => { bairrosModal = d.bairros || []; });
+            }
+
+            function verificarBairroModal() {
+                const val   = document.getElementById('edit-bairro')?.value.trim().toLowerCase();
+                const aviso = document.getElementById('edit-bairro-aviso');
+                if (!val || !aviso || !bairrosModal.length) { if(aviso) aviso.style.display = 'none'; return; }
+                aviso.style.display = bairrosModal.some(b => b.toLowerCase() === val) ? 'none' : 'block';
             }
         });
     </script>
     
     <style>
-        /* Responsividade geral para dispositivos móveis */
-        @media (max-width: 767px) {
-            /* Modal responsivo */
-            .modal-dialog {
-                margin: 5px !important;
-                max-width: calc(100% - 10px) !important;
-            }
-            
-            .modal-content {
-                border-radius: 8px !important;
-            }
-            
-            .modal-body {
-                padding: 15px !important;
-            }
-            
-            .modal-footer {
-                padding: 10px 15px !important;
-            }
-            
-            /* Navbar brand responsivo */
-            .navbar-brand {
-                font-size: 1.1rem !important;
-                line-height: 1.2 !important;
-            }
-            
-            .navbar-brand small {
-                font-size: 0.7rem !important;
-            }
-            
-            /* Hero section responsivo */
-            .home-slider .slider-item h1 {
-                font-size: 1.8rem !important;
-            }
-            
-            .home-slider .slider-item p {
-                font-size: 0.9rem !important;
-            }
-            
-            /* Botões responsivos */
-            .btn {
-                padding: 8px 16px !important;
-                font-size: 0.9rem !important;
-            }
-            
-            /* Container responsivo */
-            .container-fluid {
-                padding-left: 10px !important;
-                padding-right: 10px !important;
-            }
-            
-            /* Seções com padding reduzido */
-            .ftco-section {
-                padding: 3em 0 !important;
-            }
-            
-            /* Footer responsivo */
-            .ftco-footer {
-                padding: 3em 0 2em !important;
-            }
-            
-            .ftco-footer .ftco-footer-widget {
-                margin-bottom: 2em !important;
-            }
-        }
-        
-        @media (max-width: 575px) {
-            /* Telas muito pequenas */
-            .modal-dialog {
-                margin: 0 !important;
-                max-width: 100% !important;
-                height: 100vh !important;
-            }
-            
-            .modal-content {
-                height: 100% !important;
-                border-radius: 0 !important;
-            }
-            
-            .modal-body {
-                max-height: calc(100vh - 120px) !important;
-                overflow-y: auto !important;
-            }
-            
-            /* Navbar ainda mais compacta */
-            .navbar-brand {
-                font-size: 1rem !important;
-            }
-            
-            /* Hero ainda mais compacto */
-            .home-slider .slider-item h1 {
-                font-size: 1.5rem !important;
-            }
-            
-            .home-slider .slider-item .btn {
-                padding: 6px 12px !important;
-                font-size: 0.8rem !important;
-                margin: 2px !important;
-            }
-        }
+        /* Responsividade geral — ver produto-modal.css e mobile-responsive.css */
     </style>
     
     <!-- Scripts personalizados -->
@@ -1334,6 +1309,56 @@
             }
         }
     </script>
+    <!-- Nav inferior mobile (substitui o botão Menu) -->
+    <nav id="mobile-bottom-nav" class="d-lg-none" style="position:fixed;bottom:0;left:0;right:0;z-index:1050;background:#111;border-top:1px solid #333;display:flex;">
+        <a href="<?= site_url('/') ?>" class="mob-nav-btn" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.5rem .2rem;color:#fff;text-decoration:none;font-size:.7rem;border-top:3px solid transparent;">
+            <i class="fas fa-home" style="font-size:1.2rem;margin-bottom:2px;"></i>Home
+        </a>
+        <a href="#menu" class="mob-nav-btn" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.5rem .2rem;color:#fff;text-decoration:none;font-size:.7rem;border-top:3px solid transparent;">
+            <i class="fas fa-hamburger" style="font-size:1.2rem;margin-bottom:2px;"></i>Menu
+        </a>
+        <a href="#services" class="mob-nav-btn" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.5rem .2rem;color:#fff;text-decoration:none;font-size:.7rem;border-top:3px solid transparent;">
+            <i class="fas fa-concierge-bell" style="font-size:1.2rem;margin-bottom:2px;"></i>Serviços
+        </a>
+        <a href="#about" class="mob-nav-btn" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.5rem .2rem;color:#fff;text-decoration:none;font-size:.7rem;border-top:3px solid transparent;">
+            <i class="fas fa-info-circle" style="font-size:1.2rem;margin-bottom:2px;"></i>Sobre
+        </a>
+        <a href="#contact" class="mob-nav-btn" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.5rem .2rem;color:#fff;text-decoration:none;font-size:.7rem;border-top:3px solid transparent;">
+            <i class="fas fa-envelope" style="font-size:1.2rem;margin-bottom:2px;"></i>Contato
+        </a>
+        <button id="mob-user-btn" onclick="var ml=document.getElementById('menu-logout');ml.style.display=ml.style.display==='block'?'none':'block';event.stopPropagation();" style="display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;padding:.5rem .2rem;color:#ffc107;font-size:.7rem;border:none;border-top:3px solid #ffc107;background:transparent;cursor:pointer;">
+            <i class="fas fa-user-circle" style="font-size:1.2rem;margin-bottom:2px;"></i>
+            <span id="mob-user-label">Conta</span>
+        </button>
+    </nav>
+    <style>
+        @media (max-width: 991px) {
+            body { padding-bottom: 56px; }
+            .mob-nav-btn:hover, .mob-nav-btn.active { color: #ffc107 !important; border-top-color: #ffc107 !important; }
+            #cliente-logado { display: none !important; }
+        }
+        @media (min-width: 992px) {
+            /* Desktop: menu aparece acima do flutuante */
+            #menu-logout { bottom: 70px; right: 20px; }
+        }
+    </style>
+    <script>
+        // Destacar item ativo conforme seção visível
+        (function() {
+            var links = document.querySelectorAll('.mob-nav-btn');
+            function setActive(hash) {
+                links.forEach(function(l) {
+                    var isActive = l.getAttribute('href') === hash || (hash === '' && l.getAttribute('href') === '<?= site_url('/') ?>');
+                    l.classList.toggle('active', isActive);
+                    l.style.color = isActive ? '#ffc107' : '#fff';
+                    l.style.borderTopColor = isActive ? '#ffc107' : 'transparent';
+                });
+            }
+            window.addEventListener('hashchange', function() { setActive(location.hash); });
+            setActive(location.hash || '<?= site_url('/') ?>');
+        })();
+    </script>
+
     <?= $this->renderSection('scripts') ?>
     
   </body>

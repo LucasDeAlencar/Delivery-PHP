@@ -37,6 +37,7 @@ class DadosCorporativos extends BaseController
             'instagram' => $json->instagram ?? '',
             'facebook' => $json->facebook ?? '',
             'preco_minimo_compra' => $json->preco_minimo_compra ?? 0,
+            'entrega_ate' => $json->entrega_ate ?? 0,
             'updated_at' => date('Y-m-d H:i:s')
         ];
 

@@ -233,6 +233,19 @@
             </div>
         <?php endif; ?>
 
+        <!-- Sachês -->
+        <?php if (!empty($saches)): ?>
+            <div class="section">
+                <div class="label">SACHÊS</div>
+                <?php foreach ($saches as $s): ?>
+                    <div style="display:flex;justify-content:space-between;font-size:13px;margin:3px 0;">
+                        <span><?= $s['quantidade'] ?>x <?= esc($s['sache_nome']) ?><?= $s['quantidade_paga'] > 0 ? ' (' . $s['quantidade_gratuita'] . ' grátis + ' . $s['quantidade_paga'] . ' pago' . ($s['quantidade_paga'] > 1 ? 's' : '') . ')' : ' (grátis)' ?></span>
+                        <span><?= $s['preco_total'] > 0 ? 'R$ ' . number_format($s['preco_total'], 2, ',', '.') : '—' ?></span>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+
         <!-- Total -->
         <div class="total-section">
             <div class="total-linha">

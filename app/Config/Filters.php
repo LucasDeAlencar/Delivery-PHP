@@ -128,7 +128,9 @@ class Filters extends BaseFilters {
                 'admin/formas-pagamento*',
                 'admin/formas*',
                 'admin/entregadores*',
-                // 'admin/pedidos*' - Removido para permitir acesso de não-admin
+                'admin/saches*',
+                'admin/dados-corporativos*',
+                // NÃO incluir: admin/pedidos*, admin/mesas*, admin/venda-especifica*
             ]
         ],
     ];

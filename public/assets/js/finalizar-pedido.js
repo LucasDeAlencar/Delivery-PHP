@@ -7,6 +7,7 @@
 window.FinalizarPedido = {
     formasPagamento: [],
     bairros: [],
+    sachesDisponiveis: [],
     tipoEntrega: null,
     taxaEntrega: 0,
     
@@ -51,6 +52,106 @@ window.FinalizarPedido = {
             console.error('Erro ao carregar bairros:', error);
             this.bairros = [];
         }
+    },
+
+    // Carrega sachês disponíveis para as categorias dos itens do carrinho
+    carregarSaches: async function() {
+        try {
+            const categoriaIds = [...new Set(
+                (window.Carrinho?.itens || [])
+                    .map(i => i.categoria_id)
+                    .filter(Boolean)
+            )];
+
+            if (categoriaIds.length === 0) {
+                this.sachesDisponiveis = [];
+                this.renderizarSaches();
+                return;
+            }
+
+            const response = await fetch('/api/saches/disponiveis', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ categoria_ids: categoriaIds })
+            });
+            const data = await response.json();
+            this.sachesDisponiveis = data.saches || [];
+        } catch (e) {
+            this.sachesDisponiveis = [];
+        }
+        this.renderizarSaches();
+    },
+
+    // Calcula limite máximo de um sachê com base no valor do carrinho
+    calcularLimiteSache: function(sache) {
+        if (sache.limite_tipo === 'fixo') {
+            return parseInt(sache.limite_fixo) || 1;
+        }
+        // personalizado: minimo + floor(total / por_valor)
+        const total = window.Carrinho?.getValorTotal() || 0;
+        const min = parseInt(sache.limite_minimo) || 0;
+        const porValor = parseFloat(sache.limite_por_valor) || 1;
+        return min + Math.floor(total / porValor);
+    },
+
+    // Renderiza seção de sachês no modal
+    renderizarSaches: function() {
+        const container = $('#secao-saches');
+        if (!container.length) return;
+
+        if (!this.sachesDisponiveis || this.sachesDisponiveis.length === 0) {
+            container.hide();
+            return;
+        }
+
+        let html = '';
+        this.sachesDisponiveis.forEach(s => {
+            const limite = this.calcularLimiteSache(s);
+            const preco = parseFloat(s.preco);
+            const precoTexto = preco > 0
+                ? `<small class="text-warning"> +R$ ${preco.toFixed(2).replace('.', ',')} cada</small>`
+                : '<small class="text-muted"> Grátis até o limite</small>';
+            html += `
+                <div class="d-flex justify-content-between align-items-center mb-2 p-2" style="background:#2d2d2d;border-radius:6px;border:1px solid #333;">
+                    <div>
+                        <span class="text-light">${s.nome}</span>${precoTexto}
+                        <br><small class="text-muted">Grátis até: <strong class="text-light">${limite}</strong></small>
+                        <span id="sache-preco-extra-${s.id}" class="text-warning" style="display:none;font-size:0.8em;margin-left:6px;"></span>
+                    </div>
+                    <div class="d-flex align-items-center" style="gap:6px;">
+                        <button type="button" class="btn btn-sm btn-secondary sache-dec" data-id="${s.id}" style="padding:2px 8px;">−</button>
+                        <span id="sache-qtd-${s.id}" class="text-light" style="min-width:20px;text-align:center;">0</span>
+                        <button type="button" class="btn btn-sm btn-secondary sache-inc" data-id="${s.id}" data-limite="${limite}" data-preco="${preco}" style="padding:2px 8px;">+</button>
+                    </div>
+                </div>`;
+        });
+
+        container.find('#saches-lista').html(html);
+        container.show();
+    },
+
+    // Retorna sachês selecionados [{id, nome, preco, quantidade, preco_cobrado}]
+    getSachesSelecionados: function() {
+        const result = [];
+        (this.sachesDisponiveis || []).forEach(s => {
+            const qtd = parseInt($(`#sache-qtd-${s.id}`).text()) || 0;
+            if (qtd > 0) {
+                const limite = this.calcularLimiteSache(s);
+                const preco = parseFloat(s.preco);
+                // Apenas a quantidade excedente ao limite gratuito é cobrada
+                const qtdPaga = Math.max(0, qtd - limite);
+                const precoCobrado = qtdPaga * preco;
+                result.push({
+                    id: s.id,
+                    nome: s.nome,
+                    preco: preco,
+                    quantidade: qtd,
+                    quantidade_paga: qtdPaga,
+                    preco_cobrado: precoCobrado
+                });
+            }
+        });
+        return result;
     },
 
     // Carrega preço mínimo de compra
@@ -120,6 +221,9 @@ window.FinalizarPedido = {
         
         // Renderizar bairros
         this.renderizarBairros();
+
+        // Recarregar sachês com as categorias atuais do carrinho e renderizar
+        await this.carregarSaches();
         
         // Abrir modal sem scroll
         const scrollTop = $(window).scrollTop();
@@ -194,6 +298,14 @@ window.FinalizarPedido = {
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                            
+                            <!-- Sachês -->
+                            <div class="mb-4" id="secao-saches" style="display:none;">
+                                <h6 class="text-warning mb-3">
+                                    <i class="fas fa-pepper-hot mr-2"></i>Sachês
+                                </h6>
+                                <div id="saches-lista"></div>
                             </div>
                             
                             <!-- Dados do Cliente -->
@@ -316,7 +428,12 @@ window.FinalizarPedido = {
     atualizarResumo: function() {
         const itens = window.Carrinho.itens;
         const subtotal = window.Carrinho.getValorTotal();
-        const total = this.getValorTotalComTaxa();
+
+        // Calcular custo dos sachês excedentes
+        const saches = this.getSachesSelecionados();
+        const totalSaches = saches.reduce((sum, s) => sum + s.preco_cobrado, 0);
+
+        const total = this.getValorTotalComTaxa() + totalSaches;
         
         let html = '<div class="resumo-itens">';
         
@@ -330,6 +447,21 @@ window.FinalizarPedido = {
                     <span class="text-warning">R$ ${item.total.toFixed(2).replace('.', ',')}</span>
                 </div>
             `;
+        });
+
+        // Mostrar sachês com custo no resumo
+        saches.forEach(s => {
+            if (s.preco_cobrado > 0) {
+                html += `
+                    <div class="d-flex justify-content-between align-items-center mb-2 pb-2" style="border-bottom: 1px solid #333;">
+                        <div>
+                            <strong class="text-light">${s.quantidade}x ${s.nome}</strong>
+                            <br><small class="text-muted">${s.quantidade - s.quantidade_paga} grátis + ${s.quantidade_paga} pagos</small>
+                        </div>
+                        <span class="text-warning">R$ ${s.preco_cobrado.toFixed(2).replace('.', ',')}</span>
+                    </div>
+                `;
+            }
         });
         
         html += `
@@ -348,6 +480,15 @@ window.FinalizarPedido = {
                 </div>
             `;
         }
+
+        if (totalSaches > 0) {
+            html += `
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-light">Sachês (excedente):</span>
+                    <span class="text-light">R$ ${totalSaches.toFixed(2).replace('.', ',')}</span>
+                </div>
+            `;
+        }
         
         html += `
                 <div class="d-flex justify-content-between align-items-center mt-2 pt-2" style="border-top: 2px solid #f8b531;">
@@ -360,9 +501,16 @@ window.FinalizarPedido = {
         $('#resumo-pedido').html(html);
     },
     
-    // Retorna valor total com taxa de entrega
+    // Retorna valor total com taxa de entrega e sachês pagos
     getValorTotalComTaxa: function() {
-        return window.Carrinho.getValorTotal() + this.taxaEntrega;
+        const totalSaches = (this.sachesDisponiveis || []).reduce((sum, s) => {
+            const qtd = parseInt($(`#sache-qtd-${s.id}`).text()) || 0;
+            const limite = this.calcularLimiteSache(s);
+            const preco = parseFloat(s.preco);
+            const qtdPaga = Math.max(0, qtd - limite);
+            return sum + (qtdPaga * preco);
+        }, 0);
+        return window.Carrinho.getValorTotal() + this.taxaEntrega + totalSaches;
     },
     
     // Renderiza formas de pagamento
@@ -495,6 +643,53 @@ window.FinalizarPedido = {
             }
         });
         
+        // Botões + / - dos sachês
+        $(document).on('click', '.sache-inc', function() {
+            const id = $(this).data('id');
+            const limite = parseInt($(this).data('limite')) || 0;
+            const preco = parseFloat($(this).data('preco')) || 0;
+            const span = $(`#sache-qtd-${id}`);
+            const atual = parseInt(span.text()) || 0;
+            const novaQtd = atual + 1;
+            span.text(novaQtd);
+
+            // Atualizar indicador de custo extra
+            const extraSpan = $(`#sache-preco-extra-${id}`);
+            if (novaQtd > limite && preco > 0) {
+                const qtdPaga = novaQtd - limite;
+                const totalExtra = (qtdPaga * preco).toFixed(2).replace('.', ',');
+                extraSpan.text(`(+R$ ${totalExtra} pelo excedente)`).show();
+            } else {
+                extraSpan.hide();
+            }
+
+            FinalizarPedido.atualizarResumo();
+        });
+        $(document).on('click', '.sache-dec', function() {
+            const id = $(this).data('id');
+            const span = $(`#sache-qtd-${id}`);
+            const atual = parseInt(span.text()) || 0;
+            if (atual > 0) {
+                span.text(atual - 1);
+
+                // Atualizar indicador de custo extra
+                const btn = $(`.sache-inc[data-id="${id}"]`);
+                const limite = parseInt(btn.data('limite')) || 0;
+                const preco = parseFloat(btn.data('preco')) || 0;
+                const novaQtd = atual - 1;
+                const extraSpan = $(`#sache-preco-extra-${id}`);
+                if (novaQtd > limite && preco > 0) {
+                    const qtdPaga = novaQtd - limite;
+                    const totalExtra = (qtdPaga * preco).toFixed(2).replace('.', ',');
+                    extraSpan.text(`(+R$ ${totalExtra} pelo excedente)`).show();
+                } else {
+                    extraSpan.hide();
+                }
+
+                FinalizarPedido.atualizarResumo();
+            }
+        });
+
         // Máscara de telefone
         $(document).on('input', '#telefone_cliente', function() {
             let valor = $(this).val().replace(/\D/g, '');
@@ -546,6 +741,8 @@ window.FinalizarPedido = {
         }
         
         // Coletar dados
+        const sachesSelecionados = this.getSachesSelecionados();
+        const totalSaches = sachesSelecionados.reduce((sum, s) => sum + s.preco_cobrado, 0);
         const dados = {
             tipo_entrega: this.tipoEntrega,
             nome_cliente: $('#nome_cliente').val(),
@@ -558,8 +755,10 @@ window.FinalizarPedido = {
             valor_dinheiro: formaPagamento === 'dinheiro' ? parseFloat($('#valor_dinheiro').val()) : null,
             observacoes: $('#observacoes').val(),
             itens: window.Carrinho.itens,
+            saches: sachesSelecionados,
             valor_produtos: window.Carrinho.getValorTotal(),
             valor_entrega: this.taxaEntrega,
+            valor_saches: totalSaches,
             valor_total: this.getValorTotalComTaxa()
         };
         
@@ -600,7 +799,7 @@ window.FinalizarPedido = {
                 
                 // Abrir popup do pedido automaticamente
                 if (typeof CarrinhoSimples !== 'undefined') {
-                    CarrinhoSimples.exibirPopupAcompanhamento(result.pedido, result.itens || [], result.chave_pix || null, result.qrcode_image || null);
+                    CarrinhoSimples.exibirPopupAcompanhamento(result.pedido, result.itens || [], result.saches || [], result.chave_pix || null, result.qrcode_image || null, result.tempo_entrega || 0);
                 } else {
                     this.mostrarNotificacao('✅ Pedido realizado com sucesso! Código: ' + result.pedido.codigo, 'success');
                 }

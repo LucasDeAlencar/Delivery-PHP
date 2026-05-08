@@ -42,8 +42,8 @@
                 <span class="fas fa-hotdog"></span>
             </div>
             <div class="media-body">
-                <h3 class="heading">Salgados Originais</h3>
-                <p class="text-comp">Tradição em cada salgado, com o tempero especial da nossa casa.</p>
+                <h3 class="heading">Produtos Originais</h3>
+                <p class="text-comp">Tradição em cada produto, com o tempero especial da nossa casa.</p>
             </div>
         </div>    
     </div>

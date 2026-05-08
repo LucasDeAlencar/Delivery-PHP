@@ -111,6 +111,7 @@ window.CarrinhoMenu = {
                 quantidade: produto.quantidade,
                 observacoes: produto.observacoes || '',
                 extras: produto.extras || [],
+                categoria_id: produto.categoria_id || null,
                 totalCalculado: precoUnitario * produto.quantidade
             });
         }

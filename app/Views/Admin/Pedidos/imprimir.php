@@ -318,6 +318,21 @@
             </div>
         <?php endif; ?>
 
+        <!-- Sachês -->
+        <?php if (!empty($saches)): ?>
+        <div class="section">
+            <div class="label">SACHÊS</div>
+            <?php foreach ($saches as $s): ?>
+            <div class="item-linha">
+                <span><?= esc($s->sache_nome) ?> x<?= $s->quantidade ?>
+                    <?php if ($s->quantidade_gratuita > 0): ?>(<?= $s->quantidade_gratuita ?> grátis)<?php endif; ?>
+                </span>
+                <span><?= $s->preco_total > 0 ? 'R$ ' . number_format($s->preco_total, 2, ',', '.') : 'Grátis' ?></span>
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
+
         <!-- Total -->
         <div class="total-section">
             <div class="total-linha">
@@ -328,6 +343,15 @@
                 <span>Entrega:</span>
                 <span>R$ <?= number_format($pedido->valor_entrega, 2, ',', '.') ?></span>
             </div>
+            <?php
+            $valorSaches = 0;
+            if (!empty($saches)) { foreach ($saches as $s) { $valorSaches += $s->preco_total; } }
+            if ($valorSaches > 0): ?>
+            <div class="total-linha">
+                <span>Sachês:</span>
+                <span>R$ <?= number_format($valorSaches, 2, ',', '.') ?></span>
+            </div>
+            <?php endif; ?>
             <div class="total-final">
                 <div class="total-linha">
                     <span>TOTAL:</span>
@@ -341,9 +365,9 @@
             <div class="label">PAGAMENTO</div>
             <div class="content">
                 <?= esc(ucfirst($pedido->forma_pagamento)) ?>
-                <?php if ($pedido->forma_pagamento === 'dinheiro' && $pedido->troco_para > 0): ?>
+                <?php if (strtolower($pedido->forma_pagamento) === 'dinheiro' && $pedido->troco_para > 0): ?>
                     <br>Troco p/ R$ <?= number_format($pedido->troco_para, 2, ',', '.') ?>
-                    = R$ <?= number_format($pedido->troco_para - $pedido->valor_total, 2, ',', '.') ?>
+                    <br>Troco: R$ <?= number_format(max(0, $pedido->troco_para - $pedido->valor_total), 2, ',', '.') ?>
                 <?php endif; ?>
             </div>
         </div>

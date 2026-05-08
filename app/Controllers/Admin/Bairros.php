@@ -18,29 +18,72 @@ class Bairros extends BaseController {
     public function index() {
         $db = \Config\Database::connect();
         
-        // Carrega configuração de entrega
         $configModel = new \App\Models\ConfiguracaoEntregaModel();
         $config = $configModel->first();
-        
-        // Se não existe configuração, cria uma padrão
         if (!$config) {
             $config = (object)[
-                'modo_cobranca' => 'bairro',
-                'taxa_por_km' => 0,
-                'taxa_minima' => 0,
-                'distancia_maxima' => 0,
-                'cep_loja' => ''
+                'modo_cobranca' => 'bairro', 'taxa_por_km' => 0,
+                'taxa_minima' => 0, 'distancia_maxima' => 0, 'cep_loja' => ''
             ];
         }
-        
+
+        $cidade = $this->request->getGet('cidade') ?? '';
+        $nome   = $this->request->getGet('nome') ?? '';
+
+        // Usar query builder direto para evitar problemas com withDeleted + where
+        $builder = $db->table('bairros');
+        if ($cidade !== '') $builder->where('cidade', $cidade);
+        if ($nome   !== '') $builder->like('nome', $nome);
+
+        // Paginação manual
+        $perPage = 15;
+        $page    = (int)($this->request->getGet('page') ?? 1);
+        $total   = $builder->countAllResults(false);
+        $bairros = $builder->orderBy('cidade')->orderBy('nome')
+                           ->limit($perPage, ($page - 1) * $perPage)
+                           ->get()->getResult();
+
+        $cidades = $db->query("SELECT DISTINCT cidade FROM bairros WHERE deletado_em IS NULL AND cidade IS NOT NULL AND cidade != '' ORDER BY cidade")->getResultArray();
+
         $data = [
-            'titulo'  => "Listando os bairros atendidos",
-            'bairros' => $this->bairroModel->withDeleted(true)->paginate(10),
-            'pager' => $this->bairroModel->pager,
-            'configuracao' => $config
+            'titulo'       => "Listando os bairros atendidos",
+            'bairros'      => $bairros,
+            'configuracao' => $config,
+            'cidadeAtual'  => $cidade,
+            'nomeAtual'    => $nome,
+            'cidades'      => $cidades,
+            'totalPaginas' => ceil($total / $perPage),
+            'paginaAtual'  => $page,
+            'totalBairros' => $total,
         ];
         
         return view('Admin/Bairros/index', $data);
+    }
+
+    public function desativarTodos() {
+        if (!$this->request->isAJAX()) return $this->response->setStatusCode(403);
+        $json   = $this->request->getJSON(true);
+        $cidade = trim($json['cidade'] ?? '');
+        $nome   = trim($json['nome'] ?? '');
+        $db = \Config\Database::connect();
+        $builder = $db->table('bairros')->where('deletado_em IS NULL');
+        if ($cidade !== '') $builder->where('cidade', $cidade);
+        if ($nome   !== '') $builder->like('nome', $nome);
+        $builder->update(['ativo' => 0]);
+        return $this->response->setJSON(['sucesso' => true]);
+    }
+
+    public function ativarTodos() {
+        if (!$this->request->isAJAX()) return $this->response->setStatusCode(403);
+        $json   = $this->request->getJSON(true);
+        $cidade = trim($json['cidade'] ?? '');
+        $nome   = trim($json['nome'] ?? '');
+        $db = \Config\Database::connect();
+        $builder = $db->table('bairros')->where('deletado_em IS NULL');
+        if ($cidade !== '') $builder->where('cidade', $cidade);
+        if ($nome   !== '') $builder->like('nome', $nome);
+        $builder->update(['ativo' => 1]);
+        return $this->response->setJSON(['sucesso' => true]);
     }
 
     public function criar() {

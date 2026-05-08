@@ -117,7 +117,7 @@
                             <small class="text-muted">Valor mínimo: R$ <?= number_format($subtotal, 2, ',', '.') ?></small>
                         </div>
 
-                        <!-- QR Code PIX (só aparece se for pix) -->
+                        <!-- QR Code PIX (só aparece se for pix e pix_visivel = 1) -->
                         <?php 
                         $formaPix = null;
                         foreach ($formas_pagamento as $fp) {
@@ -126,8 +126,9 @@
                                 break;
                             }
                         }
+                        $pixVisivel = !empty($formaPix) && ($formaPix['pix_visivel'] ?? 1);
                         ?>
-                        <?php if ($formaPix && !empty($formaPix['qrcode_image'])): ?>
+                        <?php if ($formaPix && $pixVisivel && !empty($formaPix['qrcode_image'])): ?>
                         <div class="mb-3" id="campo-pix-qrcode" style="display: none;">
                             <label class="form-label">QR Code PIX:</label>
                             <div class="text-center">

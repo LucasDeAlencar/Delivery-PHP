@@ -12,7 +12,7 @@ class FormaPagamentoModel extends Model
     protected $returnType       = 'object';
     protected $useSoftDeletes   = true;
     protected $protectFields    = true;
-    protected $allowedFields    = ['nome', 'slug', 'icone', 'ativo', 'ordem', 'codigo', 'qrcode_image'];
+    protected $allowedFields    = ['nome', 'slug', 'icone', 'ativo', 'ordem', 'codigo', 'qrcode_image', 'pix_visivel'];
 
     // Dates
     protected $useTimestamps = true;

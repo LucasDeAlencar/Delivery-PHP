@@ -24,8 +24,8 @@ class BairroModel extends Model{
     
     // Validation
     protected $validationRules = [
-        'nome' => 'required|min_length[1]|max_length[120]',
-        'cidade' => 'required|min_length[2]|max_length[20]',
+        'nome'          => 'required|min_length[1]|max_length[120]',
+        'cidade'        => 'required|min_length[2]|max_length[100]',
         'valor_entrega' => 'required|numeric|greater_than[0]'
     ];
     protected $validationMessages = [
@@ -37,7 +37,7 @@ class BairroModel extends Model{
         'cidade' => [
             'required' => 'O campo Cidade é obrigatório',
             'min_length' => 'O campo Cidade deve ter pelo menos 2 caracteres',
-            'max_length' => 'O campo Cidade deve ter no máximo 20 caracteres',
+            'max_length' => 'O campo Cidade deve ter no máximo 100 caracteres',
         ],
         'valor_entrega' => [
             'required' => 'O campo Valor de entrega é obrigatório',
@@ -54,11 +54,12 @@ class BairroModel extends Model{
         
         if (isset($data['data']['nome'])) {
             if (!isset($data['data']['slug']) || empty(trim($data['data']['slug']))) {
+                $cidade = $data['data']['cidade'] ?? '';
                 if (trim($data['data']['nome']) === '*') {
-                    $cidade = $data['data']['cidade'] ?? 'cidade';
                     $data['data']['slug'] = mb_url_title($cidade . '-todos', '-', TRUE);
                 } else {
-                    $data['data']['slug'] = mb_url_title($data['data']['nome'], '-', TRUE);
+                    $base = $data['data']['nome'] . ($cidade ? '-' . $cidade : '');
+                    $data['data']['slug'] = mb_url_title($base, '-', TRUE);
                 }
             } else {
                 $data['data']['slug'] = mb_url_title($data['data']['slug'], '-', TRUE);

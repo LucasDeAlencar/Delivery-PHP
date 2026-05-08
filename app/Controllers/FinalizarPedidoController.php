@@ -13,9 +13,10 @@ class FinalizarPedidoController extends Controller
         }
 
         $db = \Config\Database::connect();
-        $db->transStart();
 
         try {
+            $db->transBegin();
+
             // Dados do pedido
             $dadosPedido = $this->request->getJSON(true);
             $sessionID = session_id();
@@ -30,7 +31,7 @@ class FinalizarPedidoController extends Controller
             // Gerar código do pedido
             $codigo = 'PED' . date('YmdHis') . rand(100, 999);
 
-            // Calcular valores
+            // Calcular valores provisórios (serão recalculados com dados reais do banco)
             $valorProdutos = (float) $dadosPedido['subtotal'];
             $valorEntrega = $dadosPedido['tipo_entrega'] === 'entrega' ? (float) $dadosPedido['taxa_entrega'] : 0;
             $valorTotal = $valorProdutos + $valorEntrega;
@@ -78,20 +79,90 @@ class FinalizarPedidoController extends Controller
                 $db->table('pedidos_itens')->insert($itemData);
                 $itemId = $db->insertID();
 
-                // Inserir extras do item
+                // Inserir extras do item — validar pertencimento e usar preço do banco
+                $totalExtrasItem = 0;
                 if (!empty($item['extras'])) {
                     foreach ($item['extras'] as $extra) {
-                        $extraData = [
+                        $extraData = $db->query(
+                            "SELECT e.id, e.nome, e.preco FROM extras e
+                             INNER JOIN produtos_extras pe ON pe.extra_id = e.id
+                             WHERE pe.produto_id = ? AND e.id = ? AND e.ativo = 1 LIMIT 1",
+                            [$item['id'], $extra['id']]
+                        )->getRowArray();
+                        if (!$extraData) continue;
+                        $qtdExtra = max(1, intval($extra['quantidade'] ?? 1));
+                        $precoExtra = floatval($extraData['preco']);
+                        $totalExtrasItem += $precoExtra * $qtdExtra;
+                        $db->table('pedidos_itens_extras')->insert([
                             'pedido_item_id' => $itemId,
-                            'extra_id' => $extra['id'],
-                            'extra_nome' => $extra['nome'],
-                            'extra_preco' => $extra['preco'],
-                            'quantidade' => $extra['quantidade'] ?? 1
-                        ];
-                        $db->table('pedidos_itens_extras')->insert($extraData);
+                            'extra_id'       => $extraData['id'],
+                            'extra_nome'     => $extraData['nome'],
+                            'extra_preco'    => $precoExtra,
+                            'quantidade'     => $qtdExtra
+                        ]);
                     }
                 }
+                // Atualizar preco_total do item com extras reais
+                if ($totalExtrasItem > 0) {
+                    $novoTotal = ($item['preco'] + $totalExtrasItem) * $item['quantidade'];
+                    $db->table('pedidos_itens')->where('id', $itemId)->update(['preco_total' => $novoTotal]);
+                }
             }
+
+            // Recalcular valor_produtos com preços reais do banco
+            $row = $db->query("SELECT COALESCE(SUM(preco_total),0) as total FROM pedidos_itens WHERE pedido_id = ?", [$pedidoId])->getRowArray();
+            $valorProdutosReal = (float)$row['total'];
+
+            // Processar sachês selecionados — deduplicar por sache_id
+            if (!empty($dadosPedido['saches'])) {
+                $sachesUnicos = [];
+                foreach ($dadosPedido['saches'] as $s) {
+                    $id = (int)($s['id'] ?? 0);
+                    if ($id && !isset($sachesUnicos[$id])) $sachesUnicos[$id] = $s;
+                }
+
+                $db->query("DELETE FROM pedidos_saches WHERE pedido_id = ?", [$pedidoId]);
+                foreach ($sachesUnicos as $sache) {
+                    $sacheData = $db->table('saches')->where('id', $sache['id'])->get()->getRowArray();
+                    if (!$sacheData) continue;
+
+                    $limite = 0;
+                    if ($sacheData['limite_tipo'] === 'fixo') {
+                        $limite = max(0, (int)$sacheData['limite_fixo']);
+                    } elseif ($sacheData['limite_tipo'] === 'personalizado') {
+                        $limiteMin = (int)$sacheData['limite_minimo'];
+                        $porValor  = (float)($sacheData['limite_por_valor'] ?: 1);
+                        $limite    = $limiteMin + (int)floor($valorProdutosReal / $porValor);
+                    }
+
+                    $quantidade    = (int)$sache['quantidade'];
+                    $precoUnitario = (float)$sacheData['preco'];
+                    $gratuitos     = min($quantidade, $limite);
+                    $pagos         = max(0, $quantidade - $limite);
+
+                    $db->table('pedidos_saches')->insert([
+                        'pedido_id'           => $pedidoId,
+                        'sache_id'            => $sache['id'],
+                        'sache_nome'          => $sacheData['nome'],
+                        'quantidade'          => $quantidade,
+                        'quantidade_gratuita' => $gratuitos,
+                        'quantidade_paga'     => $pagos,
+                        'preco_unitario'      => $precoUnitario,
+                        'preco_total'         => $pagos * $precoUnitario,
+                        'criado_em'           => date('Y-m-d H:i:s'),
+                    ]);
+                }
+            }
+
+            // Atualizar pedido com valores reais (produtos + sachês pagos)
+            $valorSachesReal = (float)$db->query(
+                "SELECT COALESCE(SUM(preco_total),0) as total FROM pedidos_saches WHERE pedido_id = ?", [$pedidoId]
+            )->getRowArray()['total'];
+            $db->table('pedidos')->where('id', $pedidoId)->update([
+                'valor_produtos' => $valorProdutosReal,
+                'valor_total'    => $valorProdutosReal + $valorEntrega + $valorSachesReal,
+                'atualizado_em'  => date('Y-m-d H:i:s'),
+            ]);
 
             // Limpar carrinho temporário
             $db->table('carrinho_temporario')->where('session_id', $sessionID)->delete();
@@ -105,11 +176,7 @@ class FinalizarPedidoController extends Controller
                 ]);
             }
 
-            $db->transComplete();
-
-            if ($db->transStatus() === false) {
-                throw new \Exception('Erro ao salvar pedido');
-            }
+            $db->transCommit();
 
             // Buscar dados do pedido para retornar ao popup
             $pedidoCompleto = $db->table('pedidos')->where('id', $pedidoId)->get()->getRowArray();
@@ -128,14 +195,20 @@ class FinalizarPedidoController extends Controller
                     ->get()
                     ->getRowArray();
                 
-                if ($formaPix) {
+                if ($formaPix && ($formaPix['pix_visivel'] ?? 1)) {
                     $chavePix = $formaPix['codigo'] ?? null;
                     $qrcodeImage = $formaPix['qrcode_image'] ?? null;
                 }
             }
 
+            // Buscar tempo de entrega dos dados corporativos
+            $dadosCorp = $db->table('dados_corporativos')->where('id', 1)->get()->getRowArray();
+            $tempoEntrega = $dadosCorp['entrega_ate'] ?? 0;
+
             // Enviar para WhatsApp
             $whatsappUrl = $this->enviarWhatsApp($codigo, $pedidoData, $dadosPedido['itens']);
+
+            $sachesPedido = $db->table('pedidos_saches')->where('pedido_id', $pedidoId)->get()->getResultArray();
 
             return $this->response->setJSON([
                 'success' => true,
@@ -144,9 +217,11 @@ class FinalizarPedidoController extends Controller
                 'pedido_id' => $pedidoId,
                 'pedido' => $pedidoCompleto,
                 'itens' => $itensPedido,
+                'saches' => $sachesPedido,
                 'chave_pix' => $chavePix,
                 'qrcode_image' => $qrcodeImage,
-                'whatsapp_url' => $whatsappUrl
+                'whatsapp_url' => $whatsappUrl,
+                'tempo_entrega' => (int) $tempoEntrega
             ]);
 
         } catch (\Exception $e) {
@@ -238,6 +313,11 @@ class FinalizarPedidoController extends Controller
             ->get()
             ->getResultArray();
 
+        $saches = $db->table('pedidos_saches')
+            ->where('pedido_id', $pedido['id'])
+            ->get()
+            ->getResultArray();
+
         // Buscar chave PIX se forma de pagamento for PIX
         $chavePix = null;
         $qrcodeImage = null;
@@ -248,11 +328,13 @@ class FinalizarPedidoController extends Controller
                 ->get()
                 ->getRowArray();
             
-            if ($formaPix && !empty($formaPix['codigo'])) {
-                $chavePix = $formaPix['codigo'];
-            }
-            if ($formaPix && !empty($formaPix['qrcode_image'])) {
-                $qrcodeImage = $formaPix['qrcode_image'];
+            if ($formaPix && ($formaPix['pix_visivel'] ?? 1)) {
+                if (!empty($formaPix['codigo'])) {
+                    $chavePix = $formaPix['codigo'];
+                }
+                if (!empty($formaPix['qrcode_image'])) {
+                    $qrcodeImage = $formaPix['qrcode_image'];
+                }
             }
         }
 
@@ -260,8 +342,10 @@ class FinalizarPedidoController extends Controller
             'success' => true,
             'pedido' => $pedido,
             'itens' => $itens,
+            'saches' => $saches,
             'chave_pix' => $chavePix,
-            'qrcode_image' => $qrcodeImage
+            'qrcode_image' => $qrcodeImage,
+            'tempo_entrega' => (int) ($db->table('dados_corporativos')->where('id', 1)->get()->getRowArray()['entrega_ate'] ?? 0)
         ]);
     }
 
@@ -342,6 +426,12 @@ class FinalizarPedidoController extends Controller
             $extrasItens[$item['id']] = $extras;
         }
 
+        // Carregar sachês do pedido
+        $saches = $db->table('pedidos_saches')
+            ->where('pedido_id', $pedido['id'])
+            ->get()
+            ->getResultArray();
+
         // Carregar nome do bairro
         $bairroNome = '';
         if (!empty($pedido['bairro_id'])) {
@@ -355,6 +445,7 @@ class FinalizarPedidoController extends Controller
             'pedido' => (object) $pedido,
             'itens' => $itens,
             'extrasItens' => $extrasItens,
+            'saches' => $saches,
             'dadosCorporativos' => $dadosCorp,
             'bairroNome' => $bairroNome
         ];

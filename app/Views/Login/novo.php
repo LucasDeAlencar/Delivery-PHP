@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <title>Entrar - Restaurante</title>
+    <title>Entrar - Delivery</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" rel="stylesheet">
@@ -169,7 +169,7 @@
 
     <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
         <div class="container">
-            <a class="navbar-brand" href="<?= base_url('/') ?>"><span class="fas fa-hotdog mr-1"></span>Space Burger Dog Do Paulista<br><small>O delivery favorito da cidade</small></a>
+            <a class="navbar-brand" href="<?= base_url('/') ?>"><span class="fas fa-hotdog mr-1" style="color: #0055ff "></span>Space Burger Dog Do Paulista<br><small style="color: #0055ff ">O delivery favorito da cidade</small></a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="oi oi-menu"></span> Menu
             </button>

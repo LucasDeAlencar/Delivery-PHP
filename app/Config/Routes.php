@@ -75,6 +75,7 @@ $routes->get('carrinho/verSessao', 'CarrinhoController::verCarrinhoSessao');
         // Configuração de Entrega
         $routes->post('configuracao-entrega', 'EntregaApi::configuracaoEntrega');
         $routes->get('configuracao/preco-minimo', 'ConfiguracaoApi::precoMinimo');
+        $routes->post('saches/disponiveis', 'SachesApi::disponiveis');
         $routes->post('carrinho-cliente', 'EntregaApi::carrinhoCliente');
         
         // Mesas
@@ -102,6 +103,7 @@ $routes->post('registrar/enviarCodigo', 'Registrar::enviarCodigo');
 $routes->post('registrar/verificarCodigo', 'Registrar::verificarCodigo');
 $routes->post('registrar/verificarSessao', 'Registrar::verificarSessao');
 $routes->post('registrar/buscar_cep', 'Registrar::buscar_cep');
+$routes->get('registrar/bairros_cidade', 'Registrar::bairros_cidade');
 
 // Alias para /registar (grafia alternativa)
 $routes->get('registar', 'Registrar::index');
@@ -219,6 +221,8 @@ $routes->group('admin', function ($routes) {
     $routes->get('bairros', 'Admin\Bairros::index');
     $routes->post('bairros/salvarModoCobranca', 'Admin\Bairros::salvarModoCobranca');
     $routes->post('bairros/salvarConfiguracao', 'Admin\Bairros::salvarConfiguracao');
+    $routes->post('bairros/desativar-todos', 'Admin\Bairros::desativarTodos');
+    $routes->post('bairros/ativar-todos', 'Admin\Bairros::ativarTodos');
     $routes->get('bairros/criar', 'Admin\Bairros::criar');
     $routes->post('bairros/cadastrar', 'Admin\Bairros::cadastrar');
     $routes->get('bairros/editar/(:num)', 'Admin\Bairros::editar/$1');
@@ -243,6 +247,7 @@ $routes->group('admin', function ($routes) {
     $routes->get('pedidos/(:num)', 'Admin\Pedidos::show/$1');
     $routes->post('pedidos/atualizar-status', 'Admin\Pedidos::atualizarStatus');
     $routes->post('pedidos/filtrar-status', 'Admin\Pedidos::filtrarPorStatus');
+    $routes->post('pedidos/alterar-mesa', 'Admin\Pedidos::alterarMesa');
     $routes->get('pedidos/cancelar/(:num)', 'Admin\Pedidos::cancelar/$1');
     $routes->get('pedidos/excluir/(:num)', 'Admin\Pedidos::excluir/$1');
     $routes->post('pedidos/deletar/(:num)', 'Admin\Pedidos::deletar/$1');
@@ -255,17 +260,35 @@ $routes->group('admin', function ($routes) {
     // Venda Específica
     $routes->get('venda-especifica', 'Admin\VendaEspecifica::index');
     $routes->post('venda-especifica/criar', 'Admin\VendaEspecifica::criar');
+    $routes->post('venda-especifica/abrir-comanda', 'Admin\VendaEspecifica::abrirComanda');
+    $routes->get('venda-especifica/comandas-abertas', 'Admin\VendaEspecifica::listarComandasAbertas');
+    $routes->get('venda-especifica/itens-comanda/(:num)', 'Admin\VendaEspecifica::buscarItensComanda/$1');
+    $routes->post('venda-especifica/adicionar-item-comanda', 'Admin\VendaEspecifica::adicionarItemComanda');
+    $routes->post('venda-especifica/remover-item-comanda', 'Admin\VendaEspecifica::removerItemComanda');
+    $routes->post('venda-especifica/alterar-qtd-item-comanda', 'Admin\VendaEspecifica::alterarQtdItemComanda');
+    $routes->post('venda-especifica/atualizar-extras-item', 'Admin\VendaEspecifica::atualizarExtrasItem');
     $routes->post('venda-especifica/taxa-bairro', 'Admin\VendaEspecifica::taxaBairro');
     $routes->get('venda-especifica/produtos', 'Admin\VendaEspecifica::listarProdutos');
     $routes->get('venda-especifica/clientes', 'Admin\VendaEspecifica::buscarClientes');
     $routes->get('venda-especifica/todos-clientes', 'Admin\VendaEspecifica::listarClientes');
     $routes->get('venda-especifica/bairros', 'Admin\VendaEspecifica::listarBairros');
+    $routes->get('venda-especifica/mesas', 'Admin\VendaEspecifica::listarMesas');
     $routes->get('venda-especifica/produto-extras/(:num)', 'Admin\VendaEspecifica::buscarExtrasProduto/$1');
     $routes->post('venda-especifica/criar-cliente', 'Admin\VendaEspecifica::criarCliente');
     
     // Rotas de Dados Corporativos
     $routes->get('dados-corporativos', 'Admin\DadosCorporativos::index');
     $routes->post('dados-corporativos/atualizar', 'Admin\DadosCorporativos::atualizar');
+
+    // Sachês
+    $routes->get('saches', 'Admin\Saches::index');
+    $routes->post('saches/salvar', 'Admin\Saches::salvar');
+    $routes->post('saches/toggle/(:num)', 'Admin\Saches::toggleAtivo/$1');
+    $routes->post('saches/excluir/(:num)', 'Admin\Saches::excluir/$1');
+    $routes->get('saches/get/(:num)', 'Admin\Saches::get/$1');
+    $routes->post('saches/salvarGrupo', 'Admin\Saches::salvarGrupo');
+    $routes->post('saches/excluirGrupo', 'Admin\Saches::excluirGrupo');
+    $routes->post('saches/reordenar', 'Admin\Saches::reordenar');
     
     // Rotas de Mesas
     $routes->get('mesas', 'Admin\Mesas::index');
@@ -275,6 +298,8 @@ $routes->group('admin', function ($routes) {
     $routes->post('mesas/atualizar', 'Admin\Mesas::atualizar');
     $routes->post('mesas/excluir', 'Admin\Mesas::excluir');
     $routes->post('mesas/liberar', 'Admin\Mesas::liberar');
+    $routes->post('mesas/ocupar', 'Admin\Mesas::ocupar');
+    $routes->get('mesas/status', 'Admin\Mesas::status');
 });
 
 // Rotas de Suporte (API)

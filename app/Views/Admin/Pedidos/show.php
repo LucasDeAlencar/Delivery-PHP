@@ -122,7 +122,28 @@
                         $mesaPedido = !empty($pedido->mesa_id)
                             ? $db->table('mesas')->where('id', $pedido->mesa_id)->get()->getRow()
                             : null;
-                        if ($mesaPedido): ?>
+                        $podeAlterarMesa = in_array($pedido->status, ['em_aberto', 'pendente', 'confirmado']);
+                        if ($podeAlterarMesa): 
+                            $todasMesas = $db->table('mesas')->where('ativo', 1)->orderBy('numero')->get()->getResult();
+                        ?>
+                        <div class="info-label">Mesa</div>
+                        <div class="info-value">
+                            <select id="select-mesa" class="form-select form-select-sm d-inline-block w-auto">
+                                <option value="">— Sem mesa —</option>
+                                <?php foreach ($todasMesas as $m): ?>
+                                    <?php $ocupadaPorOutro = $m->ocupado && $m->pedido_id != $pedido->id; ?>
+                                    <option value="<?= $m->id ?>"
+                                        <?= $pedido->mesa_id == $m->id ? 'selected' : '' ?>
+                                        <?= $ocupadaPorOutro ? 'disabled' : '' ?>>
+                                        Mesa <?= $m->numero ?><?= $ocupadaPorOutro ? ' (ocupada)' : '' ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <button class="btn btn-sm btn-primary ms-1" onclick="alterarMesa()">
+                                <i class="fas fa-save"></i>
+                            </button>
+                        </div>
+                        <?php elseif ($mesaPedido): ?>
                         <div class="info-label">Mesa</div>
                         <div class="info-value">
                             <i class="fas fa-chair"></i> Mesa <?= esc($mesaPedido->numero) ?>
@@ -134,9 +155,12 @@
                         <div class="info-label">Forma de Pagamento</div>
                         <div class="info-value">
                             <i class="fas fa-credit-card"></i> <?= esc($pedido->forma_pagamento) ?>
-                            <?php if ($pedido->forma_pagamento === 'Dinheiro' && $pedido->troco_para > 0): ?>
+                            <?php if (strtolower($pedido->forma_pagamento) === 'dinheiro' && $pedido->troco_para > 0): ?>
                                 <br><small class="text-muted">
-                                    Troco para: R$ <?= number_format($pedido->troco_para, 2, ',', '.') ?>
+                                    Troco para: <strong>R$ <?= number_format($pedido->troco_para, 2, ',', '.') ?></strong>
+                                </small>
+                                <br><small class="text-success">
+                                    Troco a devolver: <strong>R$ <?= number_format(max(0, $pedido->troco_para - $pedido->valor_total), 2, ',', '.') ?></strong>
                                 </small>
                             <?php endif; ?>
                         </div>
@@ -148,7 +172,16 @@
 
                         <div class="info-label">Status</div>
                         <div class="info-value">
-                            <?php if ($pedido->status === 'inativo'): ?>
+                            <?php if ($pedido->status === 'em_aberto'): ?>
+                                <select class="form-control status-select"
+                                        data-pedido-id="<?= $pedido->id ?>"
+                                        style="width: auto; display: inline-block;">
+                                    <option value="em_aberto" selected>📂 Em Aberto</option>
+                                    <option value="pendente">⏳ Pendente</option>
+                                    <option value="cancelado">❌ Cancelado</option>
+                                </select>
+                                <br><small class="text-muted">Comanda em aberto — adicione itens em <a href="<?= site_url('admin/venda-especifica') ?>">Venda Específica</a></small>
+                            <?php elseif ($pedido->status === 'inativo'): ?>
                                 <span class="badge bg-secondary" style="font-size: 1rem; padding: 8px 15px;">
                                     <i class="fas fa-ban me-1"></i> INATIVO
                                 </span>
@@ -287,6 +320,17 @@
                     <span>Taxa de Entrega:</span>
                     <strong>R$ <?= number_format($pedido->valor_entrega, 2, ',', '.') ?></strong>
                 </div>
+                <?php
+                $valorSaches = 0;
+                if (!empty($saches)) {
+                    foreach ($saches as $s) { $valorSaches += $s->preco_total; }
+                }
+                if ($valorSaches > 0): ?>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Sachês (pagos):</span>
+                    <strong>R$ <?= number_format($valorSaches, 2, ',', '.') ?></strong>
+                </div>
+                <?php endif; ?>
                 <hr>
                 <div class="d-flex justify-content-between">
                     <strong>TOTAL:</strong>
@@ -294,8 +338,58 @@
                         R$ <?= number_format($pedido->valor_total, 2, ',', '.') ?>
                     </h4>
                 </div>
+                <?php if (strtolower($pedido->forma_pagamento) === 'dinheiro' && $pedido->troco_para > 0): ?>
+                <hr>
+                <div class="d-flex justify-content-between mb-1">
+                    <span>Pago com:</span>
+                    <strong>R$ <?= number_format($pedido->troco_para, 2, ',', '.') ?></strong>
+                </div>
+                <div class="d-flex justify-content-between text-success">
+                    <strong>Troco:</strong>
+                    <strong>R$ <?= number_format(max(0, $pedido->troco_para - $pedido->valor_total), 2, ',', '.') ?></strong>
+                </div>
+                <?php endif; ?>
             </div>
         </div>
+
+        <!-- Sachês -->
+        <?php if (!empty($saches)): ?>
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-pepper-hot"></i> Sachês
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th class="text-center">Qtd</th>
+                            <th class="text-center">Grátis</th>
+                            <th class="text-end">Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($saches as $s): ?>
+                        <tr>
+                            <td><?= esc($s->sache_nome) ?></td>
+                            <td class="text-center"><?= $s->quantidade ?></td>
+                            <td class="text-center text-success"><?= $s->quantidade_gratuita ?></td>
+                            <td class="text-end">
+                                <?php if ($s->preco_total > 0): ?>
+                                    <span class="text-danger">R$ <?= number_format($s->preco_total, 2, ',', '.') ?></span>
+                                <?php else: ?>
+                                    <span class="text-success">Grátis</span>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <?php endif; ?>
 
         <!-- Ações Rápidas -->
         <div class="card">
@@ -381,6 +475,20 @@
             }
         });
     });
+    function alterarMesa() {
+        const mesaId = $('#select-mesa').val() || null;
+        $.ajax({
+            url: '<?= site_url('admin/pedidos/alterar-mesa') ?>',
+            method: 'POST',
+            dataType: 'json',
+            data: { pedido_id: <?= $pedido->id ?>, mesa_id: mesaId },
+            success: function(r) {
+                if (r.success) location.reload();
+                else alert(r.message || 'Erro ao alterar mesa');
+            },
+            error: function() { alert('Erro ao alterar mesa'); }
+        });
+    }
 </script>
 
 <?php echo $this->endSection(); ?>

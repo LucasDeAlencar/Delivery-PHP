@@ -76,7 +76,7 @@ window.CarrinhoSimples = {
             method: 'GET',
             success: (response) => {
                 if (response.success) {
-                    this.exibirPopupAcompanhamento(response.pedido, response.itens, response.chave_pix, response.qrcode_image);
+                    this.exibirPopupAcompanhamento(response.pedido, response.itens, response.saches || [], response.chave_pix, response.qrcode_image, response.tempo_entrega || 0);
                 } else {
                     alert('Erro ao carregar pedido');
                 }
@@ -88,8 +88,8 @@ window.CarrinhoSimples = {
     },
 
     // Exibir popup de acompanhamento
-    exibirPopupAcompanhamento(pedido, itens, chavePix, qrcodeImage) {
-        console.log('Exibindo popup com:', { pedido, chavePix, qrcodeImage });
+    exibirPopupAcompanhamento(pedido, itens, saches, chavePix, qrcodeImage, tempoEntrega) {
+        console.log('Exibindo popup com:', { pedido, chavePix, qrcodeImage, tempoEntrega });
         
         const statusTexto = {
             'pendente': 'Aguardando Confirmação',
@@ -118,14 +118,18 @@ window.CarrinhoSimples = {
                     </div>
                     
                     <div style="text-align: center; margin-bottom: 20px; padding: 15px; background: #2a2a2a; border-radius: 10px;">
-                        <div style="font-size: 24px; margin-bottom: 10px;">${statusIcon[pedido.status] || '📋'}</div>
-                        <h4 style="color: #f8b531; margin: 0;">${statusTexto[pedido.status] || pedido.status}</h4>
+                        <div id="acomp-status-icon" style="font-size: 24px; margin-bottom: 10px;">${statusIcon[pedido.status] || '📋'}</div>
+                        <h4 id="acomp-status-texto" style="color: #f8b531; margin: 0;">${statusTexto[pedido.status] || pedido.status}</h4>
                         <p style="margin: 5px 0; color: #ccc;">Código: ${pedido.codigo}</p>
                     </div>
 
                     <div style="margin-bottom: 15px;">
                         <p><strong>Total:</strong> R$ ${parseFloat(pedido.valor_total).toFixed(2).replace('.', ',')}</p>
+                        ${saches && saches.length > 0 ? `<p><strong>Sachês:</strong> ${saches.map(s => `${s.sache_nome} x${s.quantidade}${s.preco_total > 0 ? ` (+R$ ${parseFloat(s.preco_total).toFixed(2).replace('.',',')})` : ' (grátis)'}`).join(', ')}</p>` : ''}
                         <p><strong>Pagamento:</strong> ${pedido.forma_pagamento}</p>
+                        ${pedido.tipo_entrega === 'entrega' && tempoEntrega > 0 ? 
+                            `<p style="color: #f8b531;"><strong>⏱ Entrega em até:</strong> ${tempoEntrega} minutos</p>` : ''
+                        }
                         ${chavePix && pedido.forma_pagamento && pedido.forma_pagamento.toLowerCase().includes('pix') ? 
                             `<div style="background: #2a2a2a; padding: 15px; border-radius: 8px; margin: 10px 0; border-left: 4px solid #f8b531;">
                                 ${qrcodeImage ? 
@@ -159,12 +163,14 @@ window.CarrinhoSimples = {
                         <button onclick="CarrinhoSimples.abrirSuporte('${pedido.codigo}', '${pedido.id}')" style="flex: 1; padding: 12px; background: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; min-width: 150px;">
                             <i class="fas fa-headset"></i> Suporte
                         </button>
+                        <span id="acomp-btn-acao" style="display:contents;">
                         ${pedido.status === 'pendente' ? 
                             `<button onclick="CarrinhoSimples.cancelarPedido('${pedido.codigo}')" style="flex: 1; padding: 12px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; min-width: 150px;">Cancelar Pedido</button>` :
                             pedido.status === 'finalizado' || pedido.status === 'cancelado' ? 
                                 `<button onclick="localStorage.removeItem('pedido_em_andamento'); $('#acompanhamento-popup').remove(); location.reload();" style="flex: 1; padding: 12px; background: #f8b531; color: black; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; min-width: 150px;">Fazer Novo Pedido</button>` :
                                 `<button style="flex: 1; padding: 12px; background: #666; color: white; border: none; border-radius: 5px; cursor: not-allowed;" disabled>Aguarde a Entrega</button>`
                         }
+                        </span>
                         <button onclick="$('#acompanhamento-popup').remove()" style="flex: 1; padding: 12px; background: #333; color: white; border: none; border-radius: 5px; cursor: pointer; min-width: 100px;">Fechar</button>
                     </div>
                 </div>
@@ -172,9 +178,61 @@ window.CarrinhoSimples = {
         `;
 
         $('body').append(html);
-    },
 
-    // Copiar chave PIX
+        // ── Polling: atualiza status automaticamente a cada 10s ──
+        const _statusTexto = statusTexto;
+        const _statusIcon  = statusIcon;
+        let _ultimoStatus  = pedido.status;
+        const _codigoPedido = pedido.codigo;
+
+        const _pollingId = setInterval(function() {
+            if (!document.getElementById('acompanhamento-popup')) {
+                clearInterval(_pollingId);
+                return;
+            }
+            $.ajax({
+                url: `/acompanhar-pedido/${_codigoPedido}`,
+                method: 'GET',
+                success: function(res) {
+                    if (!res.success) { clearInterval(_pollingId); return; }
+                    const novoStatus = res.pedido.status;
+                    if (novoStatus === _ultimoStatus) return;
+                    _ultimoStatus = novoStatus;
+
+                    $('#acomp-status-icon').text(_statusIcon[novoStatus] || '📋');
+                    $('#acomp-status-texto').text(_statusTexto[novoStatus] || novoStatus);
+
+                    let btnHtml = '';
+                    if (novoStatus === 'pendente') {
+                        btnHtml = `<button onclick="CarrinhoSimples.cancelarPedido('${_codigoPedido}')" style="flex:1;padding:12px;background:#dc3545;color:white;border:none;border-radius:5px;cursor:pointer;font-weight:bold;min-width:150px;">Cancelar Pedido</button>`;
+                    } else if (novoStatus === 'finalizado' || novoStatus === 'cancelado') {
+                        clearInterval(_pollingId);
+                        localStorage.removeItem('pedido_em_andamento');
+                        btnHtml = `<button onclick="localStorage.removeItem('pedido_em_andamento');$('#acompanhamento-popup').remove();location.reload();" style="flex:1;padding:12px;background:#f8b531;color:black;border:none;border-radius:5px;cursor:pointer;font-weight:bold;min-width:150px;">Fazer Novo Pedido</button>`;
+
+                        // Popup de notificação
+                        const isFinalizado = novoStatus === 'finalizado';
+                        const notifHtml = `
+                            <div id="notif-status-pedido" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:10000;display:flex;align-items:center;justify-content:center;">
+                                <div style="background:#1a1a1a;border:2px solid ${isFinalizado ? '#28a745' : '#dc3545'};border-radius:15px;padding:30px 24px;max-width:340px;width:90%;text-align:center;">
+                                    <div style="font-size:3rem;margin-bottom:12px;">${isFinalizado ? '✅' : '❌'}</div>
+                                    <h4 style="color:${isFinalizado ? '#28a745' : '#dc3545'};margin-bottom:8px;">${isFinalizado ? 'Pedido Finalizado!' : 'Pedido Cancelado'}</h4>
+                                    <p style="color:#ccc;font-size:.9rem;margin-bottom:20px;">${isFinalizado ? 'Seu pedido foi entregue. Obrigado pela preferência! 🎉' : 'Seu pedido foi cancelado. Entre em contato se precisar de ajuda.'}</p>
+                                    <button onclick="$('#notif-status-pedido').remove();$('#acompanhamento-popup').remove();location.reload();" style="background:${isFinalizado ? '#28a745' : '#f8b531'};color:${isFinalizado ? '#fff' : '#000'};border:none;border-radius:8px;padding:12px 28px;font-weight:bold;cursor:pointer;font-size:1rem;">
+                                        ${isFinalizado ? 'Fazer Novo Pedido' : 'Entendido'}
+                                    </button>
+                                </div>
+                            </div>`;
+                        $('body').append(notifHtml);
+                    } else {
+                        btnHtml = `<button style="flex:1;padding:12px;background:#666;color:white;border:none;border-radius:5px;cursor:not-allowed;" disabled>Aguarde a Entrega</button>`;
+                    }
+                    $('#acomp-btn-acao').html(btnHtml);
+                },
+                error: function() {}
+            });
+        }, 10000);
+    },
     copiarChavePix(chave) {
         if (navigator.clipboard) {
             navigator.clipboard.writeText(chave).then(() => {
@@ -335,6 +393,9 @@ window.CarrinhoSimples = {
             return;
         }
 
+        // Limpar sachês de sessões anteriores ao abrir novo carrinho
+        localStorage.removeItem('carrinho_saches');
+
         let html = `
             <div id="carrinho-popup" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center;">
                 <div style="background: #1a1a1a; width: 90%; max-width: 500px; border-radius: 15px; padding: 20px; color: white; max-height: 80vh; overflow-y: auto;">
@@ -354,21 +415,28 @@ window.CarrinhoSimples = {
                     (+R$ ${item.extras.reduce((t, e) => t + (e.preco * e.quantidade), 0).toFixed(2).replace('.', ',')})
                 </div>` : '';
             
+            const sachesTexto = item.saches && item.saches.length > 0 ? 
+                `<div style="color: #9C27B0; font-size: 12px; margin-top: 3px;">
+                    <i class="fas fa-box"></i> ${item.saches.map(s => `${s.nome} (${s.quantidade}x)`).join(', ')}
+                    ${item.saches.some(s => s.preco > 0) ? `(+R$ ${item.saches.reduce((t, s) => t + (s.preco * s.quantidade), 0).toFixed(2).replace('.', ',')})` : ''}
+                </div>` : '';
+            
             const tamanhoTexto = item.tamanho ?
                 `<div style="color: #00bcd4; font-size: 12px; margin-top: 3px;">
                     <i class="fas fa-ruler"></i> Tamanho: <strong>${item.tamanho.nome}</strong>
                 </div>` : "";
 
             html += `
-                <div style="border-bottom: 1px solid #333; padding: 15px 0;">
+                <div data-index="${index}" style="border-bottom: 1px solid #333; padding: 15px 0;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                         <div>
                             <h6 style="margin: 0; color: #f8b531;">${item.nome}</h6>
                             ${tamanhoTexto}
                             ${extrasTexto}
+                            ${sachesTexto}
                             ${item.observacoes ? `<div style="color: #888; font-size: 12px; margin-top: 3px;"><i class="fas fa-comment"></i> ${item.observacoes}</div>` : ''}
                         </div>
-                        <strong style="color: white;">R$ ${item.total.toFixed(2).replace('.', ',')}</strong>
+                        <strong class="item-total" style="color: white;">R$ ${item.total.toFixed(2).replace('.', ',')}</strong>
                     </div>
                     
                     <div style="display: flex; gap: 15px; align-items: center; margin-top: 10px;">
@@ -391,6 +459,12 @@ window.CarrinhoSimples = {
         });
 
         html += `
+                    </div>
+                    
+                    <!-- Sachês -->
+                    <div id="secao-saches" style="border-top:1px solid #333;padding-top:6px;margin-top:6px;display:none;">
+                        <div style="font-size:11px;color:#f8b531;margin-bottom:4px;"><i class="fas fa-box"></i> Sachês</div>
+                        <div id="lista-saches" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
                     </div>
                     
                     <!-- Tipo de Entrega -->
@@ -435,7 +509,7 @@ window.CarrinhoSimples = {
                                        style="flex: 1; background: #333; border: 1px solid #555; color: white; padding: 5px; border-radius: 3px;"
                                        placeholder="${total.toFixed(2).replace('.', ',')}">
                             </div>
-                            <small style="color: #888; font-size: 11px;">Mínimo: R$ ${total.toFixed(2).replace('.', ',')}</small>
+                            <small id="troco-minimo" style="color: #888; font-size: 11px;">Mínimo: R$ ${total.toFixed(2).replace('.', ',')}</small>
                         </div>
                     </div>
                     
@@ -463,8 +537,312 @@ window.CarrinhoSimples = {
         // Carregar formas de pagamento
         this.carregarFormasPagamento();
         
+        // Carregar sachês disponíveis
+        this.carregarSaches();
+        
         // Configurar eventos
         this.configurarEventos(total);
+    },
+
+    // Carregar sachês disponíveis baseado nas categorias dos produtos
+    carregarSaches() {
+        const carrinho = JSON.parse(localStorage.getItem('carrinho') || '[]');
+
+        // Enriquecer itens sem categoria_id buscando no DOM
+        carrinho.forEach(item => {
+            if (!item.categoria_id) {
+                const el = $(`[data-produto-id="${item.id}"]`).first();
+                if (el.length) {
+                    item.categoria_id = parseInt(el.attr('data-categoria-id')) || null;
+                }
+            }
+        });
+
+        const categoriaIds = [...new Set(carrinho.map(item => item.categoria_id).filter(Boolean))];
+        console.log('[Sachês] categoria_ids extraídos:', categoriaIds);
+
+        if (categoriaIds.length === 0) {
+            console.warn('[Sachês] Nenhuma categoria_id encontrada nos itens — sachês não serão carregados.');
+            return;
+        }
+
+        $.ajax({
+            url: '/api/saches/disponiveis',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ categoria_ids: categoriaIds }),
+            success: (response) => {
+                console.log('[Sachês] Resposta da API:', response);
+                if (response.saches && response.saches.length > 0) {
+                    this.renderizarSaches(response.saches);
+                } else {
+                    console.warn('[Sachês] API retornou lista vazia para as categorias:', categoriaIds);
+                }
+            },
+            error: (xhr, status, err) => {
+                console.error('[Sachês] Erro na requisição:', status, err, xhr.responseText);
+            }
+        });
+    },
+
+    // Renderizar sachês disponíveis
+    renderizarSaches(saches) {
+        if (!saches || saches.length === 0) return;
+        this._sachesCache = saches;
+        // NÃO limpar localStorage — preservar seleções do usuário
+        this._atualizarSachesInPlace();
+        $('#secao-saches').show();
+    },
+
+    _atualizarSachesInPlace() {
+        const saches = this._sachesCache;
+        if (!saches || !saches.length) return;
+        const stored = JSON.parse(localStorage.getItem('carrinho_saches') || '{}');
+
+        // Inicializar sachês não definidos com qtd_inicial do grupo
+        const qtdInicialPorGrupo = {};
+        const qtdMaxPorGrupo = {};
+        saches.forEach(s => {
+            const g = (s.categoria_sache || '').trim();
+            if (g && qtdInicialPorGrupo[g] === undefined) {
+                qtdInicialPorGrupo[g] = parseInt(s.qtd_inicial ?? 0) || 0;
+                qtdMaxPorGrupo[g] = s.qtd_max ? parseInt(s.qtd_max) : null;
+            }
+        });
+        saches.forEach(s => {
+            const limite = this.calcularLimiteSache(s);
+            const g = (s.categoria_sache || '').trim();
+            const qtdMax = qtdMaxPorGrupo[g] ?? null;
+            if (stored[s.id] === undefined) {
+                stored[s.id] = Math.min(qtdInicialPorGrupo[g] ?? 0, limite);
+            } else if (qtdMax !== null) {
+                stored[s.id] = Math.min(stored[s.id], qtdMax);
+            }
+        });
+        localStorage.setItem('carrinho_saches', JSON.stringify(stored));
+
+        // Separar sachês com grupo e sem grupo
+        const grupos = {};
+        const semGrupo = [];
+        saches.forEach(s => {
+            const g = (s.categoria_sache || '').trim();
+            if (g) {
+                if (!grupos[g]) grupos[g] = [];
+                grupos[g].push(s);
+            } else {
+                semGrupo.push(s);
+            }
+        });
+
+        let totalSaches = 0;
+        let html = '';
+
+        // Renderizar grupos como botões clicáveis
+        Object.entries(grupos).forEach(([grupo, itens]) => {
+            const qtdTotal = itens.reduce((sum, s) => sum + (stored[s.id] || 0), 0);
+            const custoGrupo = itens.reduce((sum, s) => {
+                const qtd = stored[s.id] || 0;
+                const limite = this.calcularLimiteSache(s);
+                const pagos = Math.max(0, qtd - limite);
+                return sum + pagos * parseFloat(s.preco);
+            }, 0);
+            totalSaches += custoGrupo;
+            const extra = custoGrupo > 0 ? ` +R$${custoGrupo.toFixed(2).replace('.',',')}` : '';
+            const badge = qtdTotal > 0 ? `<span style="background:#f8b531;color:#000;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-left:4px;">${qtdTotal}</span>` : '';
+            html += `<button onclick="CarrinhoSimples.abrirPopupGrupo('${grupo.replace(/'/g, "\\'")}')" style="display:inline-flex;align-items:center;gap:4px;background:#2a2a2a;border:1px solid #9C27B0;border-radius:20px;padding:5px 12px;color:#ddd;cursor:pointer;font-size:13px;white-space:nowrap;">
+                <i class="fas fa-box" style="color:#9C27B0;font-size:11px;"></i>
+                <span>${grupo}</span>${badge}${extra ? `<span style="color:#f8b531;font-size:10px;">${extra}</span>` : ''}
+            </button>`;
+        });
+
+        // Renderizar sachês sem grupo inline (comportamento original)
+        semGrupo.forEach(s => {
+            const limite = this.calcularLimiteSache(s);
+            const qtd = stored[s.id] ?? 0;
+            const pagos = Math.max(0, qtd - limite);
+            const custo = pagos * parseFloat(s.preco);
+            totalSaches += custo;
+            const extra = custo > 0 ? `<span style="color:#f8b531;font-size:10px;"> +R$${custo.toFixed(2).replace('.',',')}</span>` : '';
+            html += `<div style="display:inline-flex;align-items:center;gap:4px;background:#2a2a2a;border:1px solid #444;border-radius:20px;padding:3px 8px;white-space:nowrap;">
+                <button onclick="CarrinhoSimples.alterarSache(${s.id},-1)" style="background:none;border:none;color:#aaa;cursor:pointer;font-size:14px;line-height:1;padding:0;" ${qtd===0?'disabled':''}>−</button>
+                <span style="font-size:13px;color:#ddd;">${s.nome}</span>
+                <span style="font-size:13px;color:#f8b531;font-weight:600;">${qtd}</span>${extra}
+                <button onclick="CarrinhoSimples.alterarSache(${s.id},1)" style="background:none;border:none;color:#aaa;cursor:pointer;font-size:14px;line-height:1;padding:0;">+</button>
+            </div>`;
+        });
+
+        $('#lista-saches').html(html);
+
+        // Recalcular total com sachês
+        this._recalcularTotal();
+    },
+
+    // Calcula e atualiza #valor-total sempre com produtos + taxa + sachês
+    _recalcularTotal() {
+        const carrinho = JSON.parse(localStorage.getItem('carrinho') || '[]');
+        const subtotal = carrinho.reduce((s, i) => s + i.total, 0);
+        const taxaTexto = $('#valor-entrega').text().replace('R$ ', '').replace(',', '.');
+        const taxa = parseFloat(taxaTexto) || 0;
+
+        let totalSaches = 0;
+        const stored = JSON.parse(localStorage.getItem('carrinho_saches') || '{}');
+        (this._sachesCache || []).forEach(s => {
+            const qtd = stored[s.id] || 0;
+            const limite = this.calcularLimiteSache(s);
+            const pagos = Math.max(0, qtd - limite);
+            totalSaches += pagos * parseFloat(s.preco);
+        });
+
+        const total = subtotal + taxa + totalSaches;
+        $('#valor-total').text('R$ ' + total.toFixed(2).replace('.', ','));
+
+        // Atualizar min do campo troco
+        const trocoInput = document.getElementById('troco_para');
+        if (trocoInput) {
+            trocoInput.min         = total.toFixed(2);
+            trocoInput.placeholder = total.toFixed(2).replace('.', ',');
+            // Atualizar texto "Mínimo: R$ X"
+            const trocoSmall = document.getElementById('troco-minimo');
+            if (trocoSmall) trocoSmall.textContent = 'Mínimo: R$ ' + total.toFixed(2).replace('.', ',');
+            // Revalidar cor
+            const val = parseFloat(trocoInput.value) || 0;
+            trocoInput.style.borderColor = (val > 0 && val < total) ? '#dc3545' : '#555';
+        }
+    },
+
+    // Abrir popup de grupo de sachês
+    abrirPopupGrupo(grupo) {
+        const saches = (this._sachesCache || []).filter(s => (s.categoria_sache || '').trim() === grupo);
+        if (!saches.length) return;
+
+        const stored = JSON.parse(localStorage.getItem('carrinho_saches') || '{}');
+        const qtdMax = saches[0].qtd_max ? parseInt(saches[0].qtd_max) : null;
+
+        // Calcular total atual do grupo para checar qtd_max
+        const totalGrupo = () => saches.reduce((sum, s) => sum + (JSON.parse(localStorage.getItem('carrinho_saches') || '{}')[s.id] || 0), 0);
+
+        let itensHtml = '';
+        saches.forEach(s => {
+            const limite = this.calcularLimiteSache(s);
+            const qtd = stored[s.id] || 0;
+            const pagos = Math.max(0, qtd - limite);
+            const custo = pagos * parseFloat(s.preco);
+            const precoTexto = parseFloat(s.preco) > 0
+                ? `<small style="color:#aaa;font-size:11px;">R$ ${parseFloat(s.preco).toFixed(2).replace('.',',')} cada (${limite} grátis)</small>`
+                : `<small style="color:#4CAF50;font-size:11px;">Grátis (até ${limite})</small>`;
+            const custoTexto = custo > 0 ? `<span style="color:#f8b531;font-size:11px;"> +R$${custo.toFixed(2).replace('.',',')}</span>` : '';
+            const maxAtingido = qtdMax !== null && totalGrupo() >= qtdMax;
+
+            itensHtml += `
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #333;">
+                    <div>
+                        <div style="color:#fff;font-size:14px;">${s.nome}</div>
+                        ${precoTexto}
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <button onclick="CarrinhoSimples.alterarSachePopup(${s.id},-1,this,${qtdMax ?? 'null'})" style="background:#333;border:1px solid #555;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:16px;line-height:1;" ${qtd===0?'disabled':''}>−</button>
+                        <span id="qtd-sache-${s.id}" style="color:#f8b531;font-weight:700;min-width:20px;text-align:center;">${qtd}</span>${custoTexto}
+                        <button onclick="CarrinhoSimples.alterarSachePopup(${s.id},1,this,${qtdMax ?? 'null'})" style="background:#333;border:1px solid #555;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:16px;line-height:1;" ${maxAtingido?'disabled':''}>+</button>
+                    </div>
+                </div>`;
+        });
+
+        const maxInfo = qtdMax ? `<small style="color:#aaa;font-size:11px;">Máximo: ${qtdMax} no total</small>` : '';
+
+        const html = `
+            <div id="popup-grupo-sache" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:10001;display:flex;align-items:center;justify-content:center;">
+                <div style="background:#1a1a1a;width:90%;max-width:420px;border-radius:15px;padding:20px;color:#fff;max-height:80vh;overflow-y:auto;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                        <h5 style="color:#9C27B0;margin:0;"><i class="fas fa-box"></i> ${grupo}</h5>
+                        <button onclick="$('#popup-grupo-sache').remove(); CarrinhoSimples._atualizarSachesInPlace();" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;">×</button>
+                    </div>
+                    ${maxInfo}
+                    <div style="margin-top:10px;">${itensHtml}</div>
+                    <button onclick="$('#popup-grupo-sache').remove(); CarrinhoSimples._atualizarSachesInPlace();" style="width:100%;margin-top:16px;padding:12px;background:#9C27B0;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:bold;">Confirmar</button>
+                </div>
+            </div>`;
+
+        $('#popup-grupo-sache').remove();
+        $('body').append(html);
+    },
+
+    // Alterar sachê dentro do popup de grupo
+    alterarSachePopup(sacheId, delta, btn, qtdMax) {
+        const stored = JSON.parse(localStorage.getItem('carrinho_saches') || '{}');
+        const novaQtd = Math.max(0, (stored[sacheId] || 0) + delta);
+
+        // Verificar qtd_max do grupo
+        if (delta > 0 && qtdMax !== null) {
+            const grupo = (this._sachesCache || []).find(s => s.id == sacheId)?.categoria_sache || '';
+            const grupoSaches = (this._sachesCache || []).filter(s => (s.categoria_sache || '') === grupo);
+            const totalAtual = grupoSaches.reduce((sum, s) => sum + (stored[s.id] || 0), 0);
+            if (totalAtual >= qtdMax) return;
+        }
+
+        stored[sacheId] = novaQtd;
+        localStorage.setItem('carrinho_saches', JSON.stringify(stored));
+
+        $(`#qtd-sache-${sacheId}`).text(novaQtd);
+        const row = $(btn).closest('div[style*="display:flex"]');
+        row.find('button:first').prop('disabled', novaQtd === 0);
+
+        // Atualizar botões + de todos os itens do grupo se qtd_max atingido
+        if (qtdMax !== null) {
+            const grupo = (this._sachesCache || []).find(s => s.id == sacheId)?.categoria_sache || '';
+            const grupoSaches = (this._sachesCache || []).filter(s => (s.categoria_sache || '') === grupo);
+            const novoTotal = grupoSaches.reduce((sum, s) => sum + (stored[s.id] || 0), 0);
+            grupoSaches.forEach(s => {
+                const plusBtn = $(`#qtd-sache-${s.id}`).next('span').length
+                    ? $(`#qtd-sache-${s.id}`).next('span').next('button')
+                    : $(`#qtd-sache-${s.id}`).next('button');
+                // Selecionar o botão + (último botão na row)
+                $(`#qtd-sache-${s.id}`).closest('div[style*="display:flex"]').find('button:last').prop('disabled', novoTotal >= qtdMax);
+            });
+        }
+
+        // Atualizar custo
+        const sache = (this._sachesCache || []).find(s => s.id == sacheId);
+        if (sache) {
+            const limite = this.calcularLimiteSache(sache);
+            const pagos = Math.max(0, novaQtd - limite);
+            const custo = pagos * parseFloat(sache.preco);
+            const custoSpan = $(`#qtd-sache-${sacheId}`).next('span');
+            if (custo > 0) {
+                if (custoSpan.length) custoSpan.text(` +R$${custo.toFixed(2).replace('.',',')}`);
+                else $(`#qtd-sache-${sacheId}`).after(`<span style="color:#f8b531;font-size:11px;"> +R$${custo.toFixed(2).replace('.',',')}</span>`);
+            } else {
+                custoSpan.remove();
+            }
+        }
+    },
+
+    // Calcular limite de sachês gratuitos
+    calcularLimiteSache(sache) {
+        const tipo = sache.limite_tipo || sache.tipo_limite;
+        if (tipo === 'fixo') {
+            return parseInt(sache.limite_fixo) || 1;
+        } else if (tipo === 'personalizado') {
+            const carrinho = JSON.parse(localStorage.getItem('carrinho') || '[]');
+            const totalCarrinho = carrinho.reduce((sum, item) => sum + item.total, 0);
+            const limiteMin = parseInt(sache.limite_minimo) || 1;
+            const porValor = parseFloat(sache.limite_por_valor) || 40;
+            return limiteMin + Math.floor(totalCarrinho / porValor);
+        }
+        return 1;
+    },
+
+    // Obter quantidade atual de um sachê
+    getQuantidadeSache(sacheId) {
+        const saches = JSON.parse(localStorage.getItem('carrinho_saches') || '{}');
+        return saches[sacheId] !== undefined ? saches[sacheId] : 0;
+    },
+
+    // Alterar quantidade de sachê
+    alterarSache(sacheId, delta) {
+        const saches = JSON.parse(localStorage.getItem('carrinho_saches') || '{}');
+        saches[sacheId] = Math.max(0, (saches[sacheId] || 0) + delta);
+        localStorage.setItem('carrinho_saches', JSON.stringify(saches));
+        this._atualizarSachesInPlace();
     },
 
     // Carregar mesas disponíveis
@@ -487,6 +865,7 @@ window.CarrinhoSimples = {
                     return;
                 }
 
+                const mostrarCapacidade = response.mostrar_capacidade_carrinho !== 0;
                 const POR_PAGINA = 7;
                 const mesas = response.mesas;
                 let paginaAtual = 1;
@@ -502,12 +881,13 @@ window.CarrinhoSimples = {
                         const ocupada = mesa.ocupado == 1;
                         const cor = ocupada ? '#dc3545' : '#28a745';
                         const bg  = ocupada ? 'rgba(220,53,69,0.15)' : 'rgba(40,167,69,0.15)';
+                        const capacidadeHtml = mostrarCapacidade ? `<small style="font-size:10px;color:#aaa;">${mesa.capacidade} lugares</small>` : '';
                         html += `
                             <label style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:${ocupada?'not-allowed':'pointer'};padding:10px 8px;border:2px solid ${cor};border-radius:8px;background:${bg};text-align:center;opacity:${ocupada?'0.6':'1'};">
                                 <input type="radio" name="local_retirada" value="mesa_${mesa.id}" data-mesa-id="${mesa.id}" ${ocupada?'disabled':''} style="margin:0;">
                                 <i class="fas fa-chair" style="color:${cor};font-size:18px;"></i>
                                 <span style="font-size:11px;color:#fff;font-weight:600;">Mesa ${mesa.numero}</span>
-                                <small style="font-size:10px;color:#aaa;">${mesa.capacidade} lugares</small>
+                                ${capacidadeHtml}
                                 <small style="font-size:10px;color:${cor};">${ocupada?'Ocupada':'Livre'}</small>
                             </label>`;
                     });
@@ -597,7 +977,8 @@ window.CarrinhoSimples = {
             
             if (tipoEntrega === 'retirada') {
                 $('#linha-entrega').hide();
-                $('#valor-total').text('R$ ' + subtotal.toFixed(2).replace('.', ','));
+                $('#valor-entrega').text('R$ 0,00');
+                CarrinhoSimples._recalcularTotal();
                 $('#btn-finalizar').prop('disabled', false).text('Finalizar Pedido');
                 // Mostrar seleção de mesa
                 $('#selecao-mesa').show();
@@ -612,7 +993,8 @@ window.CarrinhoSimples = {
         // Validar troco
         $(document).on('input', '#troco_para', function() {
             const valorTroco = parseFloat($(this).val()) || 0;
-            if (valorTroco < subtotal) {
+            const totalReal = parseFloat($('#valor-total').text().replace('R$ ', '').replace(',', '.')) || 0;
+            if (valorTroco > 0 && valorTroco < totalReal) {
                 $(this).css('border-color', '#dc3545');
             } else {
                 $(this).css('border-color', '#555');
@@ -630,7 +1012,7 @@ window.CarrinhoSimples = {
             // Usuário não logado - taxa padrão
             const taxaPadrao = 5.00;
             $('#valor-entrega').text('R$ ' + taxaPadrao.toFixed(2).replace('.', ','));
-            $('#valor-total').text('R$ ' + (subtotal + taxaPadrao).toFixed(2).replace('.', ','));
+            CarrinhoSimples._recalcularTotal();
             $('#btn-finalizar').prop('disabled', false).text('Finalizar Pedido');
             console.log('Usuário não logado - taxa padrão:', taxaPadrao);
             return;
@@ -652,17 +1034,16 @@ window.CarrinhoSimples = {
                 
                 if (response.success && response.pode_entregar) {
                     const taxa = parseFloat(response.taxa_entrega);
-                    const total = subtotal + taxa;
                     
                     $('#valor-entrega').text('R$ ' + taxa.toFixed(2).replace('.', ','));
-                    $('#valor-total').text('R$ ' + total.toFixed(2).replace('.', ','));
+                    CarrinhoSimples._recalcularTotal();
                     $('#btn-finalizar').prop('disabled', false).text('Finalizar Pedido');
                     
                     console.log('Taxa aplicada:', taxa);
                 } else {
                     // Não entrega no bairro
                     $('#valor-entrega').text('Não disponível');
-                    $('#valor-total').text('R$ ' + subtotal.toFixed(2).replace('.', ','));
+                    CarrinhoSimples._recalcularTotal();
                     $('#btn-finalizar').prop('disabled', true).text('Não entregamos neste local');
                     
                     // Remover avisos anteriores
@@ -690,7 +1071,7 @@ window.CarrinhoSimples = {
                 // Erro na API - usar taxa padrão
                 const taxaPadrao = 5.00;
                 $('#valor-entrega').text('R$ ' + taxaPadrao.toFixed(2).replace('.', ','));
-                $('#valor-total').text('R$ ' + (subtotal + taxaPadrao).toFixed(2).replace('.', ','));
+                CarrinhoSimples._recalcularTotal();
                 $('#btn-finalizar').prop('disabled', false).text('Finalizar Pedido');
             }
         });
@@ -705,28 +1086,33 @@ window.CarrinhoSimples = {
     adicionarItem(produto) {
         const carrinho = JSON.parse(localStorage.getItem('carrinho') || '[]');
         const chaveTamanho = produto.tamanho ? produto.tamanho.nome : '';
-        const chaveUnica = `${produto.id}_${chaveTamanho}_${produto.observacoes || ''}`;
+        const extrasKey = (produto.extras||[]).map(e=>`${e.id}:${e.quantidade}`).sort().join(',');
+        const chaveUnica = `${produto.id}_${chaveTamanho}_${produto.observacoes || ''}_${extrasKey}`;
         const totalExtras = (produto.extras || []).reduce((s, e) => s + (parseFloat(e.preco) * (parseInt(e.quantidade) || 1)), 0);
+        const precoBase = parseFloat(produto.preco) || 0;
         
         const existente = carrinho.find(i => {
             const it = i.tamanho ? i.tamanho.nome : '';
-            return `${i.id}_${it}_${i.observacoes || ''}` === chaveUnica;
+            const ek = (i.extras||[]).map(e=>`${e.id}:${e.quantidade}`).sort().join(',');
+            return `${i.id}_${it}_${i.observacoes || ''}_${ek}` === chaveUnica;
         });
         
         if (existente) {
             existente.quantidade += parseInt(produto.quantidade) || 1;
+            // Não sobrescrever extras — a chave garante que são os mesmos
             existente.total = (existente.preco + totalExtras) * existente.quantidade;
         } else {
             carrinho.push({
                 id: String(produto.id),
                 nome: produto.nome,
-                preco: parseFloat(produto.preco) || 0,
+                preco: precoBase,
                 quantidade: parseInt(produto.quantidade) || 1,
                 observacoes: produto.observacoes || '',
                 extras: produto.extras || [],
                 tamanho: produto.tamanho || null,
                 tamanho_id: produto.tamanho_id || null,
-                total: (parseFloat(produto.preco) + totalExtras) * (parseInt(produto.quantidade) || 1)
+                categoria_id: produto.categoria_id || null,
+                total: (precoBase + totalExtras) * (parseInt(produto.quantidade) || 1)
             });
         }
         localStorage.setItem('carrinho', JSON.stringify(carrinho));
@@ -736,17 +1122,21 @@ window.CarrinhoSimples = {
     alterarQuantidade(index, novaQtd) {
         const carrinho = JSON.parse(localStorage.getItem('carrinho') || '[]');
         const item = carrinho[index];
-        
-        if (item && novaQtd > 0) {
-            item.quantidade = parseInt(novaQtd);
-            const totalExtras = item.extras.reduce((total, e) => total + (e.preco * e.quantidade), 0);
-            item.total = (item.preco + totalExtras) * item.quantidade;
-            
-            localStorage.setItem('carrinho', JSON.stringify(carrinho));
-            
-            this.fechar();
-            setTimeout(() => this.mostrar(), 50);
+        if (!item || novaQtd < 1) return;
+        item.quantidade = parseInt(novaQtd);
+        // Recalcular total: (preço base + soma dos extras) × quantidade
+        const totalExtras = (item.extras || []).reduce((t, e) => t + (parseFloat(e.preco) * (parseInt(e.quantidade) || 1)), 0);
+        item.total = (parseFloat(item.preco) + totalExtras) * item.quantidade;
+        localStorage.setItem('carrinho', JSON.stringify(carrinho));
+        // Atualizar só o valor do item no DOM sem reabrir
+        const row = $(`#carrinho-lista [data-index="${index}"]`);
+        if (row.length) {
+            row.find('.item-total').text('R$ ' + item.total.toFixed(2).replace('.', ','));
         }
+        // Recalcular total geral
+        this._recalcularTotal();
+        // Atualizar limite personalizado dos sachês se necessário
+        this._atualizarSachesInPlace();
     },
 
     // Remover item
@@ -792,8 +1182,10 @@ window.CarrinhoSimples = {
 
     // Finalizar pedido
     async finalizar() {
+        if (this._finalizando) return;
+        this._finalizando = true;
         const carrinho = JSON.parse(localStorage.getItem('carrinho') || '[]');
-        if (carrinho.length === 0) return;
+        if (!carrinho.length) { this._finalizando = false; return; }
 
         const subtotal = carrinho.reduce((sum, item) => sum + item.total, 0);
 
@@ -811,6 +1203,7 @@ window.CarrinhoSimples = {
                         `Adicione mais R$ ${valorFaltante.toFixed(2).replace('.', ',')} em produtos.`, 
                         'warning'
                     );
+                    this._finalizando = false;
                     return;
                 }
             }
@@ -821,6 +1214,7 @@ window.CarrinhoSimples = {
         // Validar se botão não está desabilitado (não entrega no local)
         if ($('#btn-finalizar').prop('disabled')) {
             this.mostrarModal('Entrega Indisponível', 'Não é possível finalizar: não entregamos neste local. Selecione "Retirada".', 'warning');
+            this._finalizando = false;
             return;
         }
 
@@ -828,14 +1222,17 @@ window.CarrinhoSimples = {
         const formaPagamento = $('input[name="forma_pagamento"]:checked').val();
         if (!formaPagamento) {
             this.mostrarModal('Forma de Pagamento', 'Selecione uma forma de pagamento', 'warning');
+            this._finalizando = false;
             return;
         }
 
         // Validar troco se for dinheiro
         if (formaPagamento === 'dinheiro') {
             const trocoValue = parseFloat($('#troco_para').val()) || 0;
-            if (trocoValue < subtotal) {
+            const totalReal = parseFloat($('#valor-total').text().replace('R$ ', '').replace(',', '.')) || subtotal;
+            if (trocoValue < totalReal) {
                 this.mostrarModal('Troco Inválido', 'O valor do troco deve ser maior ou igual ao total do pedido', 'warning');
+                this._finalizando = false;
                 return;
             }
         }
@@ -863,9 +1260,16 @@ window.CarrinhoSimples = {
             }
         }
 
+        // Processar sachês selecionados — objeto garante chaves únicas
+        const sachesObj = JSON.parse(localStorage.getItem('carrinho_saches') || '{}');
+        const sachesSelecionados = Object.entries(sachesObj)
+            .filter(([, qtd]) => qtd > 0)
+            .map(([id, qtd]) => ({ id: parseInt(id), quantidade: qtd }));
+
         const dadosPedido = {
             email: localStorage.getItem('cliente_email'),
             itens: carrinho,
+            saches: sachesSelecionados,
             tipo_entrega: tipoEntrega,
             forma_pagamento: formaPagamento,
             troco_para: formaPagamento === 'dinheiro' ? parseFloat($('#troco_para').val()) : null,
@@ -888,6 +1292,7 @@ window.CarrinhoSimples = {
                 if (response.success) {
                     // Limpar carrinho completamente
                     localStorage.setItem('carrinho', JSON.stringify([]));
+                    localStorage.removeItem('carrinho_saches');
                     
                     // Sincronizar com CarrinhoMenu
                     if (window.CarrinhoMenu) {
@@ -896,6 +1301,7 @@ window.CarrinhoSimples = {
                     
                     // Salvar pedido em andamento
                     localStorage.setItem('pedido_em_andamento', response.pedido_codigo);
+                    this._finalizando = false;
                     
                     // Fechar popup do carrinho primeiro
                     $('#carrinho-popup').remove();
@@ -904,7 +1310,8 @@ window.CarrinhoSimples = {
                     if (response.pedido) {
                         CarrinhoSimples.exibirPopupAcompanhamento(
                             response.pedido, 
-                            response.itens || [], 
+                            response.itens || [],
+                            response.saches || [],
                             response.chave_pix, 
                             response.qrcode_image
                         );
@@ -917,7 +1324,8 @@ window.CarrinhoSimples = {
                                 if (pedidoResponse.success) {
                                     CarrinhoSimples.exibirPopupAcompanhamento(
                                         pedidoResponse.pedido, 
-                                        pedidoResponse.itens, 
+                                        pedidoResponse.itens,
+                                        pedidoResponse.saches || [],
                                         pedidoResponse.chave_pix, 
                                         pedidoResponse.qrcode_image
                                     );
@@ -928,12 +1336,14 @@ window.CarrinhoSimples = {
                 } else {
                     this.mostrarModal('Erro', 'Erro ao processar pedido: ' + response.message, 'error');
                     $('#btn-finalizar').prop('disabled', false).text('Finalizar Pedido');
+                    this._finalizando = false;
                 }
             },
             error: (xhr) => {
                 console.error('Erro na requisição:', xhr);
                 this.mostrarModal('Erro', 'Erro ao processar pedido. Tente novamente.', 'error');
                 $('#btn-finalizar').prop('disabled', false).text('Finalizar Pedido');
+                this._finalizando = false;
             }
         });
     },
@@ -1065,28 +1475,19 @@ window.CarrinhoSimples = {
 
 // Adicionar botão do carrinho se não existir
 $(document).ready(() => {
-    // Remover botão flutuante - comentado
-    /*
-    if ($('#btn-carrinho').length === 0) {
-        $('body').append(`
-            <div id="btn-carrinho" style="position: fixed; bottom: 20px; right: 20px; background: #f8b531; color: black; padding: 15px; border-radius: 50px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.3); z-index: 1000;" onclick="CarrinhoSimples.mostrar()">
-                <i class="fas fa-shopping-cart"></i>
-                <span id="carrinho-contador" style="background: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px; position: absolute; top: -5px; right: -5px;">0</span>
-            </div>
-        `);
-    }
-
-    // Atualizar contador
-    function atualizarContador() {
+    function atualizarBadgeCarrinho() {
         const carrinho = JSON.parse(localStorage.getItem('carrinho') || '[]');
-        const total = carrinho.reduce((sum, item) => sum + item.quantidade, 0);
-        $('#carrinho-contador').text(total);
+        const total = carrinho.reduce((sum, item) => sum + (item.quantidade || 1), 0);
+        const badge = $('#carrinho-badge');
+        if (total > 0) {
+            badge.text(total).show();
+            badge.addClass('animate').delay(600).queue(function(n){ $(this).removeClass('animate'); n(); });
+        } else {
+            badge.hide();
+        }
     }
-
-    // Atualizar contador a cada segundo
-    setInterval(atualizarContador, 1000);
-    atualizarContador();
-    */
+    atualizarBadgeCarrinho();
+    setInterval(atualizarBadgeCarrinho, 800);
 });
 
 // Função global para compatibilidade com código antigo

@@ -12,21 +12,21 @@
 
 .menu_filter ul li a {
     display: block;
-    padding: 10px 20px;
-    background: transparent;
-    border: 1px solid #dee2e6;
-    color: #6c757d;
+    padding: 8px 18px;
+    background: #2d2d2d;
+    border: 1px solid #555;
+    color: #ddd;
     text-decoration: none;
-    border-radius: 4px;
-    font-weight: 400;
-    transition: all 0.3s ease;
+    border-radius: 20px;
+    font-weight: 500;
+    transition: all 0.2s ease;
     font-size: 14px;
 }
 
 .menu_filter ul li a:hover,
 .menu_filter ul li.active a {
     background: #f8b531;
-    color: #1a1a1a;
+    color: #111;
     border-color: #f8b531;
 }
 
@@ -117,8 +117,8 @@
 .price-info strong { font-size: 16px; color: #495057; }
 
 @media (max-width: 768px) {
-    .menu_filter ul li { display: block; margin: 4px 0; text-align: center; }
-    .menu_filter ul li a { display: inline-block; margin: 2px; padding: 8px 16px; font-size: 13px; }
+    .menu_filter ul li { display: inline-block; margin: 3px; }
+    .menu_filter ul li a { padding: 6px 14px; font-size: 13px; }
     .filter_item_img { height: 180px; }
     .filtr-item .info { padding: 16px; }
     .filtr-item .info .name { font-size: 16px; }

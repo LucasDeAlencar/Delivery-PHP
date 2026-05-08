@@ -237,6 +237,7 @@ window.PopupProduto = {
              quantidade: parseInt($('#quantidade').val()) || 1,
              observacoes: $('#observacoes').val() || '',
              extras: window.ProdutoExtras ? window.ProdutoExtras.getExtrasSelecionados() : [],
+             categoria_id: this.produtoAtual.categoria_id || null,
              // Informações de tamanho (se houver)
              tamanho: this.tamanhoSelecionado ? {
                  id: this.tamanhoSelecionado.id,
@@ -303,6 +304,7 @@ $(document).ready(function() {
             preco: elemento.attr('data-produto-preco'),
             imagem: elemento.attr('data-produto-imagem') || elemento.find('img').first().attr('src') || '',
             categoria: elemento.attr('data-produto-categoria') || 'Produto',
+            categoria_id: parseInt(elemento.attr('data-categoria-id')) || null,
             descricao: elemento.attr('data-produto-descricao') || '',
             com_tamanho: elemento.attr('data-com-tamanho') == '1' ? 1 : 0,
             tamanhos: tamanhos

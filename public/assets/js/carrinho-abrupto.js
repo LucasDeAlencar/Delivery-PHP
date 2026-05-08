@@ -92,6 +92,7 @@ window.Carrinho = {
             extras: Array.isArray(produto.extras) ? produto.extras : [],
             tamanho: produto.tamanho || null,
             tamanho_id: produto.tamanho_id || null,
+            categoria_id: produto.categoria_id || null,
             total: 0
         };
         

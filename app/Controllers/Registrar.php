@@ -113,10 +113,16 @@ class Registrar extends BaseController {
 
     public function enviarCodigo() {
         log_message('info', '=== Registrar::enviarCodigo INÍCIO ===');
+
+        log_message('info', 'Registrar::enviarCodigo - Headers: ' . json_encode($this->request->getHeaders()));
+        log_message('info', 'Registrar::enviarCodigo - Body: ' . $this->request->getBody());
         
         if (!$this->request->isAJAX()) {
             log_message('error', 'Registrar::enviarCodigo - Requisição não é AJAX');
-            return $this->response->setJSON(['erro' => true, 'msg' => 'Requisição inválida']);
+            // Permite requisições POST mesmo que não tenham header AJAX em alguns ambientes
+            if ($this->request->getMethod() !== 'POST') {
+                return $this->response->setJSON(['erro' => true, 'msg' => 'Requisição inválida']);
+            }
         }
 
         $json = $this->request->getJSON();
@@ -203,8 +209,13 @@ class Registrar extends BaseController {
     public function verificarCodigo() {
         log_message('info', '=== Registrar::verificarCodigo INÍCIO ===');
 
+        log_message('info', 'Registrar::verificarCodigo - Headers: ' . json_encode($this->request->getHeaders()));
+        log_message('info', 'Registrar::verificarCodigo - Body: ' . $this->request->getBody());
         if (!$this->request->isAJAX()) {
-            return $this->response->setJSON(['erro' => true, 'msg' => 'Requisição inválida']);
+            // Permite requisições POST mesmo que não tenham header AJAX em alguns ambientes
+            if ($this->request->getMethod() !== 'POST') {
+                return $this->response->setJSON(['erro' => true, 'msg' => 'Requisição inválida']);
+            }
         }
 
         $json = $this->request->getJSON();
@@ -233,7 +244,10 @@ class Registrar extends BaseController {
         log_message('info', '=== Registrar::verificarSessao INÍCIO ===');
 
         if (!$this->request->isAJAX()) {
-            return $this->response->setJSON(['erro' => true, 'msg' => 'Requisição inválida']);
+            // Permite requisições POST mesmo que não tenham header AJAX em alguns ambientes
+            if ($this->request->getMethod() !== 'POST') {
+                return $this->response->setJSON(['erro' => true, 'msg' => 'Requisição inválida']);
+            }
         }
 
         $dadosVerificacao = session()->get('codigo_verificacao_registro');
@@ -298,5 +312,18 @@ class Registrar extends BaseController {
         }
 
         return $this->response->setJSON($dados);
+    }
+
+    public function bairros_cidade() {
+        $cidade = trim($this->request->getGet('cidade') ?? '');
+        if (!$cidade) return $this->response->setJSON(['bairros' => []]);
+
+        $db = \Config\Database::connect();
+        $rows = $db->query(
+            "SELECT DISTINCT nome FROM bairros WHERE deletado_em IS NULL AND ativo = 1 AND cidade = ? ORDER BY nome",
+            [$cidade]
+        )->getResultArray();
+
+        return $this->response->setJSON(['bairros' => array_column($rows, 'nome')]);
     }
 }

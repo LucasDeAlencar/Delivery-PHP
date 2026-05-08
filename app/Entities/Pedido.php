@@ -40,13 +40,14 @@ class Pedido extends Entity {
      */
     public function getStatusFormatado(): string {
         $statusMap = [
-            'pendente' => 'Pendente',
-            'confirmado' => 'Confirmado',
-            'preparando' => 'Em Preparação',
+            'em_aberto'    => 'Em Aberto',
+            'pendente'     => 'Pendente',
+            'confirmado'   => 'Confirmado',
+            'preparando'   => 'Em Preparação',
             'saiu_entrega' => 'Saiu para Entrega',
-            'finalizado' => 'Finalizado',
-            'cancelado' => 'Cancelado',
-            'inativo' => 'Inativo'
+            'finalizado'   => 'Finalizado',
+            'cancelado'    => 'Cancelado',
+            'inativo'      => 'Inativo'
         ];
 
         return $statusMap[$this->status] ?? $this->status;
@@ -57,13 +58,14 @@ class Pedido extends Entity {
      */
     public function getStatusBadgeClass(): string {
         $classMap = [
-            'pendente' => 'badge-warning',
-            'confirmado' => 'badge-info',
-            'preparando' => 'badge-primary',
+            'em_aberto'    => 'badge-orange',
+            'pendente'     => 'badge-warning',
+            'confirmado'   => 'badge-info',
+            'preparando'   => 'badge-primary',
             'saiu_entrega' => 'badge-secondary',
-            'finalizado' => 'badge-success',
-            'cancelado' => 'badge-danger',
-            'inativo' => 'badge-secondary'
+            'finalizado'   => 'badge-success',
+            'cancelado'    => 'badge-danger',
+            'inativo'      => 'badge-secondary'
         ];
 
         return $classMap[$this->status] ?? 'badge-secondary';
@@ -74,13 +76,14 @@ class Pedido extends Entity {
      */
     public function getStatusIcon(): string {
         $iconMap = [
-            'pendente' => 'fas fa-clock',
-            'confirmado' => 'fas fa-check-circle',
-            'preparando' => 'fas fa-utensils',
+            'em_aberto'    => 'fas fa-folder-open',
+            'pendente'     => 'fas fa-clock',
+            'confirmado'   => 'fas fa-check-circle',
+            'preparando'   => 'fas fa-utensils',
             'saiu_entrega' => 'fas fa-motorcycle',
-            'finalizado' => 'fas fa-check-double',
-            'cancelado' => 'fas fa-times-circle',
-            'inativo' => 'fas fa-ban'
+            'finalizado'   => 'fas fa-check-double',
+            'cancelado'    => 'fas fa-times-circle',
+            'inativo'      => 'fas fa-ban'
         ];
 
         return $iconMap[$this->status] ?? 'fas fa-question-circle';
@@ -90,7 +93,7 @@ class Pedido extends Entity {
      * Verifica se o pedido pode ser editado
      */
     public function podeEditar(): bool {
-        return in_array($this->status, ['pendente', 'confirmado']);
+        return in_array($this->status, ['em_aberto', 'pendente', 'confirmado']);
     }
 
     /**

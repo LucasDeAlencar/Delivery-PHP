@@ -385,10 +385,9 @@ const ProdutoExtras = {
      * Valida se a seleção de extras está completa
      */
     validarSelecao() {
-        const totalSelecionados = this.extrasSelecionados.length;
         const totalItens = this.getTotalItensSelecionados();
         
-        if (this.obrigatorioExtras > 0 && totalSelecionados < this.obrigatorioExtras) {
+        if (this.obrigatorioExtras > 0 && totalItens < this.obrigatorioExtras) {
             alert(`⚠️ Este produto requer a seleção de pelo menos ${this.obrigatorioExtras} extra${this.obrigatorioExtras > 1 ? 's' : ''}.`);
             return false;
         }

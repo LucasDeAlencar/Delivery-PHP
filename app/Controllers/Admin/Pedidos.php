@@ -82,9 +82,47 @@ class Pedidos extends BaseController {
             'itens' => $this->pedidoItemModel->buscaItensDoPedido($id),
             'isAdmin' => $isAdmin,
             'podeAlterar' => $this->pedidoModel->podeAlterar($pedido),
+            'saches' => \Config\Database::connect()->table('pedidos_saches')->where('pedido_id', $id)->get()->getResult(),
         ];
 
         return view('Admin/Pedidos/show', $data);
+    }
+
+    /**
+     * Altera a mesa de um pedido (AJAX)
+     */
+    public function alterarMesa() {
+        $pedidoId = (int) $this->request->getPost('pedido_id');
+        $mesaId   = $this->request->getPost('mesa_id') ?: null;
+
+        $pedido = $this->pedidoModel->find($pedidoId);
+        if (!$pedido) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Pedido não encontrado']);
+        }
+
+        if (!in_array($pedido->status, ['pendente', 'confirmado'])) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Pedido não permite alteração de mesa']);
+        }
+
+        $db = \Config\Database::connect();
+
+        // Liberar mesa anterior
+        if (!empty($pedido->mesa_id)) {
+            $db->table('mesas')->where('id', $pedido->mesa_id)
+               ->update(['ocupado' => 0, 'pedido_id' => null, 'updated_at' => date('Y-m-d H:i:s')]);
+        }
+
+        // Ocupar nova mesa
+        if ($mesaId) {
+            $db->table('mesas')->where('id', $mesaId)
+               ->update(['ocupado' => 1, 'pedido_id' => $pedidoId, 'updated_at' => date('Y-m-d H:i:s')]);
+        }
+
+        // Atualizar pedido
+        $db->table('pedidos')->where('id', $pedidoId)
+           ->update(['mesa_id' => $mesaId, 'atualizado_em' => date('Y-m-d H:i:s')]);
+
+        return $this->response->setJSON(['success' => true]);
     }
 
     /**
@@ -286,6 +324,7 @@ class Pedidos extends BaseController {
         $data = [
             'pedido' => $pedido,
             'itens' => $this->pedidoItemModel->buscaItensDoPedido($id),
+            'saches' => \Config\Database::connect()->table('pedidos_saches')->where('pedido_id', $id)->get()->getResult(),
         ];
 
         return view('Admin/Pedidos/imprimir', $data);

@@ -129,6 +129,26 @@
                         </div>
                     </div>
 
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="entrega_ate">Entrega em até (minutos)</label>
+                                <div class="input-group">
+                                    <input type="number" 
+                                           id="entrega_ate" 
+                                           class="form-control" 
+                                           placeholder="Ex: 45"
+                                           min="0"
+                                           value="<?= esc($dados->entrega_ate ?? '') ?>">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">min</span>
+                                    </div>
+                                </div>
+                                <small class="form-text text-muted">Tempo estimado de entrega exibido ao cliente após finalizar pedido</small>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="text-right mt-4">
                         <button type="button" class="btn btn-success" id="btnSalvar">
                             <i class="fas fa-save mr-2"></i>Salvar Alterações
@@ -189,7 +209,8 @@ $(document).ready(function() {
             email: $('#email').val(),
             instagram: $('#instagram').val(),
             facebook: $('#facebook').val(),
-            preco_minimo_compra: $('#preco_minimo_compra').val().replace(/\./g, '').replace(',', '.')
+            preco_minimo_compra: $('#preco_minimo_compra').val().replace(/\./g, '').replace(',', '.'),
+            entrega_ate: $('#entrega_ate').val()
         };
 
         $.ajax({

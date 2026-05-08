@@ -40,7 +40,11 @@ class PedidoApi extends ResourceController
                         $enderecoCompleto .= " - CEP: {$cliente->cep}";
                     }
                 }
-            }
+
+            // Buscar tempo de entrega dos dados corporativos
+            $dadosCorp = $db->table('dados_corporativos')->where('id', 1)->get()->getRow();
+            $tempoEntrega = $dadosCorp->entrega_ate ?? 0;
+
             
             // Salvar pedido principal
             $dadosPedido = [
@@ -109,6 +113,7 @@ class PedidoApi extends ResourceController
             }
             
             return $this->respond([
+                'tempo_entrega' => $tempoEntrega,
                 'sucesso' => true,
                 'pedido_id' => $pedidoId,
                 'codigo_pedido' => $dadosPedido['codigo'],

@@ -7,19 +7,24 @@
 
 	"use strict";
 
-	$(window).stellar({
-    responsive: true,
-    parallaxBackgrounds: true,
-    parallaxElements: true,
-    horizontalScrolling: false,
-    hideDistantElements: false,
-    scrollProperty: 'scroll',
-    horizontalOffset: 0,
-	  verticalOffset: 0
-  });
+	var isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+	var isAndroid = /Android/.test(navigator.userAgent);
 
-  // Scrollax
-  $.Scrollax();
+	if (!isIOS && !isAndroid) {
+		$(window).stellar({
+	    responsive: true,
+	    parallaxBackgrounds: true,
+	    parallaxElements: true,
+	    horizontalScrolling: false,
+	    hideDistantElements: false,
+	    scrollProperty: 'scroll',
+	    horizontalOffset: 0,
+		  verticalOffset: 0
+	  });
+
+	  // Scrollax
+	  $.Scrollax();
+	}
 
 
 	var fullHeight = function() {
@@ -41,9 +46,6 @@
 		}, 1);
 	};
 	loader();
-
-	// Scrollax
-   $.Scrollax();
 
 	var carousel = function() {
 		$('.home-slider').owlCarousel({
@@ -167,7 +169,7 @@
 
 	
 	var counter = function() {
-		
+		if (isIOS) return;
 		$('#section-counter').waypoint( function( direction ) {
 
 			if( direction === 'down' && !$(this.element).hasClass('ftco-animated') ) {
@@ -192,6 +194,15 @@
 	counter();
 
 	var contentWayPoint = function() {
+		if (isIOS) {
+			function mostrarTodos() {
+				$('.ftco-animate').addClass('ftco-animated fadeIn').css({ opacity: 1, visibility: 'visible' });
+			}
+			mostrarTodos();
+			setTimeout(mostrarTodos, 300);
+			$(document).on('initialized.owl.carousel', mostrarTodos);
+			return;
+		}
 		var i = 0;
 		$('.ftco-animate').waypoint( function( direction ) {
 
@@ -235,12 +246,14 @@
 
 		 	var hash = this.hash,
 		 			navToggler = $('.navbar-toggler');
-		 	$('html, body').animate({
+
+		 	// iOS: animar só 'body' evita o salto para o topo causado por 'html,body'
+		 	var scrollTarget = /iP(hone|ad|od)/.test(navigator.userAgent) ? $('body') : $('html, body');
+		 	scrollTarget.animate({
 		    scrollTop: $(hash).offset().top
 		  }, 700, 'easeInOutExpo', function(){
 		    window.location.hash = hash;
 		  });
-
 
 		  if ( navToggler.is(':visible') ) {
 		  	navToggler.click();

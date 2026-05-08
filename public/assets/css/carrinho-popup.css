@@ -30,8 +30,9 @@
     color: #0055ff;
     padding: 15px 20px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: center;
+    position: relative;
     border-bottom: 1px solid #333;
 }
 
@@ -43,9 +44,11 @@
 }
 
 .btn-fechar {
+    position: absolute;
+    right: 15px;
     background: none;
     border: none;
-    font-size: 24px;
+    font-size: 14px;
     cursor: pointer;
     color: #ccc;
     opacity: 0.8;
@@ -55,7 +58,6 @@
     gap: 5px;
     padding: 8px 12px;
     border-radius: 5px;
-    font-size: 14px;
     font-family: 'Poppins', sans-serif;
 }
 

@@ -1,58 +1,28 @@
-/* Correções para modal de produtos */
-
-/* FIX: Prevenir scroll jump quando modal abre/fecha */
-body.modal-open-fix {
-    position: fixed !important;
-    width: 100% !important;
-    overflow-y: scroll !important;
+/* Impedir que o Bootstrap mova o body ao abrir modal */
+body.modal-open {
+    overflow: hidden !important;
+    padding-right: 0 !important;
 }
 
-/* Garantir que botões de quantidade sejam clicáveis */
-#btn-aumentar, #btn-diminuir {
+/* Remove transform de entrada que causa salto visual */
+.modal.fade .modal-dialog {
+    transform: none !important;
+    transition: none !important;
+}
+
+/* Scroll suave dentro do modal no iOS */
+.modal-body {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+/* Interatividade dos controles */
+#btn-aumentar, #btn-diminuir, #btn-adicionar-carrinho {
     pointer-events: auto !important;
-    cursor: pointer !important;
-    z-index: 10 !important;
-    position: relative !important;
+    touch-action: manipulation;
 }
-
-/* Campo quantidade editável */
 #quantidade {
     pointer-events: auto !important;
-    cursor: text !important;
-    background-color: #2d2d2d !important;
-    color: #ffc135 !important;
-    border-color: #0055ff !important;
-}
-
-#quantidade:focus {
-    outline: none !important;
-    box-shadow: 0 0 0 2px rgba(23, 22, 54, 0.3) !important;
-}
-
-/* Botão adicionar ao carrinho */
-#btn-adicionar-carrinho {
-    pointer-events: auto !important;
-    cursor: pointer !important;
-    z-index: 10 !important;
-}
-
-/* Container dos controles de quantidade */
-.quantidade-controls {
-    display: flex !important;
-    align-items: center !important;
-    max-width: 150px !important;
-}
-
-/* Garantir que o modal não tenha sobreposições */
-#modalCompra {
-    z-index: 1050 !important;
-}
-
-#modalCompra .modal-content {
-    z-index: 1051 !important;
-}
-
-/* Remover qualquer overlay que possa estar bloqueando */
-#modalCompra .modal-body * {
-    pointer-events: auto !important;
+    -webkit-user-select: text !important;
+    user-select: text !important;
 }

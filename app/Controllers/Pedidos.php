@@ -59,7 +59,8 @@ class Pedidos extends BaseController
             // Calcular valores
             $valorProdutos = $dados->valor_produtos ?? 0;
             $valorEntrega = $dados->valor_entrega ?? 0;
-            $valorTotal = $dados->valor_total ?? ($valorProdutos + $valorEntrega);
+            $valorSaches = $dados->valor_saches ?? 0;
+            $valorTotal = $valorProdutos + $valorEntrega + $valorSaches;
 
             // Preparar dados do pedido
             $dadosPedido = [
@@ -126,6 +127,28 @@ class Pedidos extends BaseController
                 }
             }
 
+            // Salvar sachês do pedido
+            if (!empty($dados->saches) && is_array($dados->saches)) {
+                $db = \Config\Database::connect();
+                foreach ($dados->saches as $sache) {
+                    $qtd       = intval($sache->quantidade ?? 1);
+                    $qtdPaga   = intval($sache->quantidade_paga ?? 0);
+                    $qtdGratis = $qtd - $qtdPaga;
+                    $precoUnit = floatval($sache->preco ?? 0);
+                    $db->table('pedidos_saches')->insert([
+                        'pedido_id'           => $pedidoId,
+                        'sache_id'            => $sache->id ?? null,
+                        'sache_nome'          => $sache->nome ?? '',
+                        'quantidade'          => $qtd,
+                        'quantidade_gratuita' => max(0, $qtdGratis),
+                        'quantidade_paga'     => $qtdPaga,
+                        'preco_unitario'      => $precoUnit,
+                        'preco_total'         => $qtdPaga * $precoUnit,
+                        'criado_em'           => date('Y-m-d H:i:s'),
+                    ]);
+                }
+            }
+
             // Enviar email de confirmação se email fornecido
             if (!empty($dados->email_cliente)) {
                 $this->enviarEmailConfirmacao([
@@ -138,6 +161,8 @@ class Pedidos extends BaseController
             }
 
             // Retornar sucesso
+            $db = \Config\Database::connect();
+            $sachesRetorno = $db->table('pedidos_saches')->where('pedido_id', $pedidoId)->get()->getResultArray();
             return $this->response->setJSON([
                 'success' => true,
                 'message' => 'Pedido criado com sucesso!',
@@ -145,7 +170,8 @@ class Pedidos extends BaseController
                     'id' => $pedidoId,
                     'codigo' => $codigo,
                     'valor_total' => $valorTotal
-                ]
+                ],
+                'saches' => $sachesRetorno
             ]);
 
         } catch (\Exception $e) {

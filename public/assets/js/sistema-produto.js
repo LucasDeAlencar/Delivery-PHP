@@ -23,8 +23,16 @@ window.SistemaProduto = {
         this.extras = [];
         this.tamanhoSelecionado = null;
 
+        // Limpar extras COMPLETAMENTE antes de abrir novo produto
         if (window.ProdutoExtras) {
-            window.ProdutoExtras.limparExtras();
+            window.ProdutoExtras.extrasSelecionados = [];
+            window.ProdutoExtras.extrasDisponiveis = [];
+            window.ProdutoExtras.produtoAtual = null;
+            window.ProdutoExtras.obrigatorioExtras = 0;
+            window.ProdutoExtras.maxExtras = 0;
+            $('#container-btn-extras').hide();
+            $('#extras-selecionados-resumo').hide();
+            $('#modal-produto-preco-extras').text('Sem extras');
         }
 
         this.preencherModal(dados);
@@ -55,6 +63,7 @@ window.SistemaProduto = {
             preco: parseFloat($el.attr('data-produto-preco')),
             imagem: $el.attr('data-produto-imagem'),
             categoria: $el.attr('data-produto-categoria'),
+            categoria_id: parseInt($el.attr('data-categoria-id')) || null,
             descricao: $el.attr('data-produto-descricao') || '',
             com_tamanho: $el.attr('data-com-tamanho') == '1' ? 1 : 0,
             tamanhos: tamanhos
@@ -79,6 +88,14 @@ window.SistemaProduto = {
         $('#modal-produto-categoria').text(dados.categoria);
         $('#modal-produto-descricao').text(dados.descricao);
         $('#modal-produto-imagem').attr('src', dados.imagem);
+
+        // Bloco mobile: imagem pequena + nome inline
+        const $mob = $('#modal-produto-imagem-mobile');
+        if ($mob.length) {
+            $('#modal-produto-imagem-mobile-img').attr('src', dados.imagem || '');
+            $('#modal-produto-nome-mobile').text(dados.nome);
+            $('#modal-produto-cat-mobile').text(dados.categoria);
+        }
 
         $('#quantidade').val(1);
         $('#observacoes').val('');
@@ -116,39 +133,39 @@ window.SistemaProduto = {
     },
 
     async carregarExtras(produtoId) {
+        // Guardar o id do produto que disparou esta chamada para evitar race condition
+        const _produtoId = produtoId;
         try {
             const response = await fetch(`/api/produto-extras/${produtoId}`);
             const data = await response.json();
 
-            if (data.success && data.extras?.length > 0) {
+            // Se o produto atual mudou enquanto aguardávamos, ignorar resultado
+            if (!this.produto || String(this.produto.id) !== String(_produtoId)) return;
+
+            const temExtras = data.success && data.extras?.length > 0;
+
+            if (temExtras) {
                 this.extrasDisponiveis = data.extras;
                 $('#container-btn-extras').show();
-                
-                // Configurar no objeto global ProdutoExtras
+
                 if (window.ProdutoExtras) {
                     window.ProdutoExtras.extrasDisponiveis = data.extras;
+                    window.ProdutoExtras.extrasSelecionados = []; // garantir limpeza
                     window.ProdutoExtras.obrigatorioExtras = parseInt(data.obrigatorio_extras) || 0;
                     window.ProdutoExtras.maxExtras = parseInt(data.max_extras) || 0;
-                    console.log('SistemaProduto - Extras carregados:', {
-                        obrigatorio: window.ProdutoExtras.obrigatorioExtras,
-                        max: window.ProdutoExtras.maxExtras
-                    });
                 }
-                
+
                 let textoBtn = 'Selecionar Extras';
-                if (data.obrigatorio_extras > 0) {
-                    textoBtn = `Selecionar Extras (${data.obrigatorio_extras} obrigatório)`;
-                } else if (data.max_extras > 0) {
-                    textoBtn = `Selecionar Extras (Máx. ${data.max_extras})`;
-                } else {
-                    textoBtn = 'Selecionar Extras (Opcional)';
-                }
+                if (data.obrigatorio_extras > 0) textoBtn = `Selecionar Extras (${data.obrigatorio_extras} obrigatório)`;
+                else if (data.max_extras > 0) textoBtn = `Selecionar Extras (Máx. ${data.max_extras})`;
+                else textoBtn = 'Selecionar Extras (Opcional)';
                 $('#texto-btn-extras').text(textoBtn);
             } else {
-                // Sem extras disponíveis - ainda assim configurar valores
                 if (window.ProdutoExtras && data.obrigatorio_extras !== undefined) {
                     window.ProdutoExtras.obrigatorioExtras = parseInt(data.obrigatorio_extras) || 0;
                     window.ProdutoExtras.maxExtras = parseInt(data.max_extras) || 0;
+                    window.ProdutoExtras.extrasSelecionados = [];
+                    window.ProdutoExtras.extrasDisponiveis = [];
                 }
                 this.extrasDisponiveis = [];
                 $('#container-btn-extras').hide();
@@ -224,6 +241,7 @@ window.SistemaProduto = {
             extras: extrasSelecionados,
             tamanho: this.tamanhoSelecionado ? { id: this.tamanhoSelecionado.id, nome: this.tamanhoSelecionado.nome, preco: this.tamanhoSelecionado.preco } : null,
             tamanho_id: this.tamanhoSelecionado?.id || null,
+            categoria_id: this.produto.categoria_id || null,
             total: this.calcularTotalItem(extrasSelecionados)
         };
 
@@ -260,6 +278,14 @@ window.SistemaProduto = {
         $('#modalCompra').modal('hide');
         this.produto = null;
         this.extras = [];
+        this.tamanhoSelecionado = null;
+        if (window.ProdutoExtras) {
+            window.ProdutoExtras.extrasSelecionados = [];
+            window.ProdutoExtras.extrasDisponiveis = [];
+            window.ProdutoExtras.produtoAtual = null;
+            window.ProdutoExtras.obrigatorioExtras = 0;
+            window.ProdutoExtras.maxExtras = 0;
+        }
     },
 
     salvarCarrinho() {
@@ -282,37 +308,27 @@ window.SistemaProduto = {
     },
 
     bindEventos() {
-        let scrollPosicao = 0;
-        let scrollInterval = null;
-
+        // Salvar scroll ANTES do Bootstrap travar o body
         $('#modalCompra').on('show.bs.modal', () => {
-            scrollPosicao = window.scrollY || window.pageYOffset;
-            document.body.style.overflow = 'unset';
-            document.body.style.position = 'relative';
+            document.body.dataset.scrollY = window.scrollY || window.pageYOffset || 0;
         });
 
+        // Após abrir: desfazer tudo que o Bootstrap fez no body
         $('#modalCompra').on('shown.bs.modal', () => {
             document.body.style.overflow = '';
-            scrollPosicao = window.scrollY || window.pageYOffset;
-            
-            let attempts = 0;
-            scrollInterval = setInterval(() => {
-                if (attempts < 10) {
-                    window.scrollTo(0, scrollPosicao);
-                    attempts++;
-                } else {
-                    clearInterval(scrollInterval);
-                }
-            }, 50);
+            document.body.style.paddingRight = '';
+            document.documentElement.style.overflow = 'hidden'; // travar no <html> sem mover body
         });
 
+        // Ao fechar: restaurar e rolar de volta
         $('#modalCompra').on('hide.bs.modal', () => {
-            if (scrollInterval) clearInterval(scrollInterval);
+            document.documentElement.style.overflow = '';
         });
 
         $('#modalCompra').on('hidden.bs.modal', () => {
-            if (scrollInterval) clearInterval(scrollInterval);
-            window.scrollTo(0, scrollPosicao);
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+            window.scrollTo(0, parseInt(document.body.dataset.scrollY || '0', 10));
         });
 
         $(document).on('extrasAtualizados', () => {

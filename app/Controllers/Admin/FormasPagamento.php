@@ -51,9 +51,12 @@ class FormasPagamento extends BaseController
                 $ativo = $this->request->getPost('forma_' . $forma->id) ? 1 : 0;
                 $dadosUpdate = ['ativo' => $ativo];
 
-                // Se for PIX, atualizar também a chave
-                if ($forma->slug === 'pix' && $chavePix) {
-                    $dadosUpdate['codigo'] = $chavePix;
+                // Se for PIX, atualizar também a chave e visibilidade
+                if ($forma->slug === 'pix') {
+                    if ($chavePix) {
+                        $dadosUpdate['codigo'] = $chavePix;
+                    }
+                    $dadosUpdate['pix_visivel'] = $this->request->getPost('pix_visivel') ? 1 : 0;
                 }
 
                 // Se for PIX, processar upload do QR Code
@@ -76,7 +79,8 @@ class FormasPagamento extends BaseController
                 }
 
                 // Atualiza apenas se mudou
-                if ($forma->ativo != $ativo || ($forma->slug === 'pix' && $forma->codigo !== $chavePix) || isset($dadosUpdate['qrcode_image'])) {
+                $pixVisivelNovo = isset($dadosUpdate['pix_visivel']) ? $dadosUpdate['pix_visivel'] : ($forma->pix_visivel ?? 1);
+                if ($forma->ativo != $ativo || ($forma->slug === 'pix' && $forma->codigo !== $chavePix) || isset($dadosUpdate['qrcode_image']) || ($forma->slug === 'pix' && ($forma->pix_visivel ?? 1) != $pixVisivelNovo)) {
                     $this->formaPagamentoModel->update($forma->id, $dadosUpdate);
                     $atualizados++;
                 }

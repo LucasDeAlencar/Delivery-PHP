@@ -40,10 +40,59 @@
         </div>
     </div>
 
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-bell me-1"></i> Sistema de Chamada
+        </div>
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h5 class="mb-0">Ativar Sistema de Chamada</h5>
+                    <p class="text-muted mb-0">Quando ativo, clientes não podem escolher mesas na home — apenas o admin gerencia as mesas</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="form-check form-switch form-check-inline fs-5">
+                        <input class="form-check-input" type="checkbox" id="sistema_chamada" style="width:3rem;height:1.5rem;"
+                               <?php echo (isset($config->sistema_chamada) && $config->sistema_chamada == 1) ? 'checked' : ''; ?>>
+                        <label class="form-check-label" for="sistema_chamada" id="label_sistema_chamada">
+                            <?php echo (isset($config->sistema_chamada) && $config->sistema_chamada == 1) ? '<span class="text-success">Ativado</span>' : '<span class="text-secondary">Desativado</span>'; ?>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-users me-1"></i> Capacidade das Mesas no Carrinho
+        </div>
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h5 class="mb-0">Exibir capacidade no carrinho</h5>
+                    <p class="text-muted mb-0">Quando ativo, mostra a quantidade de lugares de cada mesa na seleção do carrinho</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="form-check form-switch form-check-inline fs-5">
+                        <input class="form-check-input" type="checkbox" id="mostrar_capacidade_carrinho" style="width:3rem;height:1.5rem;"
+                               <?php echo (isset($config->mostrar_capacidade_carrinho) && $config->mostrar_capacidade_carrinho == 1) ? 'checked' : ''; ?>>
+                        <label class="form-check-label" for="mostrar_capacidade_carrinho" id="label_mostrar_capacidade_carrinho">
+                            <?php echo (isset($config->mostrar_capacidade_carrinho) && $config->mostrar_capacidade_carrinho == 1) ? '<span class="text-success">Ativado</span>' : '<span class="text-secondary">Desativado</span>'; ?>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <?php if (isset($config->sistema_ativo) && $config->sistema_ativo == 1): ?>
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <div><i class="fas fa-chair me-1"></i> Mesas</div>
+            <div>
+                <i class="fas fa-chair me-1"></i> Mesas
+                <small class="text-muted ms-2" id="ultima-atualizacao"></small>
+            </div>
             <div class="d-flex gap-2">
                 <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalCriarMesa">
                     <i class="fas fa-plus"></i> Nova Mesa
@@ -54,10 +103,10 @@
             </div>
         </div>
         <div class="card-body">
-            <div class="row g-3">
+            <div class="row g-3" id="grid-mesas">
                 <?php if (!empty($mesas)): ?>
                     <?php foreach ($mesas as $mesa): ?>
-                        <div class="col-6 col-md-4 col-lg-3">
+                        <div class="col-6 col-md-4 col-lg-3" data-mesa-id="<?php echo $mesa->id; ?>">
                             <div class="card h-100 border-<?php echo $mesa->ativo ? ($mesa->ocupado ? 'warning' : 'success') : 'secondary'; ?>">
                                 <div class="card-body text-center p-3">
                                     <h4 class="mb-1">
@@ -74,12 +123,20 @@
                                     <?php else: ?>
                                         <span class="badge bg-secondary">Inativa</span>
                                     <?php endif; ?>
+                                    <?php if (!($mesa->mostrar_no_carrinho ?? 1)): ?>
+                                        <span class="badge bg-dark border border-secondary mt-1"><i class="fas fa-eye-slash me-1"></i>Oculta no carrinho</span>
+                                    <?php endif; ?>
                                     <div class="mt-2 d-flex justify-content-center gap-1">
-                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="editarMesa(<?php echo $mesa->id; ?>, <?php echo $mesa->capacidade; ?>, <?php echo $mesa->ativo; ?>)" title="Editar">
+                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="editarMesa(<?php echo $mesa->id; ?>, <?php echo $mesa->capacidade; ?>, <?php echo $mesa->ativo; ?>, <?php echo (int)($mesa->mostrar_no_carrinho ?? 1); ?>)" title="Editar">
                                             <i class="fas fa-edit"></i>
                                         </button>
+                                        <?php if ($mesa->ativo && !$mesa->ocupado): ?>
+                                            <button type="button" class="btn btn-outline-warning btn-sm" onclick="ocuparMesa(<?php echo $mesa->id; ?>)" title="Ocupar">
+                                                <i class="fas fa-lock"></i>
+                                            </button>
+                                        <?php endif; ?>
                                         <?php if ($mesa->ocupado): ?>
-                                            <button type="button" class="btn btn-outline-warning btn-sm" onclick="liberarMesa(<?php echo $mesa->id; ?>)" title="Liberar">
+                                            <button type="button" class="btn btn-outline-success btn-sm" onclick="liberarMesa(<?php echo $mesa->id; ?>)" title="Liberar">
                                                 <i class="fas fa-unlock"></i>
                                             </button>
                                         <?php endif; ?>
@@ -92,7 +149,7 @@
                         </div>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <div class="col-12 text-center text-muted py-5">
+                    <div class="col-12 text-center text-muted py-5" id="sem-mesas">
                         <i class="fas fa-chair fa-3x mb-3"></i>
                         <p class="mb-0">Nenhuma mesa cadastrada</p>
                         <p class="small">Clique em "Nova Mesa" para adicionar</p>
@@ -178,6 +235,13 @@
                         <label class="form-check-label" for="mesa_ativo">Mesa ativa</label>
                     </div>
                 </div>
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="mesa_mostrar_no_carrinho">
+                        <label class="form-check-label" for="mesa_mostrar_no_carrinho">Mostrar no carrinho da home</label>
+                        <div class="form-text text-muted" style="font-size:.8rem;">Quando ativo, o espaço desta mesa aparece para seleção no carrinho.</div>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer" style="border-top:1px solid #444;">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -197,6 +261,24 @@ document.getElementById('sistema_ativo').addEventListener('change', function() {
         headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
         body: JSON.stringify({ sistema_ativo: this.checked ? 1 : 0 })
     }).then(r => r.json()).then(d => { if (d.sucesso) location.reload(); });
+});
+
+document.getElementById('sistema_chamada').addEventListener('change', function() {
+    fetch('<?php echo site_url('admin/mesas/atualizarConfig'); ?>', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify({ sistema_chamada: this.checked ? 1 : 0 })
+    }).then(r => r.json()).then(d => { if (d.sucesso) location.reload(); });
+});
+
+document.getElementById('mostrar_capacidade_carrinho').addEventListener('change', function() {
+    const label = document.getElementById('label_mostrar_capacidade_carrinho');
+    label.innerHTML = this.checked ? '<span class="text-success">Ativado</span>' : '<span class="text-secondary">Desativado</span>';
+    fetch('<?php echo site_url('admin/mesas/atualizarConfig'); ?>', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify({ mostrar_capacidade_carrinho: this.checked ? 1 : 0 })
+    });
 });
 
 function criarMesa() {
@@ -237,10 +319,20 @@ function liberarMesa(id) {
     }).then(r => r.json()).then(d => { if (d.sucesso) location.reload(); });
 }
 
-function editarMesa(id, capacidade, ativo) {
+function ocuparMesa(id) {
+    if (!confirm('Marcar esta mesa como ocupada?')) return;
+    fetch('<?php echo site_url('admin/mesas/ocupar'); ?>', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify({ id })
+    }).then(r => r.json()).then(d => { if (d.sucesso) location.reload(); });
+}
+
+function editarMesa(id, capacidade, ativo, mostrarNoCarrinho) {
     document.getElementById('mesa_id').value = id;
     document.getElementById('mesa_capacidade').value = capacidade;
     document.getElementById('mesa_ativo').checked = ativo == 1;
+    document.getElementById('mesa_mostrar_no_carrinho').checked = mostrarNoCarrinho == 1;
     new bootstrap.Modal(document.getElementById('modalEditarMesa')).show();
 }
 
@@ -251,9 +343,13 @@ function salvarMesa() {
         body: JSON.stringify({
             id: document.getElementById('mesa_id').value,
             capacidade: document.getElementById('mesa_capacidade').value,
-            ativo: document.getElementById('mesa_ativo').checked ? 1 : 0
+            ativo: document.getElementById('mesa_ativo').checked ? 1 : 0,
+            mostrar_no_carrinho: document.getElementById('mesa_mostrar_no_carrinho').checked ? 1 : 0
         })
     }).then(r => r.json()).then(d => { if (d.sucesso) location.reload(); });
 }
+
+// Auto-refresh a cada 10 segundos
+setInterval(() => location.reload(), 10000);
 </script>
 <?php echo $this->endSection(); ?>

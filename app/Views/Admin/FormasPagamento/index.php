@@ -102,6 +102,11 @@
         padding-top: 15px;
         margin-top: 15px;
     }
+    
+    /* Estado oculto do PIX */
+    .pix-config.pix-oculto {
+        display: none !important;
+    }
 
     .pix-config .form-control {
         background: var(--input-bg);
@@ -247,38 +252,53 @@
                                             </label>
                                         </div>
 
-                                        <!-- Campo PIX (só aparece para PIX) -->
-                                        <?php if ($forma->slug === 'pix'): ?>
-                                        <div class="mt-3 pix-config" style="<?= $forma->ativo ? '' : 'display: none;' ?>">
-                                            <label class="form-label text-muted" style="font-size: 0.8rem;">Chave PIX:</label>
-                                            <input type="text" 
-                                                   name="chave_pix" 
-                                                   class="form-control form-control-sm" 
-                                                   placeholder="Digite sua chave PIX"
-                                                   value="<?= esc($forma->codigo ?? '') ?>"
-                                                   style="font-size: 0.8rem;"
-                                                   <?= $forma->ativo ? 'required' : '' ?>>
-                                            <small class="text-muted d-block">CPF, CNPJ, e-mail, telefone ou chave aleatória</small>
-                                            
-                                            <label class="form-label text-muted mt-2" style="font-size: 0.8rem;">QR Code do PIX:</label>
-                                            <input type="file" 
-                                                   name="qrcode_pix" 
-                                                   class="form-control form-control-sm" 
-                                                   accept="image/*"
-                                                   style="font-size: 0.8rem;">
-                                            <?php if (!empty($forma->qrcode_image)): ?>
-                                                <div class="mt-2">
-                                                    <img src="<?= base_url('uploads/qrcode_pix/' . $forma->qrcode_image) ?>" 
-                                                         alt="QR Code PIX" 
-                                                         style="max-width: 150px; border: 2px solid #0055ff; border-radius: 8px;">
-                                                    <div class="mt-1">
-                                                        <small class="text-muted">QR Code atual</small>
-                                                    </div>
-                                                </div>
-                                            <?php endif; ?>
-                                            <small class="text-muted d-block mt-1">Envie uma imagem do QR Code para pagamento PIX</small>
-                                        </div>
-                                        <?php endif; ?>
+                                         <!-- Campo PIX (só aparece para PIX) -->
+                                         <?php if ($forma->slug === 'pix'): ?>
+                                         <div class="mt-3 pix-config" style="<?= $forma->ativo ? '' : 'display: none;' ?>">
+                                             <label class="form-label text-muted" style="font-size: 0.8rem;">Chave PIX:</label>
+                                             <input type="text" 
+                                                    name="chave_pix" 
+                                                    class="form-control form-control-sm" 
+                                                    placeholder="Digite sua chave PIX"
+                                                    value="<?= esc($forma->codigo ?? '') ?>"
+                                                    style="font-size: 0.8rem;"
+                                                    <?= ($forma->ativo && ($forma->pix_visivel ?? 1)) ? 'required' : '' ?>>
+                                             <small class="text-muted d-block">CPF, CNPJ, e-mail, telefone ou chave aleatória</small>
+                                             
+                                             <label class="form-label text-muted mt-2" style="font-size: 0.8rem;">QR Code do PIX:</label>
+                                             <input type="file" 
+                                                    name="qrcode_pix" 
+                                                    class="form-control form-control-sm" 
+                                                    accept="image/*"
+                                                    style="font-size: 0.8rem;">
+                                             <?php if (!empty($forma->qrcode_image)): ?>
+                                                 <div class="mt-2">
+                                                     <img src="<?= base_url('uploads/qrcode_pix/' . $forma->qrcode_image) ?>" 
+                                                          alt="QR Code PIX" 
+                                                          style="max-width: 150px; border: 2px solid #0055ff; border-radius: 8px;">
+                                                     <div class="mt-1">
+                                                         <small class="text-muted">QR Code atual</small>
+                                                     </div>
+                                                 </div>
+                                             <?php endif; ?>
+                                             <small class="text-muted d-block mt-1">Envie uma imagem do QR Code para pagamento PIX</small>
+                                             
+                                             <!-- Toggle: mostrar chave PIX e QR Code para o cliente -->
+                                             <div class="mt-3 d-flex align-items-center gap-2">
+                                                 <label class="switch mb-0">
+                                                     <input type="checkbox"
+                                                            name="pix_visivel"
+                                                            value="1"
+                                                            id="pix_visivel_toggle"
+                                                            <?= ($forma->pix_visivel ?? 1) ? 'checked' : '' ?>>
+                                                     <span class="slider"></span>
+                                                 </label>
+                                                 <small class="text-muted ms-2" id="pix_visivel_label">
+                                                     <?= ($forma->pix_visivel ?? 1) ? 'Chave PIX e QR Code <strong class="text-success">visíveis</strong> para o cliente' : 'Chave PIX e QR Code <strong class="text-danger">ocultos</strong> para o cliente' ?>
+                                                 </small>
+                                             </div>
+                                         </div>
+                                         <?php endif; ?>
 
                                         <!-- Descrição -->
                                         <div class="text-center mt-2">
@@ -387,13 +407,14 @@
                 return false;
             }
 
-            // Validar chave PIX se PIX estiver ativo
-            const pixAtivo = $('input[data-id]:checked').closest('.payment-card').find('.pix-config').is(':visible');
+            // Validar chave PIX se PIX estiver ativo e visível
+            const pixAtivo = $('.payment-toggle[data-id]:checked').closest('.payment-card').find('.pix-config').is(':visible');
+            const pixVisivel = $('#pix_visivel_toggle').is(':checked');
             const chavePix = $('input[name="chave_pix"]').val();
             
-            if (pixAtivo && !chavePix.trim()) {
+            if (pixAtivo && pixVisivel && !chavePix.trim()) {
                 e.preventDefault();
-                alert('⚠️ Atenção!\n\nA chave PIX é obrigatória quando o PIX está ativo.');
+                alert('⚠️ Atenção!\n\nA chave PIX é obrigatória quando o PIX está ativo e visível.');
                 $('input[name="chave_pix"]').focus();
                 return false;
             }
@@ -415,6 +436,15 @@
 
         $('.payment-toggle').on('change', atualizarContador);
         atualizarContador();
+
+        // Toggle pix_visivel: atualiza label
+        $('#pix_visivel_toggle').on('change', function() {
+            if ($(this).is(':checked')) {
+                $('#pix_visivel_label').html('Chave PIX e QR Code <strong class="text-success">visíveis</strong> para o cliente');
+            } else {
+                $('#pix_visivel_label').html('Chave PIX e QR Code <strong class="text-danger">ocultos</strong> para o cliente');
+            }
+        });
     });
 </script>
 <?php echo $this->endSection(); ?>

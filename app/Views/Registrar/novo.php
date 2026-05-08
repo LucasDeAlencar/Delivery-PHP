@@ -321,15 +321,19 @@
                                readonly>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group" style="position:relative;">
                         <label for="bairro">Bairro</label>
                         <input type="text" 
                                name="bairro" 
                                id="bairro"
                                value="<?= old('bairro') ?>" 
                                class="form-control" 
-                               placeholder="Campo autopreenchido pelo CEP"
-                               readonly>
+                               placeholder="Digite ou selecione o bairro"
+                               autocomplete="off">
+                        <div id="bairro-sugestoes" style="position:absolute;z-index:999;width:100%;background:#2d2d2d;border:1px solid #444;border-radius:0 0 8px 8px;max-height:180px;overflow-y:auto;display:none;"></div>
+                        <div id="bairro-aviso" style="display:none;color:#ff6b6b;font-size:0.82rem;margin-top:4px;">
+                            <i class="fas fa-exclamation-triangle"></i> Bairro não encontrado na nossa área de entrega. Verifique ou continue assim mesmo.
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -535,6 +539,15 @@
                         if (data.codigo_dev) {
                             document.getElementById('codigo-dev-valor').textContent = data.codigo_dev;
                             document.getElementById('codigo-dev').style.display = 'block';
+
+                             // Exibe alerta explicativo sobre falha no envio de email
+                             const alertDiv = document.createElement("div");
+                             alertDiv.className = "alert alert-warning mt-3";
+                             alertDiv.style.cssText = "background: #5a4c2d; color: #e6c878; border: 1px solid #7a6a3a; padding: 12px; border-radius: 8px; text-align: center;";
+                             alertDiv.innerHTML = "<strong>Aviso:</strong> O email não pôde ser enviado no momento. Use o código abaixo para continuar. Tente novamente mais tarde.";
+
+                             // Insere antes da div do codigo-dev
+                             document.getElementById("codigo-dev").parentNode.insertBefore(alertDiv, document.getElementById("codigo-dev"));
                         }
 
                         document.getElementById('etapa-verificacao').classList.add('hidden');
@@ -662,6 +675,15 @@
                         if (data.codigo_dev) {
                             document.getElementById('codigo-dev-valor').textContent = data.codigo_dev;
                             document.getElementById('codigo-dev').style.display = 'block';
+
+                             // Exibe alerta explicativo sobre falha no envio de email
+                             const alertDiv = document.createElement("div");
+                             alertDiv.className = "alert alert-warning mt-3";
+                             alertDiv.style.cssText = "background: #5a4c2d; color: #e6c878; border: 1px solid #7a6a3a; padding: 12px; border-radius: 8px; text-align: center;";
+                             alertDiv.innerHTML = "<strong>Aviso:</strong> O email não pôde ser enviado no momento. Use o código abaixo para continuar. Tente novamente mais tarde.";
+
+                             // Insere antes da div do codigo-dev
+                             document.getElementById("codigo-dev").parentNode.insertBefore(alertDiv, document.getElementById("codigo-dev"));
                         }
 
                         if (intervalTimer) clearInterval(intervalTimer);
@@ -719,8 +741,36 @@
             // Event listener para submit do formulário de cadastro
             if (formCadastro) {
                 formCadastro.addEventListener('submit', function(e) {
-                    console.log('Formulário de cadastro enviado');
-                    limparEstado(); // Limpar estado salvo
+                    const bairroVal   = document.getElementById('bairro').value.trim();
+                    const enderecoVal = document.getElementById('endereco').value.trim();
+                    const aviso       = document.getElementById('bairro-aviso');
+
+                    // Validar campos obrigatórios de endereço
+                    if (!bairroVal) {
+                        e.preventDefault();
+                        aviso.innerHTML = '<i class="fas fa-exclamation-triangle"></i> O campo Bairro é obrigatório.';
+                        aviso.style.color   = '#ff6b6b';
+                        aviso.style.display = 'block';
+                        document.getElementById('bairro').focus();
+                        return;
+                    }
+                    if (!enderecoVal) {
+                        e.preventDefault();
+                        aviso.innerHTML = '<i class="fas fa-exclamation-triangle"></i> O campo Logradouro é obrigatório.';
+                        aviso.style.color   = '#ff6b6b';
+                        aviso.style.display = 'block';
+                        document.getElementById('endereco').focus();
+                        return;
+                    }
+
+                    // Aviso se bairro não está na área de entrega (não bloqueia)
+                    if (bairrosCidade.length > 0 && !bairrosCidade.some(b => b.toLowerCase() === bairroVal.toLowerCase())) {
+                        aviso.innerHTML = '<i class="fas fa-info-circle"></i> Bairro não encontrado na nossa área de entrega. Isso pode afetar o frete. Você poderá editar futuramente.';
+                        aviso.style.color   = '#f8b531';
+                        aviso.style.display = 'block';
+                    }
+
+                    limparEstado();
                     const btnCadastrar = document.getElementById('btnCadastrar');
                     btnCadastrar.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>CADASTRANDO...';
                     btnCadastrar.disabled = true;
@@ -742,35 +792,97 @@
 
             // Buscar CEP
             function buscarCEP(cep) {
-                console.log('Buscando CEP:', cep);
                 fetch('<?= site_url('registrar/buscar_cep') ?>', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({cep: cep})
+                    headers: {'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},
+                    body: JSON.stringify({cep})
                 })
-                .then(response => {
-                    console.log('Response status:', response.status);
-                    return response.text();
-                })
-                .then(text => {
-                    console.log('Response text:', text);
-                    const data = JSON.parse(text);
-                    console.log('Data parsed:', data);
-                    if (data && data.erro) {
-                        alert(data.msg || 'CEP não encontrado');
-                    } else if (data) {
-                        document.getElementById('bairro').value = data.bairro || '';
-                        document.getElementById('cidade').value = data.localidade || '';
-                        document.getElementById('endereco').value = data.logradouro || '';
+                .then(r => r.json())
+                .then(data => {
+                    if (data && !data.erro) {
+                        document.getElementById('cidade').value   = data.localidade || '';
+
+                        const enderecoInput = document.getElementById('endereco');
+                        if (data.logradouro) {
+                            enderecoInput.value    = data.logradouro;
+                            enderecoInput.readOnly = true;
+                        } else {
+                            enderecoInput.value       = '';
+                            enderecoInput.readOnly    = false;
+                            enderecoInput.placeholder = 'Digite seu logradouro';
+                        }
+
+                        const bairroInput = document.getElementById('bairro');
+                        // CEP de faixa geral: ViaCEP retorna bairro vazio
+                        if (data.bairro) {
+                            bairroInput.value = data.bairro;
+                            bairroInput.readOnly = true;
+                        } else {
+                            bairroInput.value = '';
+                            bairroInput.readOnly = false;
+                            bairroInput.placeholder = 'Digite seu bairro';
+                        }
+
+                        verificarBairro();
+                        if (data.localidade) carregarSugestoesBairro(data.localidade);
+                    } else {
+                        alert(data?.msg || 'CEP não encontrado');
                     }
                 })
-                .catch(error => {
-                    console.error('Erro ao buscar CEP:', error);
-                    alert('Erro ao buscar CEP. Tente novamente.');
+                .catch(() => alert('Erro ao buscar CEP. Tente novamente.'));
+            }
+
+            // Carregar sugestões de bairro da cidade
+            let bairrosCidade = [];
+            function carregarSugestoesBairro(cidade) {
+                fetch('<?= site_url('registrar/bairros_cidade') ?>?cidade=' + encodeURIComponent(cidade), {
+                    headers: {'X-Requested-With':'XMLHttpRequest'}
+                })
+                .then(r => r.json())
+                .then(data => { bairrosCidade = data.bairros || []; });
+            }
+
+            // Autocomplete bairro
+            const bairroInput = document.getElementById('bairro');
+            const sugestoesDiv = document.getElementById('bairro-sugestoes');
+
+            bairroInput.addEventListener('input', function() {
+                const termo = this.value.trim().toLowerCase();
+                sugestoesDiv.innerHTML = '';
+                sugestoesDiv.style.display = 'none';
+
+                verificarBairro();
+
+                if (!termo || bairrosCidade.length === 0) return;
+
+                const filtrados = bairrosCidade.filter(b => b.toLowerCase().includes(termo)).slice(0, 8);
+                if (!filtrados.length) return;
+
+                filtrados.forEach(b => {
+                    const item = document.createElement('div');
+                    item.textContent = b;
+                    item.style.cssText = 'padding:8px 12px;cursor:pointer;color:#fff;border-bottom:1px solid #444;font-size:0.9rem;';
+                    item.addEventListener('mousedown', () => {
+                        bairroInput.value = b;
+                        sugestoesDiv.style.display = 'none';
+                        verificarBairro();
+                    });
+                    item.addEventListener('mouseover', () => item.style.background = '#3a3a3a');
+                    item.addEventListener('mouseout',  () => item.style.background = '');
+                    sugestoesDiv.appendChild(item);
                 });
+                sugestoesDiv.style.display = 'block';
+            });
+
+            bairroInput.addEventListener('blur', () => setTimeout(() => sugestoesDiv.style.display = 'none', 150));
+
+            // Verificar se bairro está cadastrado
+            function verificarBairro() {
+                const val = bairroInput.value.trim().toLowerCase();
+                const aviso = document.getElementById('bairro-aviso');
+                if (!val || bairrosCidade.length === 0) { aviso.style.display = 'none'; return; }
+                const encontrado = bairrosCidade.some(b => b.toLowerCase() === val);
+                aviso.style.display = encontrado ? 'none' : 'block';
             }
 
             // Permitir apenas letras e números no código
@@ -788,12 +900,6 @@
                     window.location.href = this.href;
                 });
             }
-
-            // Ao finalizar cadastro (redirecionamento), limpar localStorage
-            formCadastro.addEventListener('submit', function(e) {
-                // O servidor redirecionará após criar, mas vamos limpar o estado
-                limparEstado();
-            });
 
             // Restaurar sessão salva ao carregar a página
             restaurarSessaoSalva();

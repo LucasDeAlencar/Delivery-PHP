@@ -177,7 +177,7 @@ class PedidoModel extends Model {
      */
     public function atualizarStatus($pedidoId, $novoStatus) {
         $novoStatus = strtolower(trim($novoStatus));
-        $statusValidos = ['pendente', 'confirmado', 'finalizado', 'cancelado'];
+        $statusValidos = ['pendente', 'confirmado', 'finalizado', 'cancelado', 'em_aberto'];
         
         if (!in_array($novoStatus, $statusValidos)) {
             log_message('error', "Status inválido: {$novoStatus}");
@@ -239,11 +239,12 @@ class PedidoModel extends Model {
         $novoStatus = strtolower(trim($novoStatus ?? ''));
         
         $transicoesPermitidas = [
+            'em_aberto' => ['pendente', 'cancelado'],
             'pendente' => ['confirmado', 'cancelado'],
             'confirmado' => ['finalizado', 'cancelado'],
-            'finalizado' => [], // Não pode mudar
-            'cancelado' => [], // Não pode mudar
-            'inativo' => [], // Não pode mudar
+            'finalizado' => [],
+            'cancelado' => [],
+            'inativo' => [],
         ];
         
         return in_array($novoStatus, $transicoesPermitidas[$statusAtual] ?? []);
@@ -263,6 +264,7 @@ class PedidoModel extends Model {
             'finalizados' => $this->where('status', 'finalizado')->countAllResults(false),
             'cancelados' => $this->where('status', 'cancelado')->countAllResults(false),
             'inativos' => $this->where('status', 'inativo')->countAllResults(false),
+            'em_aberto' => $this->where('status', 'em_aberto')->countAllResults(false),
             'valor_total_hoje' => $this->selectSum('valor_total')
                                        ->where('DATE(criado_em)', date('Y-m-d'))
                                        ->where('status !=', 'inativo')
@@ -286,7 +288,7 @@ class PedidoModel extends Model {
                 WHERE (status IS NULL OR status = '' OR status = 'pendente')
                 AND criado_em < DATE_SUB(NOW(), INTERVAL " . self::TEMPO_INATIVO . " MINUTE)
                 AND deletado_em IS NULL
-                AND status != 'inativo'";
+                AND status NOT IN ('inativo', 'em_aberto')";
         
         $db->query($sql);
         $totalAlterados = $db->affectedRows();
