@@ -22,7 +22,7 @@ class BairrosApi extends ResourceController {
      */
     public function index() {
         $bairros = $this->db->table('bairros')
-                ->select('id, nome, valor_entrega')
+                ->select('id, nome, cidade, valor_entrega')
                 ->where('ativo', 1)
                 ->where('deletado_em IS NULL')
                 ->orderBy('nome', 'ASC')

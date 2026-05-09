@@ -214,6 +214,15 @@
                                     <option value="cancelado">❌ Cancelado</option>
                                 </select>
                                 <br><small class="text-muted">Confirmado → Finalizado ou Cancelado</small>
+                            <?php elseif ($pedido->status === 'nao_concluido'): ?>
+                                <select class="form-control status-select" 
+                                        data-pedido-id="<?= $pedido->id ?>"
+                                        style="width: auto; display: inline-block;">
+                                    <option value="nao_concluido" selected>⚠️ Não Concluído</option>
+                                    <option value="pendente">⏳ Pendente</option>
+                                    <option value="cancelado">❌ Cancelado</option>
+                                </select>
+                                <br><small class="text-muted">Não Concluído → Pendente ou Cancelado</small>
                             <?php else: ?>
                                 <span class="badge bg-secondary" style="font-size: 1rem; padding: 8px 15px;">
                                     <?= ucfirst($pedido->status) ?>
@@ -318,7 +327,19 @@
                 </div>
                 <div class="d-flex justify-content-between mb-2">
                     <span>Taxa de Entrega:</span>
-                    <strong>R$ <?= number_format($pedido->valor_entrega, 2, ',', '.') ?></strong>
+                    <?php if ($pedido->status === 'nao_concluido' && $pedido->tipo_entrega === 'entrega'): ?>
+                        <div class="d-flex align-items-center gap-1">
+                            <span>R$</span>
+                            <input type="number" id="input-taxa-entrega" step="0.01" min="0"
+                                   value="<?= number_format($pedido->valor_entrega, 2, '.', '') ?>"
+                                   style="width:90px;" class="form-control form-control-sm d-inline-block">
+                            <button class="btn btn-sm btn-primary" onclick="salvarTaxaEntrega()">
+                                <i class="fas fa-save"></i>
+                            </button>
+                        </div>
+                    <?php else: ?>
+                        <strong>R$ <?= number_format($pedido->valor_entrega, 2, ',', '.') ?></strong>
+                    <?php endif; ?>
                 </div>
                 <?php
                 $valorSaches = 0;
@@ -334,7 +355,7 @@
                 <hr>
                 <div class="d-flex justify-content-between">
                     <strong>TOTAL:</strong>
-                    <h4 class="text-success mb-0">
+                    <h4 class="text-success mb-0" id="valor-total-display">
                         R$ <?= number_format($pedido->valor_total, 2, ',', '.') ?>
                     </h4>
                 </div>
@@ -487,6 +508,24 @@
                 else alert(r.message || 'Erro ao alterar mesa');
             },
             error: function() { alert('Erro ao alterar mesa'); }
+        });
+    }
+
+    function salvarTaxaEntrega() {
+        const taxa = parseFloat($('#input-taxa-entrega').val()) || 0;
+        $.ajax({
+            url: '<?= site_url('admin/pedidos/atualizar-taxa-entrega') ?>',
+            method: 'POST',
+            dataType: 'json',
+            data: { pedido_id: <?= $pedido->id ?>, taxa_entrega: taxa },
+            success: function(r) {
+                if (r.success) {
+                    $('#valor-total-display').text('R$ ' + r.novo_total);
+                } else {
+                    alert(r.message || 'Erro ao atualizar taxa');
+                }
+            },
+            error: function() { alert('Erro ao atualizar taxa de entrega'); }
         });
     }
 </script>

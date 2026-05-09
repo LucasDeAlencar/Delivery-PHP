@@ -9,18 +9,46 @@ use CodeIgniter\HTTP\ResponseInterface;
 class Registrar extends BaseController {
 
     private $usuarioModel;
+    private $modo_cadastro;
 
     public function __construct() {
         $this->usuarioModel = new UsuarioModel();
         helper(['form']);
+
+        // Buscar modo_cadastro atual dos dados corporativos
+        $db = \Config\Database::connect();
+        $dadosCorp = $db->table('dados_corporativos')->where('id', 1)->get()->getRow();
+        $this->modo_cadastro = $dadosCorp ? (int)($dadosCorp->modo_cadastro ?? 1) : 1;
     }
 
-    public function index() {
-        log_message('info', 'Registrar::index - Acessando página de registro');
+    public function index()
+    {
+        log_message('info', 'Registrar::index - Acessando página de registro. Modo: ' . $this->modo_cadastro);
+
         $data = [
-            'titulo' => 'Criar Nova Conta'
+            'titulo' => 'Criar Nova Conta',
+            'modo_cadastro' => $this->modo_cadastro
         ];
 
+        // Modo 3: exibe view de cadastro simplificado (nome + celular)
+        if ($this->modo_cadastro == 3) {
+            return view('Login/cadastrar', $data);
+        }
+
+        // Modo 2: passa bairros da área de cobertura
+        if ($this->modo_cadastro == 2) {
+            $db = \Config\Database::connect();
+            $data['bairros'] = $db->table('bairros')->where('ativo', 1)->orderBy('cidade', 'ASC')->orderBy('nome', 'ASC')->get()->getResult();
+            return view('Registrar/sem_verificacao', $data);
+        }
+
+        // Modo 2: exibe view de cadastro simplificado sem verificação
+        if ($this->modo_cadastro == 2) {
+            log_message('info', 'Registrar::index - Modo 2, exibindo view sem verificação');
+            return view('Registrar/sem_verificacao', $data);
+        }
+
+        // Modo 1 (padrão): exibe view completa com verificação
         return view('Registrar/novo', $data);
     }
 
@@ -85,7 +113,8 @@ class Registrar extends BaseController {
             'Endereco' => $endereco ?? '',
             'Numero' => (int)($numero ?? 0) ?: 0,
             'Cidade' => $cidade ?? '',
-            'complemento' => $complemento ?? ''
+            'complemento' => $complemento ?? '',
+            'modo_cadastro' => 1
         ];
 
         log_message('info', 'Registrar::criar - Tentando inserir cliente: ' . json_encode($dados));
@@ -312,6 +341,140 @@ class Registrar extends BaseController {
         }
 
         return $this->response->setJSON($dados);
+    }
+
+    public function criarSemVerificacao()
+    {
+        log_message('info', '=== Registrar::criarSemVerificacao INÍCIO ===');
+
+        $nome = $this->request->getPost('nome');
+        $telefone = $this->request->getPost('telefone');
+        $cidade = $this->request->getPost('cidade');
+        $bairro = $this->request->getPost('bairro');
+        $endereco = $this->request->getPost('endereco');
+        $numero = $this->request->getPost('numero');
+        $complemento = $this->request->getPost('complemento') ?? '';
+
+        log_message('info', "Registrar::criarSemVerificacao - Dados: nome=$nome, telefone=$telefone");
+
+        if (empty($nome)) {
+            return redirect()->back()->withInput()->with('atencao', 'Por favor, preencha o nome');
+        }
+
+        if (empty($telefone)) {
+            return redirect()->back()->withInput()->with('atencao', 'Por favor, preencha o telefone');
+        }
+
+        $db = \Config\Database::connect();
+
+        // Verificar se telefone já existe
+        $telefoneNumeros = preg_replace("/[^0-9]/", "", $telefone);
+        if (!empty($telefoneNumeros)) {
+            $telefoneExistente = $db->query(
+                "SELECT id FROM clientes WHERE REPLACE(REPLACE(REPLACE(REPLACE(telefone, '(', ''), ')', ''), '-', ''), ' ', '') = ?",
+                [$telefoneNumeros]
+            )->getRow();
+            if ($telefoneExistente) {
+                return redirect()->back()->withInput()->with('atencao', 'Este telefone já está cadastrado');
+            }
+        }
+
+        $dados = [
+            'nome' => $nome,
+            'telefone' => $telefone,
+            'Cidade' => $cidade ?? null,
+            'Bairro' => $bairro ?? null,
+            'Endereco' => $endereco ?? null,
+            'Numero' => $numero ?? null,
+            'complemento' => $complemento ?? null,
+            'modo_cadastro' => 2,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+
+        try {
+            $resultado = $db->table('clientes')->insert($dados);
+            if ($resultado) {
+                $clienteId = $db->insertID();
+                $cliente = $db->table('clientes')->where('id', $clienteId)->get()->getRow();
+
+                session()->set('cliente_id', $cliente->id);
+                session()->set('cliente_telefone', $telefone);
+                session()->set('cliente_nome', $cliente->nome);
+
+                log_message('info', 'Registrar::criarSemVerificacao - Cliente cadastrado: ' . $cliente->id);
+                return redirect()->to(site_url('/'))->with('sucesso', "Bem-vindo(a), {$cliente->nome}! Seu cadastro foi realizado com sucesso.");
+            }
+
+            return redirect()->back()->withInput()->with('atencao', 'Erro ao cadastrar cliente. Tente novamente.');
+        } catch (\Exception $e) {
+            log_message('error', 'Registrar::criarSemVerificacao - Exceção: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('atencao', 'Erro no banco de dados: ' . $e->getMessage());
+        }
+    }
+
+    public function cadastroRapido()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['erro' => true, 'msg' => 'Requisição inválida']);
+        }
+
+        $json = $this->request->getJSON();
+        $nome = $json->nome ?? '';
+        $telefone = $json->telefone ?? '';
+
+        if (empty($nome) || empty($telefone)) {
+            return $this->response->setJSON(['erro' => true, 'msg' => 'Nome e telefone são obrigatórios']);
+        }
+
+        $db = \Config\Database::connect();
+
+        // Verificar se telefone já existe
+        $telefoneNumeros = preg_replace("/[^0-9]/", "", $telefone);
+        $telefoneExistente = null;
+        if (!empty($telefoneNumeros)) {
+            $telefoneExistente = $db->query(
+                "SELECT id FROM clientes WHERE REPLACE(REPLACE(REPLACE(REPLACE(telefone, '(', ''), ')', ''), '-', ''), ' ', '') = ?",
+                [$telefoneNumeros]
+            )->getRow();
+        }
+
+        // Se telefone já existe, faz login automático
+        if ($telefoneExistente) {
+            $cliente = $db->table('clientes')->where('id', $telefoneExistente->id)->get()->getRow();
+            session()->set('cliente_id', $cliente->id);
+            session()->set('cliente_telefone', $telefone);
+            session()->set('cliente_nome', $cliente->nome);
+            return $this->response->setJSON(['sucesso' => true, 'msg' => 'Bem-vindo de volta!', 'login' => true]);
+        }
+
+        // Cadastrar novo cliente (modo 3)
+        $dados = [
+            'nome' => $nome,
+            'telefone' => $telefone,
+            'modo_cadastro' => 3,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+
+        try {
+            $resultado = $db->table('clientes')->insert($dados);
+            if ($resultado) {
+                $clienteId = $db->insertID();
+                $cliente = $db->table('clientes')->where('id', $clienteId)->get()->getRow();
+
+                session()->set('cliente_id', $cliente->id);
+                session()->set('cliente_telefone', $telefone);
+                session()->set('cliente_nome', $cliente->nome);
+
+                return $this->response->setJSON(['sucesso' => true, 'msg' => 'Cadastro realizado com sucesso!']);
+            }
+
+            return $this->response->setJSON(['erro' => true, 'msg' => 'Erro ao cadastrar']);
+        } catch (\Exception $e) {
+            log_message('error', 'Registrar::cadastroRapido - ' . $e->getMessage());
+            return $this->response->setJSON(['erro' => true, 'msg' => 'Erro no banco de dados']);
+        }
     }
 
     public function bairros_cidade() {

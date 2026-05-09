@@ -469,6 +469,5 @@
          $('#modal-produto-preco-extras').text('Sem extras');
      });
 
-     console.log('🎯 Sistema de extras inicializado');
  });
 

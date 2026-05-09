@@ -382,6 +382,21 @@
         </div>
     </div>
     <div class="col-6 col-lg mb-2">
+        <div class="card card-estatistica" style="border-left-color: #e65100; cursor:pointer;" onclick="$('.filtro-status[data-status=nao_concluido]').trigger('click')">
+            <div class="card-body py-2">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">Não Concluídos</h6>
+                        <h3 id="stat-nao-concluido" style="color: #e65100 !important;"><?= $estatisticas['nao_concluido'] ?? 0 ?></h3>
+                    </div>
+                    <div class="icon-circle" style="background: #e65100;">
+                        <i class="fas fa-exclamation-triangle text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg mb-2">
         <div class="card card-estatistica" style="border-left-color: #ff9800; cursor: pointer;" onclick="toggleSuportes()">
             <div class="card-body py-2">
                 <div class="d-flex justify-content-between align-items-center">
@@ -582,13 +597,14 @@ function carregarInfoPedido(codigo, pedidoId) {
 
 function getStatusColor(status) {
     const colors = {
-        'em_aberto':   'orange',
-        'pendente':    'warning',
-        'confirmado':  'info',
-        'preparando':  'primary',
-        'saiu_entrega':'info',
-        'finalizado':  'success',
-        'cancelado':   'danger'
+        'em_aberto':    'orange',
+        'pendente':     'warning',
+        'confirmado':   'info',
+        'preparando':   'primary',
+        'saiu_entrega': 'info',
+        'finalizado':   'success',
+        'cancelado':    'danger',
+        'nao_concluido':'secondary'
     };
     return colors[status] || 'secondary';
 }
@@ -636,6 +652,7 @@ function resolverTodosSuporte(codigo) {
                             <button type="button" class="btn btn-outline-danger filtro-status" data-status="cancelado">Cancelados</button>
                             <button type="button" class="btn btn-outline-secondary filtro-status" data-status="inativo">Inativos</button>
                             <button type="button" class="btn filtro-status" data-status="em_aberto" style="border-color:#c47a00;color:#c47a00;">Em Aberto</button>
+                            <button type="button" class="btn btn-outline-secondary filtro-status" data-status="nao_concluido">Não Concluídos</button>
                         </div>
                         <div class="d-flex align-items-center gap-2">
                             <i class="fas fa-search" style="color: #999;"></i>
@@ -773,13 +790,14 @@ function resolverTodosSuporte(codigo) {
                                                     <option value="finalizado">✔️ Finalizado</option>
                                                     <option value="cancelado">❌ Cancelado</option>
                                                 </select>
-                                            <?php else: ?>
+                                            <?php elseif ($statusPedido === 'nao_concluido'): ?>
                                                 <select class="status-select" data-pedido-id="<?= $pedido->id ?>">
+                                                    <option value="nao_concluido" selected>⚠️ Não Concluído</option>
                                                     <option value="pendente">⏳ Pendente</option>
-                                                    <option value="confirmado">✅ Confirmado</option>
-                                                    <option value="finalizado">✔️ Finalizado</option>
                                                     <option value="cancelado">❌ Cancelado</option>
                                                 </select>
+                                            <?php else: ?>
+                                                <span class="badge bg-secondary"><?= esc($statusPedido) ?></span>
                                             <?php endif; ?>
                                         </td>
                                         <td><small><?= date('d/m/Y H:i', strtotime($pedido->criado_em)) ?></small></td>
@@ -886,13 +904,14 @@ function resolverTodosSuporte(codigo) {
                                                 <option value="finalizado">Finalizado</option>
                                                 <option value="cancelado">Cancelado</option>
                                             </select>
-                                        <?php else: ?>
+                                        <?php elseif ($statusPedido === 'nao_concluido'): ?>
                                             <select class="status-select" data-pedido-id="<?= $pedido->id ?>">
+                                                <option value="nao_concluido" selected>⚠️ Não Concluído</option>
                                                 <option value="pendente">Pendente</option>
-                                                <option value="confirmado">Confirmado</option>
-                                                <option value="finalizado">Finalizado</option>
                                                 <option value="cancelado">Cancelado</option>
                                             </select>
+                                        <?php else: ?>
+                                            <span class="badge bg-secondary"><?= esc($statusPedido) ?></span>
                                         <?php endif; ?>
                                     </div>
                                     <div class="acoes-botoes">
@@ -1168,6 +1187,7 @@ function verificarNovosPedidos() {
                 $('#stat-finalizados').text(response.estatisticas.finalizados || 0);
                 $('#stat-cancelados').text(response.estatisticas.cancelados || 0);
                 $('#stat-inativos').text(response.estatisticas.inativos || 0);
+                $('#stat-nao-concluido').text(response.estatisticas.nao_concluido || 0);
             }
         }
     });

@@ -15,7 +15,6 @@ const ProdutoExtras = {
      * Inicializa o sistema de extras
      */
     init() {
-        console.log('🎯 Inicializando sistema de extras...');
         this.bindEvents();
     },
 
@@ -43,7 +42,6 @@ const ProdutoExtras = {
      * Carrega os extras de um produto
      */
     async carregarExtras(produtoId) {
-        console.log(`📦 Carregando extras do produto ${produtoId}...`);
 
         this.produtoAtual = produtoId;
         this.extrasSelecionados = [];
@@ -58,7 +56,6 @@ const ProdutoExtras = {
                 this.obrigatorioExtras = parseInt(data.obrigatorio_extras) || 0;
                 this.maxExtras = parseInt(data.max_extras) || 0;
                 
-                console.log('ProdutoExtras - Carregado:', {
                     obrigatorio: this.obrigatorioExtras,
                     max: this.maxExtras
                 });
@@ -74,8 +71,6 @@ const ProdutoExtras = {
 
                 this.emitirAtualizacao();
 
-                console.log(`✅ ${data.total_extras} extras carregados`);
-                console.log(`⚠️ Obrigatório: ${this.obrigatorioExtras} extras`);
 
                 // Mostrar/ocultar botão de extras
                 if (data.total_extras > 0) {
@@ -110,7 +105,6 @@ const ProdutoExtras = {
      * Abre o modal de seleção de extras
      */
     abrirModalExtras() {
-        console.log('🎨 Abrindo modal de extras...');
 
         // Mostrar loading
         $('#extras-loading').show();
@@ -361,7 +355,6 @@ const ProdutoExtras = {
             return;
         }
 
-        console.log('✅ Extras confirmados:', this.extrasSelecionados);
 
         // Mostrar resumo
         if (this.extrasSelecionados.length > 0) {

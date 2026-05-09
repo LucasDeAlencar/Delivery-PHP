@@ -9,8 +9,12 @@ $routes->get('/', 'Home::index');
 $routes->get('login', 'Login::index');
 $routes->get('login/entrar', 'Login::novo');
 $routes->post('login/criar', 'Login::criar');
+$routes->get('login/cadastrar', 'Login::cadastrar');
+$routes->post('login/cadastrar', 'Login::cadastrar');
+$routes->post('login/verificarTelefoneAdmin', 'Login::verificarTelefoneAdmin');
 $routes->post('login/verificarEmail', 'Login::verificarEmail');
 $routes->post('login/verificarTelefone', 'Login::verificarTelefone');
+$routes->post('login/verificarNomeCelular', 'Login::verificarNomeCelular');
 $routes->post('login/enviarCodigo', 'Login::enviarCodigo');
 $routes->post('login/verificarCodigo', 'Login::verificarCodigo');
 $routes->post('login/buscar_cep', 'Login::buscar_cep');
@@ -29,6 +33,7 @@ $routes->post('carrinho/limpar', 'CarrinhoController::limpar', ['as' => 'carrinh
 
 // Taxa de entrega
 $routes->post('taxa-entrega-email', 'TaxaEntregaController::calcularPorEmail');
+$routes->post('taxa-entrega-sessao', 'TaxaEntregaController::calcularPorSessao');
 
 // Finalizar pedido
 $routes->post('finalizar-pedido', 'FinalizarPedidoController::processar');
@@ -99,6 +104,8 @@ $routes->post('teste-carrinho/validar', 'TesteCarrinho::validarApi');
 // Rotas de registro de usuários públicos
 $routes->get('registrar', 'Registrar::index');
 $routes->post('registrar/criar', 'Registrar::criar');
+$routes->post('registrar/criarSemVerificacao', 'Registrar::criarSemVerificacao');
+$routes->post('registrar/cadastroRapido', 'Registrar::cadastroRapido');
 $routes->post('registrar/enviarCodigo', 'Registrar::enviarCodigo');
 $routes->post('registrar/verificarCodigo', 'Registrar::verificarCodigo');
 $routes->post('registrar/verificarSessao', 'Registrar::verificarSessao');
@@ -108,6 +115,8 @@ $routes->get('registrar/bairros_cidade', 'Registrar::bairros_cidade');
 // Alias para /registar (grafia alternativa)
 $routes->get('registar', 'Registrar::index');
 $routes->post('registar/criar', 'Registrar::criar');
+$routes->post('registar/criarSemVerificacao', 'Registrar::criarSemVerificacao');
+$routes->post('registar/cadastroRapido', 'Registrar::cadastroRapido');
 $routes->post('registar/enviarCodigo', 'Registrar::enviarCodigo');
 $routes->post('registar/verificarCodigo', 'Registrar::verificarCodigo');
 $routes->post('registar/verificarSessao', 'Registrar::verificarSessao');
@@ -115,6 +124,11 @@ $routes->post('registar/buscar_cep', 'Registrar::buscar_cep');
 
 // Rotas do cliente
 $routes->post('cliente/dados', 'Cliente::dados');
+$routes->get('cliente/dados_sessao', 'Cliente::dados_sessao');
+$routes->post('cliente/atualizar_endereco', 'Cliente::atualizar_endereco');
+$routes->get('cliente/endereco_atual', 'Cliente::endereco_atual');
+$routes->get('cliente/logout', 'Cliente::logout');
+$routes->post('cliente/atualizar', 'Cliente::atualizar');
 $routes->post('cliente/atualizar', 'Cliente::atualizar');
 $routes->post('api/cliente/telefone', 'Cliente::telefone');
 
@@ -246,6 +260,7 @@ $routes->group('admin', function ($routes) {
     $routes->get('pedidos', 'Admin\Pedidos::index');
     $routes->get('pedidos/(:num)', 'Admin\Pedidos::show/$1');
     $routes->post('pedidos/atualizar-status', 'Admin\Pedidos::atualizarStatus');
+    $routes->post('pedidos/atualizar-taxa-entrega', 'Admin\Pedidos::atualizarTaxaEntrega');
     $routes->post('pedidos/filtrar-status', 'Admin\Pedidos::filtrarPorStatus');
     $routes->post('pedidos/alterar-mesa', 'Admin\Pedidos::alterarMesa');
     $routes->get('pedidos/cancelar/(:num)', 'Admin\Pedidos::cancelar/$1');

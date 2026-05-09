@@ -35,6 +35,17 @@ class Pedidos extends BaseController
         try {
             $dados = $this->request->getJSON();
 
+            // Se cliente está logado, sobrescrever nome e telefone com dados do cadastro
+            $clienteId = session()->get('cliente_id');
+            if ($clienteId) {
+                $db = \Config\Database::connect();
+                $cliente = $db->table('clientes')->where('id', $clienteId)->get()->getRow();
+                if ($cliente) {
+                    $dados->nome_cliente = $cliente->nome;
+                    $dados->telefone_cliente = $cliente->telefone;
+                }
+            }
+
             // Validar dados obrigatórios
             if (empty($dados->nome_cliente) || empty($dados->telefone_cliente) || 
                 empty($dados->forma_pagamento) || empty($dados->itens) ||

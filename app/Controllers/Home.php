@@ -68,7 +68,13 @@ class Home extends BaseController {
             'dadosCorporativos' => $dadosCorporativos,
             'sistemaMessasAtivo' => $configMesas ? (bool)$configMesas->sistema_ativo : false,
             'mesasAtivas' => $mesasAtivas,
+            'modoCadastro' => (int)($dadosCorporativos->modo_cadastro ?? 1),
         ];
+        
+        // Modo 3: carregar bairros da área de cobertura para o popup
+        if ((int)($dadosCorporativos->modo_cadastro ?? 1) === 3) {
+            $data['bairrosCobertura'] = $db->table('bairros')->where('ativo', 1)->orderBy('nome', 'ASC')->get()->getResult();
+        }
         
         return view('Home/index', $data);
     }

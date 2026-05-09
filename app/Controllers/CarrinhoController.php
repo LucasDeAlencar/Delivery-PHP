@@ -11,12 +11,14 @@ class CarrinhoController extends BaseController {
     private function getItensCarrinho(string $sessionID) {
         $db = \Config\Database::connect();
 
-        // Puxa todos os itens do carrinho da sessão atual
-        $itens = $db->table('carrinho_temporario')
-                ->where('session_id', $sessionID)
-                ->orderBy('criado_em', 'asc') // Opcional: ordenar
-                ->get()
-                ->getResultArray(); // Retorna como array para a View
+        $itens = $db->query(
+            "SELECT ct.*, p.categoria_id
+             FROM carrinho_temporario ct
+             LEFT JOIN produtos p ON p.id = ct.produto_id
+             WHERE ct.session_id = ?
+             ORDER BY ct.criado_em ASC",
+            [$sessionID]
+        )->getResultArray();
 
         return $itens;
     }
@@ -38,13 +40,9 @@ class CarrinhoController extends BaseController {
 
     // Método index para exibir a página do carrinho
     public function index() {
-        // Recupera a Session ID
         $sessionID = session_id();
-
-        // Busca os dados no banco
         $carrinho_itens = $this->getItensCarrinho($sessionID);
 
-        // Buscar formas de pagamento ativas
         $db = \Config\Database::connect();
         $formasPagamento = $db->table('formas_pagamento')
                 ->where('ativo', 1)
@@ -53,14 +51,36 @@ class CarrinhoController extends BaseController {
                 ->get()
                 ->getResultArray();
 
-        // Prepara a data para a view
+        $dadosCorp = $db->table('dados_corporativos')->where('id', 1)->get()->getRow();
+        $modo_cadastro = $dadosCorp ? (int)($dadosCorp->modo_cadastro ?? 1) : 1;
+
+        // Buscar email do cliente logado
+        $clienteEmail = null;
+        $clienteEndereco = null;
+        $clienteId = session()->get('cliente_id');
+        if ($clienteId) {
+            $clienteRow = $db->table('clientes')->select('email, Endereco, Numero, Bairro, Cidade, complemento')->where('id', $clienteId)->get()->getRowArray();
+            if ($clienteRow) {
+                $clienteEmail = $clienteRow['email'];
+                // Verificar se tem endereço cadastrado
+                if (!empty($clienteRow['Endereco'])) {
+                    $clienteEndereco = $clienteRow;
+                }
+            }
+        }
+
         $data = [
             'carrinho_itens' => $carrinho_itens,
             'total_itens' => $this->contarItensCarrinho($sessionID),
-            'formas_pagamento' => $formasPagamento
+            'formas_pagamento' => $formasPagamento,
+            'modo_cadastro' => $modo_cadastro,
+            'cliente_logado' => session()->has('cliente_id'),
+            'cliente_nome' => session('cliente_nome'),
+            'cliente_telefone' => session('cliente_telefone'),
+            'cliente_email' => $clienteEmail,
+            'cliente_tem_endereco' => $clienteEndereco !== null,
         ];
 
-        // Retorna a view principal do carrinho
         return view('carrinho/index', $data);
     }
 

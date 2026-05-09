@@ -42,6 +42,7 @@
     <link rel="stylesheet" href="<?= site_url('assets/css/mobile-responsive.css?v=' . time()) ?>">
     <link rel="stylesheet" href="<?= site_url('assets/css/mobile-touch.css?v=' . time()) ?>">
     <link rel="stylesheet" href="<?= site_url('assets/css/about-center.css?v=' . time()) ?>">
+    <link rel="stylesheet" href="<?= site_url('assets/css/delivery-app.css?v=' . time()) ?>">
     
     <!-- Estilos do carrinho navbar -->
     <style>
@@ -216,197 +217,117 @@
     </script>
   </head>
   <body>
-  	<nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
-	    <div class="container">
-		      <a class="navbar-brand" href="<?= site_url('/') ?>">
- 		          <i class="fas fa-hamburger logo-space" style="color: #f5a623; margin-right: 8px; line-height: 1;"></i>
- 		          <span class="brand-name" style="color: #fff !important; line-height: 1.2;">Space Burger Dog Do Paulista<span class="brand-sub" style="text-transform: uppercase; display: block; color: #ccc !important">O seu delivery preferido</span></span>
-		      </a>
-		      
-		      <!-- Ícone do Carrinho independente -->
-		      <div class="carrinho-navbar d-flex align-items-center">
-		          <a href="#" onclick="CarrinhoSimples.mostrar(); return false;" 
-		             class="carrinho-link d-flex align-items-center text-decoration-none">
-		              <div class="carrinho-icon-container position-relative">
-		                  <i id="carrinho-icon" class="fas fa-shopping-cart text-warning" style="font-size: 28px;"></i>
-		                  <span id="carrinho-badge" class="carrinho-counter position-absolute" style="display: none;">0</span>
-		              </div>
-		          </a>
-		      </div>
-		      
-		      <button class="navbar-toggler d-none d-lg-block" type="button" data-toggle="collapse" data-target="#ftco-nav" aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
-		        <span class="oi oi-menu"></span> Menu
-		      </button>
-	      <div class="collapse navbar-collapse" id="ftco-nav">
-	        <ul class="navbar-nav ml-auto">
-                    <li class="nav-item active"><a href="<?= site_url('/') ?>" class="nav-link">Home</a></li>
-	          <li class="nav-item"><a href="#menu" class="nav-link">Menu</a></li>
-	          <li class="nav-item"><a href="#services" class="nav-link">Serviços</a></li>
-	          <li class="nav-item"><a href="#about" class="nav-link">Sobre</a></li>
-	          <li class="nav-item"><a href="#contact" class="nav-link">Contato</a></li>
-	        </ul>
-	      </div>
-		  </div>
-	  </nav>
-    <!-- END nav -->
+  <!-- ===== NAVBAR APP ===== -->
+  <nav id="app-navbar">
+    <a class="app-brand" href="<?= site_url('/') ?>">
+      <img src="<?= site_url('logo.png') ?>" alt="Logo" class="app-logo">
+      <div class="app-brand-text">
+        <span class="app-brand-name">Space Burger Dog</span>
+        <span class="app-brand-sub">O seu delivery preferido</span>
+      </div>
+    </a>
+    <div class="app-navbar-right">
+      <?php if (isset($estaAberto)): ?>
+        <span class="nav-status-badge <?= $estaAberto ? 'nav-aberto' : 'nav-fechado' ?>">
+          <i class="fas fa-circle"></i> <?= $estaAberto ? 'Aberto' : 'Fechado' ?>
+        </span>
+      <?php endif; ?>
+      <a href="#" onclick="CarrinhoSimples.mostrar(); return false;" class="nav-cart-btn">
+        <div class="carrinho-icon-container position-relative">
+          <i id="carrinho-icon" class="fas fa-shopping-cart text-warning"></i>
+          <span id="carrinho-badge" class="carrinho-counter position-absolute" style="display:none;">0</span>
+        </div>
+      </a>
+    </div>
+  </nav>
 
-    <!-- Hero Section -->
-    <section class="home-slider owl-carousel img" style="background-image: url('<?= site_url('web/src/images/burger-1.jpg') ?>');">
-      <div class="slider-item" style="background-image: url('<?= site_url('web/src/images/burger-1.jpg') ?>');">
-      	<div class="overlay"></div>
-        <div class="container">
-          <div class="row slider-text align-items-center" data-scrollax-parent="true">
-            <div class="col-md-6 col-sm-12 ftco-animate">
-            	<span class="subheading">Irresistível</span>
-              <h1 class="mb-4">Hamburgueres Artesanais</h1>
-              <p class="mb-4 mb-md-5">Nossos hamburgueres são feitos com carne fresquinha, pães artesanais e ingredientes selecionados. Sabor único que você não encontra em outro lugar!</p>
-              <p><a href="#menu" class="btn btn-primary p-3 px-xl-4 py-xl-3">Fazer Pedido</a> <a href="#about" class="btn btn-white btn-outline-white p-3 px-xl-4 py-xl-3">Ver Home</a></p>
-            </div>
-            <div class="col-md-6 ftco-animate">
-            	<img src="<?= site_url('web/src/images/ImagemPromocional2.jpeg') ?>" class="img-fluid" alt="Hamburguer Artesanal">
-            </div>
+  <!-- ===== HERO COMPACTO ===== -->
+  <section id="hero-delivery">
+    <div class="hero-bg" style="background-image:url('<?= site_url('web/src/images/burger-1.jpg') ?>');">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <div class="hero-text">
+          <span class="hero-sub">Artesanal & Especial</span>
+          <h1>Space Burger Dog<br>Do Paulista</h1>
+          <div class="hero-chips">
+            <?php if (isset($estaAberto)): ?>
+              <span class="hero-chip <?= $estaAberto ? 'chip-aberto' : 'chip-fechado' ?>">
+                <i class="fas fa-circle"></i> <?= $estaAberto ? 'Aberto agora' : 'Fechado' ?>
+              </span>
+            <?php endif; ?>
+            <?php if (!empty($expedienteHoje) && $expedienteHoje->situacao == 1): ?>
+              <span class="hero-chip chip-info"><i class="fas fa-clock"></i> <?= substr($expedienteHoje->abertura,0,5) ?>–<?= substr($expedienteHoje->fechamento,0,5) ?></span>
+            <?php endif; ?>
+            <?php if (!empty($dadosCorporativos->tempo_entrega_min)): ?>
+              <span class="hero-chip chip-info"><i class="fas fa-motorcycle"></i> <?= esc($dadosCorporativos->tempo_entrega_min) ?>–<?= esc($dadosCorporativos->tempo_entrega_max ?? ($dadosCorporativos->tempo_entrega_min+15)) ?> min</span>
+            <?php endif; ?>
+          </div>
+          <div class="hero-actions">
+            <a href="#menu" class="btn-hero-primary"><i class="fas fa-utensils"></i> Ver Cardápio</a>
+            <a href="<?= !empty($dadosCorporativos->whatsapp) ? 'https://wa.me/55'.preg_replace('/\D/','',$dadosCorporativos->whatsapp).'?text=Olá! Gostaria de fazer um pedido.' : '#' ?>" target="_blank" class="btn-hero-whatsapp"><i class="fab fa-whatsapp"></i> WhatsApp</a>
           </div>
         </div>
-      </div>
-
-      <div class="slider-item" style="background-image: url('<?= site_url('web/src/images/ImagemPromocional8.jpeg') ?>');">
-      	<div class="overlay"></div>
-        <div class="container">
-          <div class="row slider-text align-items-center" data-scrollax-parent="true">
-            <div class="col-md-6 col-sm-12 order-md-last ftco-animate">
-            	<span class="subheading">Saboroso</span>
-              <h1 class="mb-4">HotDogs Especiais</h1>
-              <p class="mb-4 mb-md-5">Cachorros-quentes com salsichas premium, molhos especiais e muito queijo mussarela. Uma experiência única!</p>
-              <p><a href="#menu" class="btn btn-primary p-3 px-xl-4 py-xl-3">Fazer Pedido</a> <a href="#about" class="btn btn-white btn-outline-white p-3 px-xl-4 py-xl-3">Ver Home</a></p>
-            </div>
-            <div class="col-md-6 ftco-animate">
-            	<img src="<?= site_url('web/src/images/ImagemPromocional8.jpeg') ?>" class="img-fluid" alt="HotDog Especial">
-            </div>
-          </div>
+        <div class="hero-img-wrap">
+          <img src="<?= site_url('web/src/images/ImagemPromocional2.jpeg') ?>" alt="Hamburguer" class="hero-img">
         </div>
       </div>
+    </div>
+  </section>
 
-      <div class="slider-item" style="background-image: url('<?= site_url('web/src/images/ImagemPromocional3.jpeg') ?>');">
-      	<div class="overlay"></div>
-        <div class="container">
-          <div class="row slider-text justify-content-center align-items-center" data-scrollax-parent="true">
-            <div class="col-md-7 col-sm-12 text-center ftco-animate">
-            	<span class="subheading">Bem-vindo</span>
-              <h1 class="mb-4">Space Burger Dog Do Paulista & HotDog</h1>
-              <p class="mb-4 mb-md-5">A melhor combinação de hamburgueres e hotdogs da cidade. Entrega rápida, sabor garantido!</p>
-              <p><a href="#menu" class="btn btn-primary p-3 px-xl-4 py-xl-3">Fazer Pedido</a> <a href="#about" class="btn btn-white btn-outline-white p-3 px-xl-4 py-xl-3">Ver Home</a></p>
-            </div>
-          </div>
-        </div>
+  <!-- ===== INFO BAR ===== -->
+  <div id="delivery-info-bar">
+    <div class="dinfo-item">
+      <i class="fas fa-phone-alt"></i>
+      <div><strong><?= esc($dadosCorporativos->numero ?? '(11) 9999-9999') ?></strong><small>Suporte</small></div>
+    </div>
+    <div class="dinfo-item">
+      <i class="fas fa-map-marker-alt"></i>
+      <div><strong><?= esc($dadosCorporativos->endereco ?? 'Rua das Flores, 123') ?></strong><small>Retirada</small></div>
+    </div>
+    <div class="dinfo-item">
+      <i class="fas fa-clock"></i>
+      <div>
+        <?php if (isset($estaAberto)): ?>
+          <strong style="color:<?= $estaAberto ? '#28c76f' : '#ea5455' ?>"><?= $estaAberto ? 'Aberto Agora' : 'Fechado' ?></strong>
+          <?php if (!empty($expedienteHoje) && $expedienteHoje->situacao == 1): ?>
+            <small><?= substr($expedienteHoje->abertura,0,5) ?> – <?= substr($expedienteHoje->fechamento,0,5) ?></small>
+          <?php endif; ?>
+        <?php else: ?>
+          <strong>Horário</strong><small>Consulte abaixo</small>
+        <?php endif; ?>
       </div>
-    </section>
+    </div>
+    <div class="dinfo-item dinfo-social">
+      <a href="<?= !empty($dadosCorporativos->whatsapp) ? 'https://wa.me/55'.preg_replace('/\D/','',$dadosCorporativos->whatsapp).'?text=Olá!' : '#' ?>" target="_blank"><i class="icon-whatsapp"></i></a>
+      <a href="<?= !empty($dadosCorporativos->instagram) ? 'https://instagram.com/'.ltrim($dadosCorporativos->instagram,'@') : '#' ?>" target="_blank"><i class="icon-instagram"></i></a>
+      <a href="<?= !empty($dadosCorporativos->facebook) ? 'https://facebook.com/'.$dadosCorporativos->facebook : '#' ?>" target="_blank"><i class="icon-facebook"></i></a>
+    </div>
+  </div>
 
-    <!-- Contact Info Section -->
-    <section class="ftco-intro">
-    	<div class="container-wrap">
-    		<div class="wrap d-md-flex">
-	    		<div class="info">
-	    			<div class="row no-gutters">
-	    				<div class="col-md-4 d-flex ftco-animate">
-	    					<div class="icon"><span class="icon-phone"></span></div>
-	    					<div class="text">
-	    						<h3><?= $dadosCorporativos->numero ?? '(11) 9999-9999' ?></h3>
-	    						<p>Precisa de ajuda? Solicite o suporte comercial pelo telefone.</p>
-	    					</div>
-	    				</div>
-	    				<div class="col-md-4 d-flex ftco-animate">
-	    					<div class="icon"><span class="icon-my_location"></span></div>
-	    					<div class="text">
-	    						<h3><?= $dadosCorporativos->endereco ?? 'Rua das Flores, 123' ?></h3>
-	    						<p>Ponto de retirada</p>
-	    					</div>
-	    				</div>
-	    				<div class="col-md-4 d-flex ftco-animate">
-	    					<div class="icon"><span class="icon-clock-o"></span></div>
-	    					<div class="text">
-	    						<?php if (isset($estaAberto) && isset($expedienteHoje)): ?>
-	    							<?php if ($estaAberto): ?>
-	    								<h3 style="color: #28a745;">✅ Aberto Agora</h3>
-	    							<?php elseif ($expedienteHoje && $expedienteHoje->situacao == 1): ?>
-	    								<h3 style="color: #ffc107;">⏰ Fechado no Momento</h3>
-	    							<?php else: ?>
-	    								<h3 style="color: #dc3545;">🚫 Fechado Hoje</h3>
-	    							<?php endif; ?>
-	    							<?php if ($expedienteHoje && $expedienteHoje->situacao == 1): ?>
-	    								<p><?= esc($expedienteHoje->dia_descricao) ?>: <?= substr($expedienteHoje->abertura, 0, 5) ?> - <?= substr($expedienteHoje->fechamento, 0, 5) ?></p>
-	    							<?php else: ?>
-	    								<p>Veja nossos horários abaixo</p>
-	    							<?php endif; ?>
-	    						<?php else: ?>
-	    							<h3>Horário de Atendimento</h3>
-	    							<p>Consulte nossos horários</p>
-	    						<?php endif; ?>
-	    					</div>
-	    				</div>
-	    			</div>
-	    		</div>
-	    		<div class="social d-md-flex pl-md-5 p-4 align-items-center">
-	    			<ul class="social-icon">
-              <li class="ftco-animate"><a href="<?= !empty($dadosCorporativos->whatsapp) ? 'https://wa.me/55' . preg_replace('/\D/', '', $dadosCorporativos->whatsapp) . '?text=Olá! Gostaria de fazer um pedido.' : '#' ?>" target="_blank"><span class="icon-whatsapp"></span></a></li>
-              <li class="ftco-animate"><a href="<?= !empty($dadosCorporativos->facebook) ? 'https://facebook.com/' . $dadosCorporativos->facebook : '#' ?>" target="_blank"><span class="icon-facebook"></span></a></li>
-              <li class="ftco-animate"><a href="<?= !empty($dadosCorporativos->instagram) ? 'https://instagram.com/' . ltrim($dadosCorporativos->instagram, '@') : '#' ?>" target="_blank"><span class="icon-instagram"></span></a></li>
-            </ul>
-	    		</div>
-    		</div>
-    	</div>
-    </section>
+  <!-- ===== MENU ===== -->
+  <section id="menu">
+    <?= $this->renderSection('menu_dinamico') ?>
+  </section>
 
-    <!-- About Section -->
-    <section class="ftco-about d-md-flex" id="about">
-    	<div class="one-half img" style="background-image: url(<?= site_url('web/src/images/about.jpg') ?>);"></div>
-    	<div class="one-half ftco-animate">
-        <div class="heading-section ftco-animate ">
-            <h2 class="mb-4">Bem-vindo ao <span class="fas fa-hamburger" style="color: #00567e">Space Burger Dog Do Paulista</span></h2>
+  <!-- ===== SOBRE + SERVIÇOS ===== -->
+  <section id="about-services">
+    <div class="as-inner">
+      <div class="as-img-wrap">
+        <img src="<?= site_url('web/src/images/ImagemPromocional6.jpeg') ?>" alt="Promoção" class="as-food-img">
+      </div>
+      <div class="as-content" style="background-image:url('<?= site_url('web/src/images/food.png') ?>');background-repeat:no-repeat;background-position:right center;background-size:contain;">
+        <span class="as-label">Quem somos</span>
+        <h2>Space Burger Dog<br><span>Do Paulista</span></h2>
+        <p>Hamburgueres artesanais e hotdogs especiais feitos com ingredientes frescos e selecionados. Sabor único, entrega rápida e atendimento de qualidade para você e sua família.</p>
+        <div class="as-services">
+          <div class="as-srv"><span class="flaticon-diet"></span><strong>Seleção Rigorosa</strong></div>
+          <div class="as-srv"><span class="flaticon-bicycle"></span><strong>Entrega Rápida</strong></div>
+          <div class="as-srv"><i class="fas fa-hotdog"></i><strong>Receitas Originais</strong></div>
         </div>
-        <div>
-  				<p>Somos especializados em hamburgueres artesanais e hotdogs especiais. Nossos produtos são feitos com ingredientes frescos e de qualidade, proporcionando o melhor sabor para você e sua família.</p>
-  			</div>
-    	</div>
-    </section>
-
-    <!-- Services Section -->
-    <section class="ftco-section ftco-services" id="services">
-    	<div class="overlay"></div>
-    	<div class="container">
-    		<?= $this->include('Home/servicos') ?>
-    	</div>
-    </section>
-
-    <!-- Menu Section -->
-    <section class="ftco-section" id="menu">
-    	<div class="container">
-        <!-- Conteúdo dinâmico do menu -->
-        <?= $this->renderSection('menu_dinamico') ?>
-        
-    	</div>
-    </section>
-
-    <!-- Gallery Section -->
-    <section class="ftco-gallery">
-    	<div class="container-wrap">
-    		<div class="row no-gutters">
-					<div class="col-md-6 ftco-animate">
-						<a href="#" class="gallery img d-flex align-items-center" style="background-image: url('<?= site_url('web/src/images/ImagemPromocional4.jpeg') ?>');">
-							<div class="icon mb-4 d-flex align-items-center justify-content-center">
-    						<span class="icon-search"></span>
-    					</div>
-						</a>
-					</div>
-					<div class="col-md-6 ftco-animate">
-						<a href="#" class="gallery img d-flex align-items-center" style="background-image: url('<?= site_url('web/src/images/ImagemPromocional9.jpeg') ?>');">
-							<div class="icon mb-4 d-flex align-items-center justify-content-center">
-    						<span class="icon-search"></span>
-    					</div>
-						</a>
-					</div>
-        </div>
-    	</div>
-    </section>
+        <a href="#menu" class="btn-ver-cardapio"><i class="fas fa-utensils"></i> Ver Cardápio</a>
+      </div>
+    </div>
+  </section>
 
     <!-- Contact Section -->
 		<section class="ftco-appointment" id="contact">
@@ -665,6 +586,17 @@
     <div id="scroll-popup">Posição restaurada!</div>
 
     <!-- Scripts -->
+    <script>
+        // Variáveis globais disponíveis para todos os scripts
+        window.clienteLogado = {
+            logado: <?= json_encode(session()->has('cliente_id')) ?>,
+            nome: <?= json_encode(session('cliente_nome')) ?>,
+            telefone: <?= json_encode(session('cliente_telefone')) ?>,
+            email: <?= json_encode(session('cliente_email')) ?>
+        };
+        window.modoCadastro = <?= json_encode($modoCadastro ?? 1) ?>;
+        window.negociacaoEntrega = <?= json_encode(!empty($dadosCorporativos->negociacao_entrega) ? true : false) ?>;
+    </script>
     <script src="<?= site_url('web/src/js/auth-check.js') ?>"></script>
     <script src="<?= site_url('web/src/js/jquery.min.js') ?>"></script>
     <script src="<?= site_url('web/src/js/jquery-migrate-3.0.1.min.js') ?>"></script>
@@ -685,7 +617,14 @@
     <script src="<?= site_url('assets/js/sistema-produto.js?v=' . time()) ?>"></script>
     <script src="<?= site_url('assets/js/carrinho-simples.js?v=' . time()) ?>"></script>
     <script src="<?= site_url('assets/js/finalizar-pedido.js?v=' . time()) ?>"></script>
-    
+
+    <?php if (($modoCadastro ?? 1) == 3): ?>
+    <script>
+    // Sobrescreve abrirModal para preencher endereço (modo 3) - também funciona na home
+    // Esta lógica agora estáintegrada no próprio finalizar-pedido.js
+    </script>
+    <?php endif; ?>
+
     <script>
     // Controlar ícone do carrinho baseado no status do pedido
     $(document).ready(function() {
@@ -1002,25 +941,37 @@
             <?php session()->remove('cliente_email'); ?>
         <?php endif; ?>
 
-        // Gerenciar cliente logado
+        // Gerenciar cliente logado (menu inferior)
         document.addEventListener('DOMContentLoaded', function() {
             const clienteLogado = document.getElementById('cliente-logado');
-            const emailCliente = document.getElementById('email-cliente');
+            const infoCliente = document.getElementById('email-cliente'); // Elemento que mostra o nome
             const menuLogout = document.getElementById('menu-logout');
             const btnLogout = document.getElementById('btn-logout');
             const btnEditar = document.getElementById('btn-editar');
-            
-            // Verificar se há cliente logado
-            const emailSalvo = localStorage.getItem('cliente_email');
-            if (emailSalvo) {
-                emailCliente.textContent = emailSalvo;
-                // Desktop: mostrar flutuante
+
+            // Função para obter nome do cliente (prioriza sessão, depois localStorage)
+            function getNomeCliente() {
+                if (window.clienteLogado && window.clienteLogado.logado && window.clienteLogado.nome) {
+                    return window.clienteLogado.nome;
+                }
+                return localStorage.getItem('cliente_nome') || '';
+            }
+
+            // Atualizar interface com nome do cliente
+            const nome = getNomeCliente();
+            if (nome) {
+                infoCliente.textContent = nome;
                 clienteLogado.style.display = 'block';
-                // Mobile: mostrar botão na nav inferior
+
+                // Mobile: botão na nav inferior
                 const mobBtn = document.getElementById('mob-user-btn');
                 if (mobBtn) {
                     mobBtn.style.display = 'flex';
-                    document.getElementById('mob-user-label').textContent = emailSalvo.split('@')[0];
+                    const label = document.getElementById('mob-user-label');
+                    if (label) {
+                        // Mostrar primeiro nome
+                        label.textContent = nome.split(' ')[0];
+                    }
                 }
             }
 
@@ -1029,47 +980,33 @@
                 e.stopPropagation();
                 menuLogout.style.display = menuLogout.style.display === 'block' ? 'none' : 'block';
             });
-            
+
             // Fechar menu ao clicar fora
             document.addEventListener('click', function() {
                 menuLogout.style.display = 'none';
             });
-            
+
             // Editar dados
             btnEditar.addEventListener('click', function(e) {
                 e.preventDefault();
                 menuLogout.style.display = 'none';
                 abrirModalEdicao();
             });
-            
+
             // Logout
             btnLogout.addEventListener('click', function(e) {
                 e.preventDefault();
-                
-                // Salvar o email do usuário que está fazendo logout APENAS se não existir um anterior
-                // Isso mantém referência ao "usuário anterior" para comparação no próximo login
-                const emailAtual = localStorage.getItem('cliente_email');
-                if (emailAtual && !localStorage.getItem('ultimo_email_logout')) {
-                    localStorage.setItem('ultimo_email_logout', emailAtual);
-                }
-                
-                // Limpar dados do localStorage
                 localStorage.removeItem('cliente_email');
+                localStorage.removeItem('cliente_nome');
                 localStorage.removeItem('carrinho');
-                
-                // Atualizar a página (F5)
-                window.location.reload();
+                localStorage.removeItem('endereco_entrega_modo3');
+                window.location.href = '<?= site_url('cliente/logout') ?>';
             });
-            
+
             // Função para abrir modal de edição
             function abrirModalEdicao() {
-                const email = localStorage.getItem('cliente_email');
-                if (!email) return;
-
-                fetch('<?= site_url('cliente/dados') ?>', {
-                    method: 'POST',
-                    headers: {'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},
-                    body: JSON.stringify({email})
+                fetch('<?= site_url('cliente/dados_sessao') ?>', {
+                    headers: {'X-Requested-With':'XMLHttpRequest'}
                 })
                 .then(r => r.json())
                 .then(data => {
@@ -1103,49 +1040,47 @@
                                         <input type="tel" id="edit-telefone" class="form-control" required style="background:#2d2d2d;border:1px solid #444;color:#fff;font-size:16px;">
                                     </div>
                                     <div style="margin-bottom:14px;">
-                                        <label style="color:#00557f;font-size:.85rem;display:block;margin-bottom:4px;">CEP *</label>
-                                        <input type="text" id="edit-cep" class="form-control" required style="background:#2d2d2d;border:1px solid #444;color:#fff;font-size:16px;">
+                                        <label style="color:#00557f;font-size:.85rem;display:block;margin-bottom:4px;">E-mail</label>
+                                        <input type="email" id="edit-email" class="form-control" style="background:#2d2d2d;border:1px solid #444;color:#ccc;font-size:16px;">
                                     </div>
                                     <div style="margin-bottom:14px;">
-                                        <label style="color:#00557f;font-size:.85rem;display:block;margin-bottom:4px;">Cidade *</label>
-                                        <input type="text" id="edit-cidade" class="form-control" readonly style="background:#1a1a1a;border:1px solid #444;color:#ccc;font-size:16px;">
-                                    </div>
-                                    <div style="margin-bottom:14px;position:relative;">
-                                        <label style="color:#00557f;font-size:.85rem;display:block;margin-bottom:4px;">Bairro *</label>
-                                        <input type="text" id="edit-bairro" class="form-control" autocomplete="off" style="background:#1a1a1a;border:1px solid #444;color:#ccc;font-size:16px;">
-                                        <div id="edit-bairro-sugestoes" style="position:absolute;z-index:9999;width:100%;background:#2d2d2d;border:1px solid #444;border-radius:0 0 6px 6px;max-height:160px;overflow-y:auto;display:none;"></div>
-                                        <div id="edit-bairro-aviso" style="display:none;color:#ff6b6b;font-size:.78rem;margin-top:3px;"><i class="fas fa-exclamation-triangle"></i> Bairro não encontrado na área de entrega.</div>
+                                        <label style="color:#00557f;font-size:.85rem;display:block;margin-bottom:4px;">CEP</label>
+                                        <input type="text" id="edit-cep" class="form-control" style="background:#2d2d2d;border:1px solid #444;color:#ccc;font-size:16px;">
                                     </div>
                                     <div style="margin-bottom:14px;">
-                                        <label style="color:#00557f;font-size:.85rem;display:block;margin-bottom:4px;">Logradouro *</label>
-                                        <input type="text" id="edit-endereco" class="form-control" style="background:#1a1a1a;border:1px solid #444;color:#ccc;font-size:16px;">
+                                        <label style="color:#00557f;font-size:.85rem;display:block;margin-bottom:4px;">Cidade</label>
+                                        <input type="text" id="edit-cidade" class="form-control" style="background:#2d2d2d;border:1px solid #444;color:#ccc;font-size:16px;">
+                                    </div>
+                                    <div style="margin-bottom:14px;">
+                                        <label style="color:#00557f;font-size:.85rem;display:block;margin-bottom:4px;">Bairro</label>
+                                        <input type="text" id="edit-bairro" class="form-control" style="background:#2d2d2d;border:1px solid #444;color:#ccc;font-size:16px;">
+                                    </div>
+                                    <div style="margin-bottom:14px;">
+                                        <label style="color:#00557f;font-size:.85rem;display:block;margin-bottom:4px;">Endereço</label>
+                                        <input type="text" id="edit-endereco" class="form-control" style="background:#2d2d2d;border:1px solid #444;color:#ccc;font-size:16px;">
                                     </div>
                                     <div style="margin-bottom:14px;">
                                         <label style="color:#00557f;font-size:.85rem;display:block;margin-bottom:4px;">Número</label>
-                                        <input type="text" id="edit-numero" class="form-control" style="background:#2d2d2d;border:1px solid #444;color:#fff;font-size:16px;">
+                                        <input type="text" id="edit-numero" class="form-control" style="background:#2d2d2d;border:1px solid #444;color:#ccc;font-size:16px;">
                                     </div>
-                                    <div style="margin-bottom:14px;">
+                                    <div style="margin-bottom:18px;">
                                         <label style="color:#00557f;font-size:.85rem;display:block;margin-bottom:4px;">Complemento</label>
-                                        <input type="text" id="edit-complemento" class="form-control" style="background:#2d2d2d;border:1px solid #444;color:#fff;font-size:16px;">
+                                        <input type="text" id="edit-complemento" class="form-control" style="background:#2d2d2d;border:1px solid #444;color:#ccc;font-size:16px;">
                                     </div>
+
+                                    <button type="submit" class="btn" style="width:100%;padding:12px;background:linear-gradient(135deg,#0055ff,#003f88);border:none;border-radius:8px;color:#fff;font-weight:600;cursor:pointer;">
+                                        <i class="fas fa-save mr-2"></i>Salvar Alterações
+                                    </button>
                                 </form>
-                            </div>
-                            <!-- Footer -->
-                            <div style="background:#1a1a1a;border-top:1px solid #333;padding:14px 20px;flex-shrink:0;display:flex;gap:10px;border-radius:0 0 15px 15px;">
-                                <button onclick="document.getElementById('edicao-popup').remove()" style="flex:1;padding:12px;background:#333;border:1px solid #555;color:#ccc;border-radius:8px;font-weight:600;cursor:pointer;">
-                                    <i class="fas fa-times" style="margin-right:6px;"></i>Cancelar
-                                </button>
-                                <button id="btnSalvarEdicao" style="flex:1;padding:12px;background:linear-gradient(135deg,#0055ff,#1a1866);border:none;color:#fff;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;">
-                                    <i class="fas fa-save" style="margin-right:6px;"></i>Salvar Alterações
-                                </button>
                             </div>
                         </div>
                     `;
                     document.body.appendChild(popup);
 
-                    // Preencher campos
+                    // Preencher dados
                     document.getElementById('edit-nome').value        = c.nome || '';
                     document.getElementById('edit-telefone').value    = c.telefone || '';
+                    document.getElementById('edit-email').value       = c.email || '';
                     document.getElementById('edit-cep').value         = c.cep || '';
                     document.getElementById('edit-cidade').value      = c.Cidade || '';
                     document.getElementById('edit-bairro').value      = c.Bairro || '';
@@ -1153,42 +1088,30 @@
                     document.getElementById('edit-numero').value      = c.Numero || '';
                     document.getElementById('edit-complemento').value = c.complemento || '';
 
-                    // Carregar bairros da cidade já preenchida
-                    if (c.Cidade) carregarBairrosModal(c.Cidade);
-
-                    // Fechar ao clicar no overlay
-                    popup.addEventListener('click', function(e) {
-                        if (e.target === popup) popup.remove();
+                    // Máscara telefone
+                    const telInput = document.getElementById('edit-telefone');
+                    telInput.addEventListener('input', function(e) {
+                        let v = e.target.value.replace(/\D/g,'');
+                        if (v.length <= 11) v = v.replace(/^(\d{2})(\d)/g,'($1) $2').replace(/(\d)(\d{4})$/,'$1-$2');
+                        e.target.value = v;
                     });
 
-                    // Salvar
-                    document.getElementById('btnSalvarEdicao').addEventListener('click', function() {
-                        const bairroVal   = document.getElementById('edit-bairro').value.trim();
-                        const enderecoVal = document.getElementById('edit-endereco').value.trim();
-                        const avisoEl     = document.getElementById('edit-bairro-aviso');
-
-                        if (!bairroVal) {
-                            avisoEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> O campo Bairro é obrigatório.';
-                            avisoEl.style.display = 'block';
-                            document.getElementById('edit-bairro').focus();
-                            return;
-                        }
-                        if (!enderecoVal) {
-                            avisoEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> O campo Logradouro é obrigatório.';
-                            avisoEl.style.display = 'block';
-                            document.getElementById('edit-endereco').focus();
-                            return;
-                        }
-                        avisoEl.style.display = 'none';
+                    // Submit do formulário
+                    document.getElementById('formEdicaoCliente').addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        const btn = this.querySelector('button[type="submit"]');
+                        btn.disabled = true;
+                        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
 
                         const dados = {
-                            email,
-                            telefone:    document.getElementById('edit-telefone').value,
-                            cep:         document.getElementById('edit-cep').value,
-                            cidade:      document.getElementById('edit-cidade').value,
-                            bairro:      document.getElementById('edit-bairro').value,
-                            endereco:    document.getElementById('edit-endereco').value,
-                            numero:      document.getElementById('edit-numero').value,
+                            nome: document.getElementById('edit-nome').value,
+                            telefone: document.getElementById('edit-telefone').value,
+                            email: document.getElementById('edit-email').value,
+                            cep: document.getElementById('edit-cep').value,
+                            cidade: document.getElementById('edit-cidade').value,
+                            bairro: document.getElementById('edit-bairro').value,
+                            endereco: document.getElementById('edit-endereco').value,
+                            numero: document.getElementById('edit-numero').value,
                             complemento: document.getElementById('edit-complemento').value
                         };
 
@@ -1198,98 +1121,29 @@
                             body: JSON.stringify(dados)
                         })
                         .then(r => r.json())
-                        .then(data => {
-                            if (data.sucesso) {
-                                document.getElementById('edicao-popup').remove();
+                        .then(res => {
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="fas fa-save mr-2"></i>Salvar Alterações';
+                            if (res.sucesso) {
+                                popup.remove();
+                                // Atualizar nome no menu
+                                infoCliente.textContent = dados.nome;
+                                const label = document.getElementById('mob-user-label');
+                                if (label) label.textContent = dados.nome.split(' ')[0];
+                                // Atualizar global
+                                window.clienteLogado.nome = dados.nome;
                                 alert('Dados atualizados com sucesso!');
                             } else {
-                                alert('Erro ao salvar: ' + (data.msg || 'Tente novamente'));
+                                alert('Erro: ' + (res.msg || 'falha ao salvar'));
                             }
                         })
-                        .catch(() => alert('Erro ao salvar dados'));
-                    });
-
-                    // Máscara telefone
-                    document.getElementById('edit-telefone').addEventListener('input', function(e) {
-                        let v = e.target.value.replace(/\D/g, '');
-                        v = v.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-                        if (v.length < 15) v = v.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-                        e.target.value = v;
-                    });
-
-                    // Máscara + busca CEP
-                    document.getElementById('edit-cep').addEventListener('input', function(e) {
-                        let v = e.target.value.replace(/\D/g, '');
-                        if (v.length <= 8) v = v.replace(/(\d{5})(\d{3})/, '$1-$2');
-                        e.target.value = v;
-                        if (v.replace(/\D/g,'').length === 8) buscarCEPModal(v.replace(/\D/g,''));
-                    });
-
-                    // Autocomplete bairro
-                    const editBairroEl    = document.getElementById('edit-bairro');
-                    const editSugestoesEl = document.getElementById('edit-bairro-sugestoes');
-                    editBairroEl.addEventListener('input', function() {
-                        const termo = this.value.trim().toLowerCase();
-                        editSugestoesEl.innerHTML = '';
-                        editSugestoesEl.style.display = 'none';
-                        verificarBairroModal();
-                        if (!termo || !bairrosModal.length) return;
-                        const filtrados = bairrosModal.filter(b => b.toLowerCase().includes(termo)).slice(0, 8);
-                        if (!filtrados.length) return;
-                        filtrados.forEach(b => {
-                            const item = document.createElement('div');
-                            item.textContent = b;
-                            item.style.cssText = 'padding:7px 12px;cursor:pointer;color:#fff;border-bottom:1px solid #444;font-size:.85rem;';
-                            item.addEventListener('mousedown', () => { editBairroEl.value = b; editSugestoesEl.style.display = 'none'; verificarBairroModal(); });
-                            item.addEventListener('mouseover', () => item.style.background = '#3a3a3a');
-                            item.addEventListener('mouseout',  () => item.style.background = '');
-                            editSugestoesEl.appendChild(item);
+                        .catch(() => {
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="fas fa-save mr-2"></i>Salvar Alterações';
+                            alert('Erro de conexão');
                         });
-                        editSugestoesEl.style.display = 'block';
                     });
-                    editBairroEl.addEventListener('blur', () => setTimeout(() => editSugestoesEl.style.display = 'none', 150));
-                })
-                .catch(() => alert('Erro ao carregar dados'));
-            }
-
-            function buscarCEPModal(cep) {
-                fetch('<?= site_url('login/buscar_cep') ?>', {
-                    method: 'POST',
-                    headers: {'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},
-                    body: JSON.stringify({cep})
-                })
-                .then(r => r.json())
-                .then(data => {
-                    if (!data.erro) {
-                        const cidade = data.localidade || '';
-                        document.getElementById('edit-cidade').value = cidade;
-                        const bairroEl   = document.getElementById('edit-bairro');
-                        const enderecoEl = document.getElementById('edit-endereco');
-                        if (data.bairro)     { bairroEl.value = data.bairro; bairroEl.readOnly = true; }
-                        else                 { bairroEl.value = ''; bairroEl.readOnly = false; bairroEl.placeholder = 'Digite seu bairro'; }
-                        if (data.logradouro) { enderecoEl.value = data.logradouro; enderecoEl.readOnly = true; }
-                        else                 { enderecoEl.value = ''; enderecoEl.readOnly = false; enderecoEl.placeholder = 'Digite seu logradouro'; }
-                        verificarBairroModal();
-                        if (cidade) carregarBairrosModal(cidade);
-                    }
-                })
-                .catch(() => {});
-            }
-
-            let bairrosModal = [];
-            function carregarBairrosModal(cidade) {
-                fetch('<?= site_url('registrar/bairros_cidade') ?>?cidade=' + encodeURIComponent(cidade), {
-                    headers: {'X-Requested-With':'XMLHttpRequest'}
-                })
-                .then(r => r.json())
-                .then(d => { bairrosModal = d.bairros || []; });
-            }
-
-            function verificarBairroModal() {
-                const val   = document.getElementById('edit-bairro')?.value.trim().toLowerCase();
-                const aviso = document.getElementById('edit-bairro-aviso');
-                if (!val || !aviso || !bairrosModal.length) { if(aviso) aviso.style.display = 'none'; return; }
-                aviso.style.display = bairrosModal.some(b => b.toLowerCase() === val) ? 'none' : 'block';
+                });
             }
         });
     </script>
@@ -1309,25 +1163,14 @@
             }
         }
     </script>
-    <!-- Nav inferior mobile (substitui o botão Menu) -->
-    <nav id="mobile-bottom-nav" class="d-lg-none" style="position:fixed;bottom:0;left:0;right:0;z-index:1050;background:#111;border-top:1px solid #333;display:flex;">
-        <a href="<?= site_url('/') ?>" class="mob-nav-btn" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.5rem .2rem;color:#fff;text-decoration:none;font-size:.7rem;border-top:3px solid transparent;">
-            <i class="fas fa-home" style="font-size:1.2rem;margin-bottom:2px;"></i>Home
-        </a>
-        <a href="#menu" class="mob-nav-btn" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.5rem .2rem;color:#fff;text-decoration:none;font-size:.7rem;border-top:3px solid transparent;">
-            <i class="fas fa-hamburger" style="font-size:1.2rem;margin-bottom:2px;"></i>Menu
-        </a>
-        <a href="#services" class="mob-nav-btn" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.5rem .2rem;color:#fff;text-decoration:none;font-size:.7rem;border-top:3px solid transparent;">
-            <i class="fas fa-concierge-bell" style="font-size:1.2rem;margin-bottom:2px;"></i>Serviços
-        </a>
-        <a href="#about" class="mob-nav-btn" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.5rem .2rem;color:#fff;text-decoration:none;font-size:.7rem;border-top:3px solid transparent;">
-            <i class="fas fa-info-circle" style="font-size:1.2rem;margin-bottom:2px;"></i>Sobre
-        </a>
-        <a href="#contact" class="mob-nav-btn" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.5rem .2rem;color:#fff;text-decoration:none;font-size:.7rem;border-top:3px solid transparent;">
-            <i class="fas fa-envelope" style="font-size:1.2rem;margin-bottom:2px;"></i>Contato
-        </a>
-        <button id="mob-user-btn" onclick="var ml=document.getElementById('menu-logout');ml.style.display=ml.style.display==='block'?'none':'block';event.stopPropagation();" style="display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;padding:.5rem .2rem;color:#ffc107;font-size:.7rem;border:none;border-top:3px solid #ffc107;background:transparent;cursor:pointer;">
-            <i class="fas fa-user-circle" style="font-size:1.2rem;margin-bottom:2px;"></i>
+    <!-- Nav inferior mobile -->
+    <nav id="mobile-bottom-nav" class="d-lg-none">
+        <a href="<?= site_url('/') ?>" class="mob-nav-btn"><i class="fas fa-home"></i>Home</a>
+        <a href="#menu" class="mob-nav-btn"><i class="fas fa-hamburger"></i>Cardápio</a>
+        <a href="#about-services" class="mob-nav-btn"><i class="fas fa-info-circle"></i>Sobre</a>
+        <a href="#contact" class="mob-nav-btn"><i class="fas fa-envelope"></i>Contato</a>
+        <button id="mob-user-btn" class="mob-nav-btn" onclick="var ml=document.getElementById('menu-logout');ml.style.display=ml.style.display==='block'?'none':'block';event.stopPropagation();" style="display:none;">
+            <i class="fas fa-user-circle"></i>
             <span id="mob-user-label">Conta</span>
         </button>
     </nav>
@@ -1357,6 +1200,15 @@
             window.addEventListener('hashchange', function() { setActive(location.hash); });
             setActive(location.hash || '<?= site_url('/') ?>');
         })();
+    </script>
+
+    <script>
+        window.clienteLogado = {
+            nome: <?= json_encode(session('cliente_nome')) ?>,
+            telefone: <?= json_encode(session('cliente_telefone')) ?>,
+            email: <?= json_encode(session('cliente_email')) ?>,
+            logado: <?= json_encode(session()->has('cliente_id')) ?>
+        };
     </script>
 
     <?= $this->renderSection('scripts') ?>

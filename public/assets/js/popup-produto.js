@@ -91,7 +91,6 @@ window.PopupProduto = {
                           preco: parseFloat(t.preco)
                       };
                       
-                      console.log('Tamanho selecionado:', this.tamanhoSelecionado);
                       
                       // Atualiza o preço exibido
                       this.atualizarPrecoComTamanho();
@@ -139,7 +138,6 @@ window.PopupProduto = {
                     window.ProdutoExtras.extrasDisponiveis = data.extras;
                     window.ProdutoExtras.obrigatorioExtras = parseInt(data.obrigatorio_extras) || 0;
                     window.ProdutoExtras.maxExtras = parseInt(data.max_extras) || 0;
-                    console.log('Extras carregados:', {
                         obrigatorio: window.ProdutoExtras.obrigatorioExtras,
                         max: window.ProdutoExtras.maxExtras
                     });

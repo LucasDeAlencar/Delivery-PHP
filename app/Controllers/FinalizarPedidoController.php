@@ -20,16 +20,40 @@ class FinalizarPedidoController extends Controller
             // Dados do pedido
             $dadosPedido = $this->request->getJSON(true);
             $sessionID = session_id();
-            $email = $dadosPedido['email'] ?? null;
 
-            // Buscar dados do cliente
+            // Buscar dados do cliente: prioridade para cliente_id da sessão
             $cliente = null;
-            if ($email) {
+            $email = $dadosPedido['email'] ?? null;
+            $clienteId = session()->get('cliente_id');
+            if ($clienteId) {
+                $cliente = $db->table('clientes')->where('id', $clienteId)->get()->getRowArray();
+                if ($cliente && !empty($cliente['email'])) {
+                    $email = $cliente['email'];
+                }
+            }
+            if (!$cliente && $email) {
                 $cliente = $db->table('clientes')->where('email', $email)->get()->getRowArray();
             }
 
             // Gerar código do pedido
             $codigo = 'PED' . date('YmdHis') . rand(100, 999);
+
+            // Validar endereço obrigatório para entrega
+            if ($dadosPedido['tipo_entrega'] === 'entrega') {
+                $enderecoJS = trim($dadosPedido['endereco_entrega'] ?? '');
+                $enderecoInvalido = empty($enderecoJS)
+                    || in_array($enderecoJS, ['Retirada na loja', 'Endereço não informado'])
+                    || ($cliente && empty($cliente['Endereco']) && empty($enderecoJS));
+
+                if ($enderecoInvalido || (empty($dadosPedido['bairro_id']) && ($dadosPedido['status'] ?? '') !== 'nao_concluido')) {
+                    $db->transRollback();
+                    return $this->response->setJSON([
+                        'success' => false,
+                        'message' => 'Informe o endereço de entrega antes de finalizar o pedido.',
+                        'requer_endereco' => true,
+                    ]);
+                }
+            }
 
             // Calcular valores provisórios (serão recalculados com dados reais do banco)
             $valorProdutos = (float) $dadosPedido['subtotal'];
@@ -43,9 +67,10 @@ class FinalizarPedidoController extends Controller
                 'nome_cliente' => $cliente ? $cliente['nome'] : 'Cliente',
                 'telefone_cliente' => $cliente ? $cliente['telefone'] : '',
                 'email_cliente' => $email,
-                'endereco_entrega' => $dadosPedido['tipo_entrega'] === 'entrega' ? 
-                    ($cliente ? "{$cliente['Endereco']}, {$cliente['Numero']} - {$cliente['Bairro']}, {$cliente['Cidade']}" : 'Endereço não informado') : 
-                    'Retirada no local',
+                'endereco_entrega' => $dadosPedido['tipo_entrega'] === 'entrega'
+                    ? $this->_montarEndereco($dadosPedido, $cliente)
+                    : 'Retirada no local',
+                'bairro_id' => $dadosPedido['tipo_entrega'] === 'entrega' ? ($dadosPedido['bairro_id'] ?? null) : null,
                 'forma_pagamento' => $dadosPedido['forma_pagamento'],
                 'tipo_entrega' => $dadosPedido['tipo_entrega'],
                 'mesa_id' => $dadosPedido['tipo_entrega'] === 'retirada' ? ($dadosPedido['mesa_id'] ?? null) : null,
@@ -54,7 +79,7 @@ class FinalizarPedidoController extends Controller
                 'valor_produtos' => $valorProdutos,
                 'valor_entrega' => $valorEntrega,
                 'valor_total' => $valorTotal,
-                'status' => 'pendente',
+                'status' => ($dadosPedido['status'] ?? '') === 'nao_concluido' ? 'nao_concluido' : 'pendente',
                 'criado_em' => date('Y-m-d H:i:s')
             ];
 
@@ -231,6 +256,33 @@ class FinalizarPedidoController extends Controller
                 'message' => 'Erro ao processar pedido: ' . $e->getMessage()
             ]);
         }
+    }
+
+    private function _montarEndereco(array $dadosPedido, ?array $cliente): string
+    {
+        // Prioridade 1: endereço enviado pelo JS no payload
+        $endJS = trim($dadosPedido['endereco_entrega'] ?? '');
+        if ($endJS && $endJS !== 'Retirada na loja' && $endJS !== 'Endereço não informado') {
+            $partes = array_filter([
+                $endJS,
+                trim($dadosPedido['bairro_nome'] ?? ''),
+                trim($dadosPedido['cidade'] ?? ''),
+            ]);
+            return implode(' - ', $partes);
+        }
+
+        // Prioridade 2: dados do banco
+        if ($cliente && !empty($cliente['Endereco'])) {
+            $partes = array_filter([
+                trim($cliente['Endereco'] ?? ''),
+                trim($cliente['Numero'] ?? ''),
+                trim($cliente['Bairro'] ?? ''),
+                trim($cliente['Cidade'] ?? ''),
+            ]);
+            return implode(', ', $partes) ?: 'Endereço não informado';
+        }
+
+        return 'Endereço não informado';
     }
 
     private function enviarWhatsApp($codigo, $pedido, $itens)

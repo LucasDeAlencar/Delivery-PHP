@@ -89,7 +89,6 @@ window.CarrinhoSimples = {
 
     // Exibir popup de acompanhamento
     exibirPopupAcompanhamento(pedido, itens, saches, chavePix, qrcodeImage, tempoEntrega) {
-        console.log('Exibindo popup com:', { pedido, chavePix, qrcodeImage, tempoEntrega });
         
         const statusTexto = {
             'pendente': 'Aguardando Confirmação',
@@ -559,10 +558,8 @@ window.CarrinhoSimples = {
         });
 
         const categoriaIds = [...new Set(carrinho.map(item => item.categoria_id).filter(Boolean))];
-        console.log('[Sachês] categoria_ids extraídos:', categoriaIds);
 
         if (categoriaIds.length === 0) {
-            console.warn('[Sachês] Nenhuma categoria_id encontrada nos itens — sachês não serão carregados.');
             return;
         }
 
@@ -572,11 +569,9 @@ window.CarrinhoSimples = {
             contentType: 'application/json',
             data: JSON.stringify({ categoria_ids: categoriaIds }),
             success: (response) => {
-                console.log('[Sachês] Resposta da API:', response);
                 if (response.saches && response.saches.length > 0) {
                     this.renderizarSaches(response.saches);
                 } else {
-                    console.warn('[Sachês] API retornou lista vazia para as categorias:', categoriaIds);
                 }
             },
             error: (xhr, status, err) => {
@@ -980,6 +975,7 @@ window.CarrinhoSimples = {
                 $('#valor-entrega').text('R$ 0,00');
                 CarrinhoSimples._recalcularTotal();
                 $('#btn-finalizar').prop('disabled', false).text('Finalizar Pedido');
+                CarrinhoSimples._precisaNegociacao = false;
                 // Mostrar seleção de mesa
                 $('#selecao-mesa').show();
                 CarrinhoSimples.carregarMesas();
@@ -1004,77 +1000,99 @@ window.CarrinhoSimples = {
 
     // Calcular taxa de entrega baseada no cliente
     calcularTaxaEntrega(subtotal) {
-        const email = localStorage.getItem('cliente_email') || localStorage.getItem('userEmail');
-        
-        console.log('Email encontrado:', email); // Debug
-        
-        if (!email) {
-            // Usuário não logado - taxa padrão
-            const taxaPadrao = 5.00;
-            $('#valor-entrega').text('R$ ' + taxaPadrao.toFixed(2).replace('.', ','));
-            CarrinhoSimples._recalcularTotal();
-            $('#btn-finalizar').prop('disabled', false).text('Finalizar Pedido');
-            console.log('Usuário não logado - taxa padrão:', taxaPadrao);
-            return;
-        }
-
-        // Mostrar loading
         $('#valor-entrega').text('Calculando...');
         $('#btn-finalizar').prop('disabled', true).text('Calculando...');
 
-        console.log('Consultando API para email:', email); // Debug
-
-        // Buscar taxa do cliente
         $.ajax({
-            url: '/taxa-entrega-email',
+            url: '/taxa-entrega-sessao',
             method: 'POST',
-            data: { email: email },
             success: (response) => {
-                console.log('Resposta da API:', response); // Debug
-                
-                if (response.success && response.pode_entregar) {
-                    const taxa = parseFloat(response.taxa_entrega);
-                    
-                    $('#valor-entrega').text('R$ ' + taxa.toFixed(2).replace('.', ','));
+                $('.aviso-entrega').remove();
+
+                if (response.sem_sessao) {
+                    // Sem sessão: modo 1 usa email
+                    const email = localStorage.getItem('cliente_email') || localStorage.getItem('userEmail');
+                    if (!email) {
+                        $('#valor-entrega').text('R$ 0,00');
+                        CarrinhoSimples._recalcularTotal();
+                        $('#btn-finalizar').prop('disabled', false).text('Finalizar Pedido');
+                        return;
+                    }
+                    $.ajax({
+                        url: '/taxa-entrega-email',
+                        method: 'POST',
+                        data: { email },
+                        success: (r) => {
+                            $('.aviso-entrega').remove();
+                            if (r.success && r.pode_entregar) {
+                                $('#valor-entrega').text('R$ ' + parseFloat(r.taxa_entrega).toFixed(2).replace('.', ','));
+                                CarrinhoSimples._recalcularTotal();
+                                $('#btn-finalizar').prop('disabled', false).text('Finalizar Pedido');
+                            } else {
+                                CarrinhoSimples._mostrarAvisoForaCobertura(r.cliente || {});
+                            }
+                        },
+                        error: () => {
+                            $('#valor-entrega').text('R$ 0,00');
+                            CarrinhoSimples._recalcularTotal();
+                            $('#btn-finalizar').prop('disabled', false).text('Finalizar Pedido');
+                        }
+                    });
+                    return;
+                }
+
+                if (response.endereco_incompleto) {
+                    // Campos nulos: popup será aberto ao tentar finalizar
+                    $('#valor-entrega').text('—');
                     CarrinhoSimples._recalcularTotal();
                     $('#btn-finalizar').prop('disabled', false).text('Finalizar Pedido');
-                    
-                    console.log('Taxa aplicada:', taxa);
-                } else {
-                    // Não entrega no bairro
-                    $('#valor-entrega').text('Não disponível');
+                    return;
+                }
+
+                if (response.success && response.pode_entregar) {
+                    $('#valor-entrega').text('R$ ' + parseFloat(response.taxa_entrega).toFixed(2).replace('.', ','));
                     CarrinhoSimples._recalcularTotal();
-                    $('#btn-finalizar').prop('disabled', true).text('Não entregamos neste local');
-                    
-                    // Remover avisos anteriores
-                    $('.aviso-entrega').remove();
-                    
-                    // Mostrar aviso
-                    if (!response.pode_entregar) {
-                        const cliente = response.cliente || {};
-                        const aviso = `
-                            <div class="aviso-entrega" style="background: #dc3545; color: white; padding: 10px; border-radius: 5px; margin: 10px 0; font-size: 12px;">
-                                <i class="fas fa-exclamation-triangle"></i> 
-                                Não entregamos em ${cliente.bairro || 'seu bairro'}, ${cliente.cidade || 'sua cidade'}.
-                                Selecione "Retirada" ou atualize seu endereço.
-                            </div>
-                        `;
-                        $('#linha-entrega').after(aviso);
-                    }
-                    
-                    console.log('Entrega bloqueada:', response.message);
+                    $('#btn-finalizar').prop('disabled', false).text('Finalizar Pedido');
+                } else {
+                    CarrinhoSimples._mostrarAvisoForaCobertura(response.cliente || {});
                 }
             },
-            error: (xhr, status, error) => {
-                console.error('Erro na API:', xhr.responseText, status, error); // Debug
-                
-                // Erro na API - usar taxa padrão
-                const taxaPadrao = 5.00;
-                $('#valor-entrega').text('R$ ' + taxaPadrao.toFixed(2).replace('.', ','));
+            error: () => {
+                $('#valor-entrega').text('R$ 0,00');
                 CarrinhoSimples._recalcularTotal();
                 $('#btn-finalizar').prop('disabled', false).text('Finalizar Pedido');
             }
         });
+    },
+
+    _mostrarAvisoForaCobertura(cliente) {
+        $('.aviso-entrega').remove();
+
+        if (window.negociacaoEntrega) {
+            // Negociação ativa: mostrar aviso informativo e liberar botão
+            $('#valor-entrega').text('A negociar');
+            CarrinhoSimples._recalcularTotal();
+            $('#btn-finalizar').prop('disabled', false).text('Finalizar Pedido');
+            $('#linha-entrega').after(`
+                <div class="aviso-entrega" style="background:#856404;color:#fff3cd;padding:10px;border-radius:5px;margin:10px 0;font-size:12px;border:1px solid #b8860b;">
+                    <i class="fas fa-info-circle"></i>
+                    Seu endereço está fora da área de cobertura. A taxa de entrega será negociada com o estabelecimento.
+                </div>`);
+            // Marcar que este pedido precisa de negociação
+            CarrinhoSimples._precisaNegociacao = true;
+        } else {
+            // Negociação inativa: comportamento original
+            $('#valor-entrega').text('Não disponível');
+            CarrinhoSimples._recalcularTotal();
+            $('#btn-finalizar').prop('disabled', true).text('Não entregamos neste local');
+            $('#linha-entrega').after(`
+                <div class="aviso-entrega" style="background:#dc3545;color:white;padding:10px;border-radius:5px;margin:10px 0;font-size:12px;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Não entregamos em ${cliente.bairro || 'seu bairro'}, ${cliente.cidade || 'sua cidade'}.
+                    Selecione "Retirada" ou atualize seu endereço.
+                </div>`);
+            CarrinhoSimples._precisaNegociacao = false;
+        }
     },
 
     // Fechar carrinho
@@ -1266,6 +1284,76 @@ window.CarrinhoSimples = {
             .filter(([, qtd]) => qtd > 0)
             .map(([id, qtd]) => ({ id: parseInt(id), quantidade: qtd }));
 
+        // Validar e coletar endereço para entrega
+        let enderecoEntrega = null;
+        let bairroId = null;
+        let bairroNome = null;
+        if (tipoEntrega === 'entrega') {
+            // Modo 3: endereço no localStorage
+            const endSalvo = localStorage.getItem('endereco_entrega_modo3');
+            if (endSalvo) {
+                try {
+                    const d = JSON.parse(endSalvo);
+                    if (d.endereco && d.numero && d.cidade) {
+                        enderecoEntrega = d.endereco + ', ' + d.numero + (d.complemento ? ' - ' + d.complemento : '');
+                        bairroId = d.bairro_id || null;
+                        bairroNome = d.bairro_nome || null;
+                        taxaEntrega = parseFloat(d.taxa_entrega) || taxaEntrega;
+                    }
+                } catch(e) {}
+            }
+            // Só abre popup se modo 3 sem endereço no localStorage
+            // Quando negociação está ativa e endereço existe (mesmo fora da cobertura), não abre popup
+            if (!enderecoEntrega && window.modoCadastro === 3) {
+                if (window.FinalizarPedido && typeof window.FinalizarPedido.abrirPopupEndereco === 'function') {
+                    window.FinalizarPedido.abrirPopupEndereco();
+                } else {
+                    alert('Informe o endereço de entrega antes de finalizar.');
+                }
+                this._finalizando = false;
+                return;
+            }
+        }
+
+        // Popup de confirmação para pedidos com negociação de entrega
+        if (CarrinhoSimples._precisaNegociacao && !CarrinhoSimples._enviarPedidoNegociacao) {
+            this._finalizando = false;
+            document.getElementById('popup-negociacao-confirm')?.remove();
+            const popup = document.createElement('div');
+            popup.id = 'popup-negociacao-confirm';
+            popup.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:10000;display:flex;align-items:center;justify-content:center;padding:0 12px;box-sizing:border-box;';
+            popup.innerHTML = `
+                <div style="background:#1a1a1a;width:100%;max-width:440px;border-radius:12px;overflow:hidden;border:1px solid #856404;">
+                    <div style="background:#2d2200;padding:14px 18px;border-bottom:1px solid #856404;display:flex;align-items:center;gap:10px;">
+                        <i class="fas fa-handshake" style="color:#f8b531;font-size:1.2rem;"></i>
+                        <h6 style="color:#f8b531;margin:0;font-family:'Poppins',sans-serif;">Atenção antes de confirmar</h6>
+                    </div>
+                    <div style="padding:18px;">
+                        <p style="color:#fff;font-size:.95rem;line-height:1.6;margin-bottom:12px;">
+                            <strong>Não encontramos seu endereço na nossa lista de bairros.</strong>
+                        </p>
+                        <p style="color:#ccc;font-size:.88rem;line-height:1.6;margin-bottom:12px;">
+                            Não se preocupe! Se você digitou o endereço corretamente, nosso atendimento vai verificar e tratar seu pedido normalmente como se fosse da região.
+                        </p>
+                        <p style="color:#ccc;font-size:.88rem;line-height:1.6;margin-bottom:16px;">
+                            Caso seja necessário, entraremos em contato pelo WhatsApp para combinar a taxa de entrega. O pedido pode demorar um pouquinho a mais para ser confirmado.
+                        </p>
+                        <div style="display:flex;gap:10px;">
+                            <button id="btn-neg-cancelar" style="flex:1;padding:11px;background:#333;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:.9rem;">Voltar</button>
+                            <button id="btn-neg-confirmar" style="flex:1;padding:11px;background:#f8b531;color:#111;border:none;border-radius:6px;font-weight:700;cursor:pointer;font-size:.9rem;">Confirmar Pedido</button>
+                        </div>
+                    </div>
+                </div>`;
+            document.body.appendChild(popup);
+            document.getElementById('btn-neg-cancelar').onclick = () => popup.remove();
+            document.getElementById('btn-neg-confirmar').onclick = () => {
+                popup.remove();
+                CarrinhoSimples._enviarPedidoNegociacao = true;
+                CarrinhoSimples.finalizar();
+            };
+            return;
+        }
+
         const dadosPedido = {
             email: localStorage.getItem('cliente_email'),
             itens: carrinho,
@@ -1277,7 +1365,13 @@ window.CarrinhoSimples = {
             taxa_entrega: taxaEntrega,
             mesa_id: mesaId,
             local_retirada: localRetirada,
+            endereco_entrega: enderecoEntrega,
+            bairro_id: bairroId,
+            bairro_nome: bairroNome,
+            cidade: (() => { try { return JSON.parse(localStorage.getItem('endereco_entrega_modo3') || '{}').cidade || null; } catch(e) { return null; } })(),
+            status: (CarrinhoSimples._enviarPedidoNegociacao && tipoEntrega === 'entrega') ? 'nao_concluido' : 'pendente',
         };
+        CarrinhoSimples._enviarPedidoNegociacao = false;
 
         // Desabilitar botão durante processamento
         $('#btn-finalizar').prop('disabled', true).text('Processando...');
@@ -1334,13 +1428,20 @@ window.CarrinhoSimples = {
                         });
                     }
                 } else {
-                    this.mostrarModal('Erro', 'Erro ao processar pedido: ' + response.message, 'error');
                     $('#btn-finalizar').prop('disabled', false).text('Finalizar Pedido');
                     this._finalizando = false;
+                    if (response.requer_endereco) {
+                        if (window.FinalizarPedido && typeof window.FinalizarPedido.abrirPopupEndereco === 'function') {
+                            window.FinalizarPedido.abrirPopupEndereco();
+                        }
+                    } else {
+                        this.mostrarModal('Erro', 'Erro ao processar pedido: ' + response.message, 'error');
+                    }
                 }
             },
             error: (xhr) => {
                 console.error('Erro na requisição:', xhr);
+                CarrinhoSimples._enviarPedidoNegociacao = false;
                 this.mostrarModal('Erro', 'Erro ao processar pedido. Tente novamente.', 'error');
                 $('#btn-finalizar').prop('disabled', false).text('Finalizar Pedido');
                 this._finalizando = false;
@@ -1495,4 +1596,3 @@ window.abrirCarrinhoPopup = function() {
     CarrinhoSimples.mostrar();
 };
 
-console.log('✅ Carrinho Simples carregado');

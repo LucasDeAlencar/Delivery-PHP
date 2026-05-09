@@ -5,7 +5,7 @@ window.AuthCheck = {
     init() {
         // Só executa se não estiver na página de login ou admin
         const path = window.location.pathname;
-        if (path === '/login' || path.includes('/login') || path.includes('/admin')) {
+        if (path.includes('/login') || path.includes('/admin')) {
             return;
         }
 
@@ -13,13 +13,13 @@ window.AuthCheck = {
     },
 
     verificarAutenticacao() {
-        const emailSalvo = localStorage.getItem('cliente_email');
-        
-        if (!emailSalvo) {
-            // Não tem email salvo - redirecionar para login
-            this.redirecionarParaLogin();
+        // Se já estiver logado segundo variável global, ok
+        if (window.clienteLogado && window.clienteLogado.logado) {
+            return;
         }
-        // Se tem email salvo, deixa continuar
+
+        // Caso contrário, redireciona para login
+        this.redirecionarParaLogin();
     },
 
     redirecionarParaLogin() {

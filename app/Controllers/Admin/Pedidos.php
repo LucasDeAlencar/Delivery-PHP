@@ -144,7 +144,7 @@ class Pedidos extends BaseController {
         }
 
         // Validar status permitidos
-        $statusPermitidos = ['pendente', 'confirmado', 'finalizado', 'cancelado'];
+        $statusPermitidos = ['pendente', 'confirmado', 'finalizado', 'cancelado', 'nao_concluido'];
         if (!in_array($novoStatus, $statusPermitidos)) {
             return $this->response->setJSON([
                 'success' => false,
@@ -210,6 +210,29 @@ class Pedidos extends BaseController {
                 'message' => 'Erro ao atualizar status no banco de dados'
             ]);
         }
+    }
+
+    /**
+     * Atualiza a taxa de entrega de um pedido nao_concluido (AJAX)
+     */
+    public function atualizarTaxaEntrega() {
+        $pedidoId  = (int) $this->request->getPost('pedido_id');
+        $novaTaxa  = (float) $this->request->getPost('taxa_entrega');
+
+        $pedido = $this->pedidoModel->find($pedidoId);
+        if (!$pedido || $pedido->status !== 'nao_concluido' || $pedido->tipo_entrega !== 'entrega') {
+            return $this->response->setJSON(['success' => false, 'message' => 'Pedido inválido']);
+        }
+
+        $db = \Config\Database::connect();
+        $novoTotal = (float)$pedido->valor_produtos + $novaTaxa;
+        $db->table('pedidos')->where('id', $pedidoId)->update([
+            'valor_entrega' => $novaTaxa,
+            'valor_total'   => $novoTotal,
+            'atualizado_em' => date('Y-m-d H:i:s'),
+        ]);
+
+        return $this->response->setJSON(['success' => true, 'novo_total' => number_format($novoTotal, 2, ',', '.')]);
     }
 
     /**

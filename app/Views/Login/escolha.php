@@ -101,6 +101,7 @@
     </style>
 </head>
 <body>
+    <?php $modo_cadastro = $modo_cadastro ?? 1; ?>
 
     <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
         <div class="container">
@@ -130,7 +131,7 @@
                 <p>Escolha uma das opções abaixo para continuar</p>
             </div>
 
-            <a href="<?= site_url('registrar') ?>" class="btn-choice btn-cadastrar">
+            <a href="<?= site_url($modo_cadastro == 3 ? 'login/cadastrar' : 'registrar') ?>" class="btn-choice btn-cadastrar">
                 <i class="fas fa-user-plus"></i>CADASTRAR CONTA
             </a>
 

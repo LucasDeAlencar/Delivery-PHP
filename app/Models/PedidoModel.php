@@ -239,12 +239,13 @@ class PedidoModel extends Model {
         $novoStatus = strtolower(trim($novoStatus ?? ''));
         
         $transicoesPermitidas = [
-            'em_aberto' => ['pendente', 'cancelado'],
-            'pendente' => ['confirmado', 'cancelado'],
-            'confirmado' => ['finalizado', 'cancelado'],
-            'finalizado' => [],
-            'cancelado' => [],
-            'inativo' => [],
+            'em_aberto'     => ['pendente', 'cancelado'],
+            'pendente'      => ['confirmado', 'cancelado'],
+            'confirmado'    => ['finalizado', 'cancelado'],
+            'nao_concluido' => ['pendente', 'cancelado'],
+            'finalizado'    => [],
+            'cancelado'     => [],
+            'inativo'       => [],
         ];
         
         return in_array($novoStatus, $transicoesPermitidas[$statusAtual] ?? []);
@@ -265,6 +266,7 @@ class PedidoModel extends Model {
             'cancelados' => $this->where('status', 'cancelado')->countAllResults(false),
             'inativos' => $this->where('status', 'inativo')->countAllResults(false),
             'em_aberto' => $this->where('status', 'em_aberto')->countAllResults(false),
+            'nao_concluido' => $this->where('status', 'nao_concluido')->countAllResults(false),
             'valor_total_hoje' => $this->selectSum('valor_total')
                                        ->where('DATE(criado_em)', date('Y-m-d'))
                                        ->where('status !=', 'inativo')
@@ -288,7 +290,7 @@ class PedidoModel extends Model {
                 WHERE (status IS NULL OR status = '' OR status = 'pendente')
                 AND criado_em < DATE_SUB(NOW(), INTERVAL " . self::TEMPO_INATIVO . " MINUTE)
                 AND deletado_em IS NULL
-                AND status NOT IN ('inativo', 'em_aberto')";
+                AND status NOT IN ('inativo', 'em_aberto', 'confirmado', 'finalizado', 'cancelado', 'nao_concluido')";
         
         $db->query($sql);
         $totalAlterados = $db->affectedRows();
@@ -343,6 +345,7 @@ class PedidoModel extends Model {
             'finalizados' => $this->where('status', 'finalizado')->where('DATE(criado_em)', $hoje)->countAllResults(false),
             'cancelados' => $this->where('status', 'cancelado')->where('DATE(criado_em)', $hoje)->countAllResults(false),
             'inativos' => $this->where('status', 'inativo')->where('DATE(criado_em)', $hoje)->countAllResults(false),
+            'nao_concluido' => $this->where('status', 'nao_concluido')->where('DATE(criado_em)', $hoje)->countAllResults(false),
             'valor_total_hoje' => $this->selectSum('valor_total')
                                        ->where('DATE(criado_em)', $hoje)
                                        ->where('status !=', 'inativo')

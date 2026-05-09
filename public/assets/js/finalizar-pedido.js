@@ -208,7 +208,13 @@ window.FinalizarPedido = {
         if (!document.getElementById('modalFinalizarPedido')) {
             this.criarModal();
         }
-        
+
+        // Preencher dados do cliente logado, se houver
+        if (window.clienteLogado && window.clienteLogado.logado) {
+            $('#nome_cliente').val(window.clienteLogado.nome || '');
+            $('#telefone_cliente').val(window.clienteLogado.telefone || '');
+        }
+
         // Resetar estado
         this.tipoEntrega = null;
         this.taxaEntrega = 0;
@@ -219,9 +225,43 @@ window.FinalizarPedido = {
         // Renderizar formas de pagamento
         this.renderizarFormasPagamento();
         
-        // Renderizar bairros
+        // Aguardar carregamento de bairros e depois renderizar
+        await this.carregarBairros();
         this.renderizarBairros();
 
+        // Modo 3: preencher endereço salvo no localStorage (APÓS bairros carregados)
+        if (window.modoCadastro && window.modoCadastro == 3) {
+            const enderecoSalvo = localStorage.getItem('endereco_entrega_modo3');
+            if (enderecoSalvo) {
+                try {
+                    const d = JSON.parse(enderecoSalvo);
+                    let enderecoCompleto = (d.endereco || '') + ', ' + (d.numero || '');
+                    if (d.complemento) enderecoCompleto += ' - ' + d.complemento;
+                    $('#endereco_entrega').val(enderecoCompleto);
+                    $('#bairro_id').val(d.bairro_id);
+                    $('#bairro_id').trigger('change');
+                } catch(e) {
+                    console.error('Erro ao carregar endereco salvo', e);
+                }
+            } else if (window.clienteTemEndereco) {
+                // Buscar endereço do banco via API
+                fetch('/cliente/endereco_atual', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(r => r.json())
+                    .then(res => {
+                        if (res.sucesso && res.endereco) {
+                            const e = res.endereco;
+                            let endStr = (e.Endereco || '') + (e.Numero ? ', ' + e.Numero : '');
+                            if (e.complemento) endStr += ' - ' + e.complemento;
+                            $('#endereco_entrega').val(endStr);
+                            // Tentar selecionar bairro pelo nome
+                            $('#bairro_id option').filter(function() {
+                                return $(this).text().toLowerCase().startsWith((e.Bairro || '').toLowerCase());
+                            }).first().prop('selected', true).trigger('change');
+                        }
+                    }).catch(() => {});
+            }
+        }
+        
         // Recarregar sachês com as categorias atuais do carrinho e renderizar
         await this.carregarSaches();
         
@@ -714,6 +754,15 @@ window.FinalizarPedido = {
             this.mostrarNotificacao('⚠️ Selecione o tipo de entrega', 'warning');
             return;
         }
+
+        // Se entrega e endereço/bairro vazios, abrir popup de endereço
+        if (this.tipoEntrega === 'entrega') {
+            const enderecoVal = $('#endereco_entrega').val().trim();
+            if (!enderecoVal) {
+                this.abrirPopupEndereco();
+                return;
+            }
+        }
         
         // Validar formulário
         const form = document.getElementById('form-finalizar-pedido');
@@ -744,12 +793,14 @@ window.FinalizarPedido = {
         const sachesSelecionados = this.getSachesSelecionados();
         const totalSaches = sachesSelecionados.reduce((sum, s) => sum + s.preco_cobrado, 0);
         const dados = {
+            email: (window.clienteLogado && window.clienteLogado.email) ? window.clienteLogado.email : null,
             tipo_entrega: this.tipoEntrega,
             nome_cliente: $('#nome_cliente').val(),
             telefone_cliente: $('#telefone_cliente').val(),
             endereco_entrega: this.tipoEntrega === 'entrega' ? $('#endereco_entrega').val() : 'Retirada na loja',
             bairro_id: this.tipoEntrega === 'entrega' ? $('#bairro_id').val() : null,
             bairro_nome: this.tipoEntrega === 'entrega' ? $('#bairro_id option:selected').text().split(' - ')[0] : null,
+            cidade: this.tipoEntrega === 'entrega' ? (() => { try { return JSON.parse(localStorage.getItem('endereco_entrega_modo3') || '{}').cidade || null; } catch(e) { return null; } })() : null,
             complemento: $('#complemento').val(),
             forma_pagamento: formaPagamento,
             valor_dinheiro: formaPagamento === 'dinheiro' ? parseFloat($('#valor_dinheiro').val()) : null,
@@ -891,6 +942,185 @@ window.FinalizarPedido = {
     },
     
     // Mostra notificação
+    // Abre popup para definir endereço de entrega (modo 3)
+    abrirPopupEndereco: function() {
+        const self = this;
+        // Remover popup anterior se existir
+        document.getElementById('popup-endereco-fp')?.remove();
+
+        const popup = document.createElement('div');
+        popup.id = 'popup-endereco-fp';
+        popup.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:0 12px;box-sizing:border-box;';
+        popup.innerHTML = `
+            <div style="background:#1a1a1a;width:100%;max-width:480px;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.6);">
+                <div style="background:#2d2d2d;padding:14px 18px;border-bottom:1px solid #333;display:flex;justify-content:space-between;align-items:center;">
+                    <h6 style="color:#f8b531;margin:0;font-family:'Poppins',sans-serif;"><i class="fas fa-map-marker-alt" style="margin-right:8px;"></i>Endereço de Entrega</h6>
+                    <button onclick="document.getElementById('popup-endereco-fp').remove()" style="background:none;border:none;color:#fff;font-size:1.3rem;cursor:pointer;line-height:1;">&times;</button>
+                </div>
+                <div style="padding:18px;max-height:70vh;overflow-y:auto;">
+                    <div style="background:#2a3a2a;border:1px solid #3a5a3a;border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:.82rem;color:#90ee90;line-height:1.4;">
+                        <i class="fas fa-info-circle" style="margin-right:6px;color:#f8b531;"></i>
+                        Caso sua cidade ou bairro não apareça na lista, sua região não está na área de entrega. Mas você pode realizar a <strong>retirada no local</strong>!
+                    </div>
+                    <div style="margin-bottom:12px;position:relative;">
+                        <label style="color:#ccc;font-size:.85rem;display:block;margin-bottom:4px;">Cidade *</label>
+                        <input type="text" id="fp-cidade" placeholder="Digite sua cidade..." autocomplete="off"
+                            style="width:100%;background:#2d2d2d;border:1px solid #444;color:#fff;padding:8px;border-radius:6px;font-size:16px;">
+                        <div id="fp-cidade-sugestoes" style="display:none;position:absolute;top:100%;left:0;right:0;background:#2d2d2d;border:1px solid #555;border-radius:0 0 6px 6px;z-index:10;max-height:160px;overflow-y:auto;"></div>
+                    </div>
+                    <div style="margin-bottom:12px;position:relative;">
+                        <label style="color:#ccc;font-size:.85rem;display:block;margin-bottom:4px;">Bairro *</label>
+                        <input type="text" id="fp-bairro" placeholder="Digite seu bairro..." autocomplete="off"
+                            style="width:100%;background:#2d2d2d;border:1px solid #444;color:#fff;padding:8px;border-radius:6px;font-size:16px;">
+                        <div id="fp-bairro-sugestoes" style="display:none;position:absolute;top:100%;left:0;right:0;background:#2d2d2d;border:1px solid #555;border-radius:0 0 6px 6px;z-index:10;max-height:160px;overflow-y:auto;"></div>
+                        <input type="hidden" id="fp-bairro-id" value="">
+                        <input type="hidden" id="fp-bairro-taxa" value="0">
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <label style="color:#ccc;font-size:.85rem;display:block;margin-bottom:4px;">Rua/Av *</label>
+                        <input type="text" id="fp-endereco" placeholder="Ex: Rua das Flores" style="width:100%;background:#2d2d2d;border:1px solid #444;color:#fff;padding:8px;border-radius:6px;font-size:16px;">
+                    </div>
+                    <div style="display:flex;gap:10px;margin-bottom:12px;">
+                        <div style="flex:1;">
+                            <label style="color:#ccc;font-size:.85rem;display:block;margin-bottom:4px;">Número *</label>
+                            <input type="text" id="fp-numero" placeholder="123" style="width:100%;background:#2d2d2d;border:1px solid #444;color:#fff;padding:8px;border-radius:6px;font-size:16px;">
+                        </div>
+                        <div style="flex:2;">
+                            <label style="color:#ccc;font-size:.85rem;display:block;margin-bottom:4px;">Complemento</label>
+                            <input type="text" id="fp-complemento" placeholder="Apto, bloco..." style="width:100%;background:#2d2d2d;border:1px solid #444;color:#fff;padding:8px;border-radius:6px;font-size:16px;">
+                        </div>
+                    </div>
+                    <button id="fp-btn-salvar" style="width:100%;padding:12px;background:linear-gradient(135deg,#28a745,#20c997);border:none;border-radius:8px;color:#fff;font-weight:600;font-size:1rem;cursor:pointer;">
+                        <i class="fas fa-check" style="margin-right:6px;"></i>Confirmar Endereço
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(popup);
+
+        const cidadeInput  = document.getElementById('fp-cidade');
+        const cidadeSugest = document.getElementById('fp-cidade-sugestoes');
+        const bairroInput  = document.getElementById('fp-bairro');
+        const bairroSugest = document.getElementById('fp-bairro-sugestoes');
+        const bairroIdHid  = document.getElementById('fp-bairro-id');
+        const bairroTaxaHid= document.getElementById('fp-bairro-taxa');
+
+        const cidades = [...new Set((self.bairros || []).map(b => b.cidade).filter(Boolean))].sort();
+
+        function itemSugestao(texto, onClick) {
+            const d = document.createElement('div');
+            d.textContent = texto;
+            d.style.cssText = 'padding:8px 12px;cursor:pointer;color:#fff;font-size:.9rem;border-bottom:1px solid #3a3a3a;';
+            d.addEventListener('mousedown', onClick);
+            d.addEventListener('mouseover', () => d.style.background = '#3a3a3a');
+            d.addEventListener('mouseout',  () => d.style.background = '');
+            return d;
+        }
+
+        // Autocomplete cidade
+        cidadeInput.addEventListener('input', function() {
+            const q = this.value.trim().toLowerCase();
+            cidadeSugest.innerHTML = '';
+            bairroInput.value = ''; bairroIdHid.value = ''; bairroTaxaHid.value = '0';
+            if (!q) { cidadeSugest.style.display = 'none'; return; }
+            const matches = cidades.filter(c => c.toLowerCase().includes(q));
+            if (!matches.length) { cidadeSugest.style.display = 'none'; return; }
+            matches.forEach(c => cidadeSugest.appendChild(itemSugestao(c, () => {
+                cidadeInput.value = c;
+                cidadeSugest.style.display = 'none';
+                bairroInput.focus();
+            })));
+            cidadeSugest.style.display = 'block';
+        });
+        cidadeInput.addEventListener('blur', () => setTimeout(() => cidadeSugest.style.display = 'none', 150));
+
+        // Autocomplete bairro (filtra pela cidade digitada, ou todos se cidade não bater)
+        bairroInput.addEventListener('input', function() {
+            const q = this.value.trim().toLowerCase();
+            bairroIdHid.value = ''; bairroTaxaHid.value = '0';
+            bairroSugest.innerHTML = '';
+            if (!q) { bairroSugest.style.display = 'none'; return; }
+            const cidadeDigitada = cidadeInput.value.trim();
+            const pool = (self.bairros || []).filter(b =>
+                (!cidadeDigitada || b.cidade.toLowerCase() === cidadeDigitada.toLowerCase()) &&
+                b.nome.toLowerCase().includes(q)
+            );
+            if (!pool.length) { bairroSugest.style.display = 'none'; return; }
+            pool.forEach(b => {
+                const taxa = parseFloat(b.valor_entrega) || 0;
+                const label = b.nome + (cidadeDigitada ? '' : ' — ' + b.cidade) + (taxa > 0 ? ' (+R$ ' + taxa.toFixed(2).replace('.', ',') + ')' : '');
+                bairroSugest.appendChild(itemSugestao(label, () => {
+                    bairroInput.value = b.nome;
+                    if (!cidadeInput.value.trim()) cidadeInput.value = b.cidade;
+                    bairroIdHid.value  = b.id;
+                    bairroTaxaHid.value = b.valor_entrega || 0;
+                    bairroSugest.style.display = 'none';
+                }));
+            });
+            bairroSugest.style.display = 'block';
+        });
+        bairroInput.addEventListener('blur', () => setTimeout(() => bairroSugest.style.display = 'none', 150));
+
+        // Pré-preencher com localStorage se houver
+        const saved = localStorage.getItem('endereco_entrega_modo3');
+        if (saved) {
+            try {
+                const d = JSON.parse(saved);
+                cidadeInput.value = d.cidade || '';
+                bairroInput.value = d.bairro_nome || '';
+                bairroIdHid.value  = d.bairro_id || '';
+                bairroTaxaHid.value = d.taxa_entrega || 0;
+                document.getElementById('fp-endereco').value = d.endereco || '';
+                document.getElementById('fp-numero').value   = d.numero || '';
+                document.getElementById('fp-complemento').value = d.complemento || '';
+            } catch(e) {}
+        }
+
+        // Salvar e preencher campos do modal principal
+        document.getElementById('fp-btn-salvar').addEventListener('click', function() {
+            const cidade    = cidadeInput.value.trim();
+            const bairroNome= bairroInput.value.trim();
+            const bairroId  = bairroIdHid.value;
+            const taxa      = parseFloat(bairroTaxaHid.value) || 0;
+            const endereco  = document.getElementById('fp-endereco').value.trim();
+            const numero    = document.getElementById('fp-numero').value.trim();
+            const complemento = document.getElementById('fp-complemento').value.trim();
+
+            if (!cidade || !bairroNome || !endereco || !numero) {
+                alert('Preencha cidade, bairro, rua e número');
+                return;
+            }
+
+            localStorage.setItem('endereco_entrega_modo3', JSON.stringify({
+                cidade, bairro_id: bairroId, bairro_nome: bairroNome,
+                endereco, numero, complemento, taxa_entrega: taxa
+            }));
+
+            fetch('/cliente/atualizar_endereco', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},
+                body: JSON.stringify({ cidade, bairro_nome: bairroNome, endereco, numero, complemento })
+            }).catch(() => {});
+
+            // Preencher campos do modal de finalização (se existir)
+            const endStr = endereco + ', ' + numero + (complemento ? ' - ' + complemento : '');
+            $('#endereco_entrega').val(endStr);
+            $('#bairro_id').val(bairroId).trigger('change');
+
+            popup.remove();
+
+            // Recalcular taxa no carrinho (mostrará aviso se fora da cobertura)
+            if (window.CarrinhoSimples && typeof window.CarrinhoSimples.calcularTaxaEntrega === 'function') {
+                const subtotal = JSON.parse(localStorage.getItem('carrinho') || '[]')
+                    .reduce((s, i) => s + i.total, 0);
+                window.CarrinhoSimples.calcularTaxaEntrega(subtotal);
+            } else if (window.location.pathname.includes('/carrinho')) {
+                // Na página de carrinho sem CarrinhoSimples, retomar finalização
+                self.concluirPedido();
+            }
+        });
+    },
+
     mostrarNotificacao: function(mensagem, tipo = 'info') {
         if (typeof window.Carrinho !== 'undefined' && window.Carrinho.mostrarNotificacao) {
             window.Carrinho.mostrarNotificacao(mensagem, tipo);

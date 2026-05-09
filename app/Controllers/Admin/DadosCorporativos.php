@@ -26,46 +26,43 @@ class DadosCorporativos extends BaseController
         }
 
         $json = $this->request->getJSON();
-        
-        // Usar todos os campos necessários
+        $db = \Config\Database::connect();
+
         $dados = [
-            'endereco' => $json->endereco ?? '',
-            'cep' => $json->cep ?? '',
-            'numero' => $json->numero ?? '',
-            'whatsapp' => $json->whatsapp ?? '',
-            'email' => $json->email ?? '',
-            'instagram' => $json->instagram ?? '',
-            'facebook' => $json->facebook ?? '',
+            'endereco'            => $json->endereco ?? '',
+            'cep'                 => $json->cep ?? '',
+            'numero'              => $json->numero ?? '',
+            'whatsapp'            => $json->whatsapp ?? '',
+            'email'               => $json->email ?? '',
+            'instagram'           => $json->instagram ?? '',
+            'facebook'            => $json->facebook ?? '',
             'preco_minimo_compra' => $json->preco_minimo_compra ?? 0,
-            'entrega_ate' => $json->entrega_ate ?? 0,
-            'updated_at' => date('Y-m-d H:i:s')
+            'entrega_ate'         => $json->entrega_ate ?? 0,
+            'modo_cadastro'       => (int)($json->modo_cadastro ?? 1),
+            'updated_at'          => date('Y-m-d H:i:s'),
         ];
 
-        $db = \Config\Database::connect();
-        
+        // Incluir negociacao_entrega apenas se a coluna existir
+        $colunas = $db->getFieldNames('dados_corporativos');
+        if (in_array('negociacao_entrega', $colunas)) {
+            $dados['negociacao_entrega'] = (int)($json->negociacao_entrega ?? 0);
+        }
+
         try {
-            // Verificar se registro existe
             $existe = $db->table('dados_corporativos')->where('id', 1)->get()->getRow();
-            
+
             if (!$existe) {
-                // Criar registro se não existir
                 $dados['id'] = 1;
                 $dados['created_at'] = date('Y-m-d H:i:s');
-                $resultado = $db->table('dados_corporativos')->insert($dados);
+                $db->table('dados_corporativos')->insert($dados);
             } else {
-                // Atualizar registro existente
-                $resultado = $db->table('dados_corporativos')
-                               ->where('id', 1)
-                               ->update($dados);
+                $db->table('dados_corporativos')->where('id', 1)->update($dados);
             }
 
-            if ($resultado !== false) {
-                return $this->response->setJSON(['sucesso' => true, 'msg' => 'Dados atualizados com sucesso']);
-            } else {
-                return $this->response->setJSON(['erro' => true, 'msg' => 'Erro ao atualizar dados']);
-            }
+            return $this->response->setJSON(['sucesso' => true, 'msg' => 'Dados atualizados com sucesso']);
         } catch (\Exception $e) {
-            return $this->response->setJSON(['erro' => true, 'msg' => 'Erro no banco de dados']);
+            log_message('error', 'DadosCorporativos::atualizar - ' . $e->getMessage());
+            return $this->response->setJSON(['erro' => true, 'msg' => 'Erro no banco de dados: ' . $e->getMessage()]);
         }
     }
 }
