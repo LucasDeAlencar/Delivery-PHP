@@ -133,6 +133,7 @@ class Expedientes extends BaseController {
 
             if ($atualizados > 0) {
                 log_message('info', 'Redirecionando com mensagem de sucesso');
+                \Config\Services::cache()->delete('expedientes');
 
                 if (!empty($errors)) {
                     return redirect()->to('admin/expedientes')

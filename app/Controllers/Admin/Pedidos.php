@@ -37,6 +37,7 @@ class Pedidos extends BaseController {
             'pedidos' => $pedidos,
             'estatisticas' => $estatisticas,
             'isAdmin' => $isAdmin,
+            'maxPedidoId' => !empty($pedidos) ? max(array_map(fn($p) => $p->id, $pedidos)) : 0,
         ];
         
         // Buscar suportes pendentes
@@ -144,7 +145,7 @@ class Pedidos extends BaseController {
         }
 
         // Validar status permitidos
-        $statusPermitidos = ['pendente', 'confirmado', 'finalizado', 'cancelado', 'nao_concluido'];
+        $statusPermitidos = ['pendente', 'confirmado', 'finalizado', 'cancelado', 'nao_concluido', 'em_aberto'];
         if (!in_array($novoStatus, $statusPermitidos)) {
             return $this->response->setJSON([
                 'success' => false,
@@ -417,6 +418,12 @@ class Pedidos extends BaseController {
         // Verificar pedidos cancelados recentemente (nos últimos 5 minutos)
         // Isso captura cancelamentos feitos pelo cliente
         $pedidosCancelados = $this->pedidoModel->buscarCanceladosRecentes();
+
+        // Verificar comandas que foram finalizadas/alteradas recentemente (viraram pendente)
+        $comandasFinalizadas = $this->pedidoModel->buscarComandasFinalizadasRecentes();
+        if (count($comandasFinalizadas) > 0) {
+            $alterados += count($comandasFinalizadas);
+        }
         
         // Estatísticas baseadas no tipo de usuário
         if ($isAdmin) {
@@ -433,6 +440,7 @@ class Pedidos extends BaseController {
             'success' => true,
             'novos_pedidos' => array_values($novosPedidos),
             'pedidos_cancelados' => $pedidosCancelados,
+            'comandas_finalizadas' => $comandasFinalizadas,
             'estatisticas' => $estatisticas,
             'recarregar' => $alterados > 0
         ]);

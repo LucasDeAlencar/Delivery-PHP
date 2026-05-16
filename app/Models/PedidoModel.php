@@ -69,7 +69,6 @@ class PedidoModel extends Model {
 
     // Callbacks
     protected $beforeInsert = ['gerarCodigo'];
-    protected $afterInsert = ['resetAutoIncrement'];
 
     /**
      * Gera código único para o pedido
@@ -79,23 +78,6 @@ class PedidoModel extends Model {
             // Formato: PED-YYYYMMDD-XXXX
             $data['data']['codigo'] = $this->gerarCodigoUnico();
         }
-        return $data;
-    }
-
-    /**
-     * Reseta o AUTO_INCREMENT da tabela após inserção
-     */
-    protected function resetAutoIncrement($data): array
-    {
-        $table = $this->table;
-        $db = \Config\Database::connect();
-        
-        $query = $db->query("SELECT MAX(id) as max_id FROM $table");
-        $result = $query->getRow();
-        $maxId = $result->max_id ?? 0;
-
-        $db->query("ALTER TABLE $table AUTO_INCREMENT = " . ($maxId + 1));
-
         return $data;
     }
 
@@ -132,7 +114,7 @@ class PedidoModel extends Model {
                     ->join('usuarios', 'usuarios.id = pedidos.usuario_id', 'left')
                     ->join('bairros', 'bairros.id = pedidos.bairro_id', 'left')
                     ->join('mesas', 'mesas.id = pedidos.mesa_id', 'left')
-                    ->orderBy('pedidos.criado_em', 'DESC')
+                    ->orderBy('pedidos.id', 'DESC')
                     ->limit($limit)
                     ->findAll();
     }
@@ -240,8 +222,8 @@ class PedidoModel extends Model {
         
         $transicoesPermitidas = [
             'em_aberto'     => ['pendente', 'cancelado'],
-            'pendente'      => ['confirmado', 'cancelado'],
-            'confirmado'    => ['finalizado', 'cancelado'],
+            'pendente'      => ['confirmado', 'em_aberto', 'cancelado'],
+            'confirmado'    => ['finalizado', 'em_aberto', 'cancelado'],
             'nao_concluido' => ['pendente', 'cancelado'],
             'finalizado'    => [],
             'cancelado'     => [],
@@ -281,24 +263,21 @@ class PedidoModel extends Model {
      * @return int Número de pedidos alterados
      */
     public function processarInativos() {
+        // Throttle: só roda uma vez a cada 5 minutos
+        $cache = \Config\Services::cache();
+        if ($cache->get('processarInativos_lock')) return 0;
+        $cache->save('processarInativos_lock', 1, 300);
+
         $db = \Config\Database::connect();
-        
-        // Calcular limite: 1 hora atrás usando função do MySQL
-        // Isso evita problemas de timezone entre PHP e MySQL
         $sql = "UPDATE {$this->table} 
                 SET status = 'inativo', inativo_em = NOW() 
                 WHERE (status IS NULL OR status = '' OR status = 'pendente')
                 AND criado_em < DATE_SUB(NOW(), INTERVAL " . self::TEMPO_INATIVO . " MINUTE)
                 AND deletado_em IS NULL
                 AND status NOT IN ('inativo', 'em_aberto', 'confirmado', 'finalizado', 'cancelado', 'nao_concluido')";
-        
         $db->query($sql);
         $totalAlterados = $db->affectedRows();
-        
-        if ($totalAlterados > 0) {
-            log_message('info', "processarInativos: {$totalAlterados} pedido(s) inativado(s)");
-        }
-        
+        if ($totalAlterados > 0) log_message('info', "processarInativos: {$totalAlterados} pedido(s) inativado(s)");
         return $totalAlterados;
     }
     
@@ -326,7 +305,7 @@ class PedidoModel extends Model {
                     ->join('bairros', 'bairros.id = pedidos.bairro_id', 'left')
                     ->join('mesas', 'mesas.id = pedidos.mesa_id', 'left')
                     ->where('DATE(pedidos.criado_em)', date('Y-m-d'))
-                    ->orderBy('pedidos.criado_em', 'DESC')
+                    ->orderBy('pedidos.id', 'DESC')
                     ->limit($limit)
                     ->findAll();
     }
@@ -362,6 +341,24 @@ class PedidoModel extends Model {
                 ->orderBy('pedidos.id', 'ASC') // Ordem crescente para processar um a um
                 ->findAll();
 }
+
+    /**
+     * Busca pedidos que saíram de em_aberto recentemente (comanda finalizada/alterada)
+     * Detecta pelo atualizado_em nos últimos 2 minutos com status pendente
+     * e que foram criados como em_aberto (têm histórico de comanda)
+     */
+    public function buscarComandasFinalizadasRecentes(): array
+    {
+        $db = \Config\Database::connect();
+        return $db->query(
+            "SELECT id, codigo, nome_cliente, status, atualizado_em
+             FROM {$this->table}
+             WHERE atualizado_em >= DATE_SUB(NOW(), INTERVAL 2 MINUTE)
+             AND status NOT IN ('inativo', 'cancelado', 'em_aberto')
+             AND deletado_em IS NULL
+             ORDER BY atualizado_em DESC"
+        )->getResultArray();
+    }
 
     /**
      * Busca pedidos cancelados recentemente (nos últimos 5 minutos)

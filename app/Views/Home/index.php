@@ -7,7 +7,7 @@
 <?php echo $this->section('estilos'); ?>
 <link rel="stylesheet" href="<?= site_url('web/src/css/menu-simple.css'); ?>">
 <link rel="stylesheet" href="<?= site_url('assets/css/produto-extras.css'); ?>">
-<link rel="stylesheet" href="<?= site_url('assets/css/produto-modal.css?v=' . time()); ?>">
+<link rel="stylesheet" href="<?= site_url('assets/css/produto-modal.css?v=' . (@filemtime(FCPATH . 'assets/css/produto-modal.css') ?: '1')); ?>">
 <style>
     #modalCompra #quantidade { color: #ffc135 !important; }
     #modalCompra .close { color: #fff !important; opacity: .8 !important; }
@@ -91,6 +91,15 @@ $(document).ready(function () {
         document.body.appendChild(overlay);
         document.getElementById('btn-entendi-fechado').addEventListener('click', () => overlay.remove());
     }
+
+    // ---- Polling: recarrega se status aberto/fechado mudar ----
+    setInterval(function () {
+        $.getJSON('<?= site_url('api/status-expediente') ?>', function (data) {
+            if (data.aberto !== estaAberto) {
+                location.reload();
+            }
+        });
+    }, 60000); // verifica a cada 1 minuto
 });
 </script>
 <?php echo $this->endSection(); ?>

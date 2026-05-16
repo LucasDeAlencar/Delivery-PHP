@@ -12,9 +12,10 @@
     <link rel="icon" type="image/png" href="<?= site_url('logo.png') ?>">
     <link rel="shortcut icon" type="image/png" href="<?= site_url('logo.png') ?>">
     
-    <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Josefin+Sans" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Nothing+You+Could+Do" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans&family=Nothing+You+Could+Do&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="<?= site_url('web/src/css/open-iconic-bootstrap.min.css') ?>">
     <link rel="stylesheet" href="<?= site_url('web/src/css/animate.css') ?>">
@@ -36,13 +37,13 @@
     <link rel="stylesheet" href="<?= site_url('web/src/css/style.css') ?>">
     <link rel="stylesheet" href="<?= site_url('web/src/css/space-theme.css') ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="<?= site_url('assets/css/carrinho-modal.css?v=' . time()) ?>">
-    <link rel="stylesheet" href="<?= site_url('assets/css/carrinho-popup.css?v=' . time()) ?>">
-    <link rel="stylesheet" href="<?= site_url('assets/css/modal-fix.css?v=' . time()) ?>">
-    <link rel="stylesheet" href="<?= site_url('assets/css/mobile-responsive.css?v=' . time()) ?>">
-    <link rel="stylesheet" href="<?= site_url('assets/css/mobile-touch.css?v=' . time()) ?>">
-    <link rel="stylesheet" href="<?= site_url('assets/css/about-center.css?v=' . time()) ?>">
-    <link rel="stylesheet" href="<?= site_url('assets/css/delivery-app.css?v=' . time()) ?>">
+    <link rel="stylesheet" href="<?= site_url('assets/css/carrinho-modal.css?v=' . (@filemtime(FCPATH . 'assets/css/carrinho-modal.css') ?: '1')) ?>">
+    <link rel="stylesheet" href="<?= site_url('assets/css/carrinho-popup.css?v=' . (@filemtime(FCPATH . 'assets/css/carrinho-popup.css') ?: '1')) ?>">
+    <link rel="stylesheet" href="<?= site_url('assets/css/modal-fix.css?v=' . (@filemtime(FCPATH . 'assets/css/modal-fix.css') ?: '1')) ?>">
+    <link rel="stylesheet" href="<?= site_url('assets/css/mobile-responsive.css?v=' . (@filemtime(FCPATH . 'assets/css/mobile-responsive.css') ?: '1')) ?>">
+    <link rel="stylesheet" href="<?= site_url('assets/css/mobile-touch.css?v=' . (@filemtime(FCPATH . 'assets/css/mobile-touch.css') ?: '1')) ?>">
+    <link rel="stylesheet" href="<?= site_url('assets/css/about-center.css?v=' . (@filemtime(FCPATH . 'assets/css/about-center.css') ?: '1')) ?>">
+    <link rel="stylesheet" href="<?= site_url('assets/css/delivery-app.css?v=' . (@filemtime(FCPATH . 'assets/css/delivery-app.css') ?: '1')) ?>">
     
     <!-- Estilos do carrinho navbar -->
     <style>
@@ -587,17 +588,22 @@
 
     <!-- Scripts -->
     <script>
-        // Variáveis globais disponíveis para todos os scripts
+        <?php
+        $nomeLogado = session('cliente_nome');
+        if (!$nomeLogado && session()->has('usuario_id')) {
+            $u = (new \App\Models\UsuarioModel())->find(session('usuario_id'));
+            $nomeLogado = $u ? $u->nome : null;
+        }
+        ?>
         window.clienteLogado = {
-            logado: <?= json_encode(session()->has('cliente_id')) ?>,
-            nome: <?= json_encode(session('cliente_nome')) ?>,
+            logado: <?= json_encode(session()->has('cliente_id') || session()->has('usuario_id')) ?>,
+            nome: <?= json_encode($nomeLogado) ?>,
             telefone: <?= json_encode(session('cliente_telefone')) ?>,
             email: <?= json_encode(session('cliente_email')) ?>
         };
         window.modoCadastro = <?= json_encode($modoCadastro ?? 1) ?>;
         window.negociacaoEntrega = <?= json_encode(!empty($dadosCorporativos->negociacao_entrega) ? true : false) ?>;
     </script>
-    <script src="<?= site_url('web/src/js/auth-check.js') ?>"></script>
     <script src="<?= site_url('web/src/js/jquery.min.js') ?>"></script>
     <script src="<?= site_url('web/src/js/jquery-migrate-3.0.1.min.js') ?>"></script>
     <script src="<?= site_url('web/src/js/popper.min.js') ?>"></script>
@@ -613,10 +619,10 @@
     <script src="<?= site_url('web/src/js/jquery.timepicker.min.js') ?>"></script>
     <script src="<?= site_url('web/src/js/scrollax.min.js') ?>"></script>
     <script src="<?= site_url('web/src/js/main.js') ?>"></script>
-    <script src="<?= site_url('web/src/js/ajax-config.js?v=' . time()) ?>"></script>
-    <script src="<?= site_url('assets/js/sistema-produto.js?v=' . time()) ?>"></script>
-    <script src="<?= site_url('assets/js/carrinho-simples.js?v=' . time()) ?>"></script>
-    <script src="<?= site_url('assets/js/finalizar-pedido.js?v=' . time()) ?>"></script>
+    <script src="<?= site_url('web/src/js/ajax-config.js?v=' . (@filemtime(FCPATH . 'web/src/js/ajax-config.js') ?: '1')) ?>"></script>
+    <script src="<?= site_url('assets/js/sistema-produto.js?v=' . (@filemtime(FCPATH . 'assets/js/sistema-produto.js') ?: '1')) ?>"></script>
+    <script src="<?= site_url('assets/js/carrinho-simples.min.js?v=' . (@filemtime(FCPATH . 'assets/js/carrinho-simples.min.js') ?: '1')) ?>"></script>
+    <script src="<?= site_url('assets/js/finalizar-pedido.min.js?v=' . (@filemtime(FCPATH . 'assets/js/finalizar-pedido.min.js') ?: '1')) ?>"></script>
 
     <?php if (($modoCadastro ?? 1) == 3): ?>
     <script>
@@ -1153,7 +1159,7 @@
     </style>
     
     <!-- Scripts personalizados -->
-    <script src="<?= site_url('web/src/js/carrinho-popup.js?v=' . time()) ?>"></script>
+    <script src="<?= site_url('web/src/js/carrinho-popup.js?v=' . (@filemtime(FCPATH . 'web/src/js/carrinho-popup.js') ?: '1')) ?>"></script>
     <script>
         function fecharCarrinhoEVoltarMenu() {
             $('#modalCarrinho').modal('hide');

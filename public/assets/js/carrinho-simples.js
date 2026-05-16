@@ -306,6 +306,8 @@ window.CarrinhoSimples = {
 
     // Modal de confirmação para substituir confirm
     mostrarConfirmacao(titulo, mensagem, callback) {
+        this._callbackConfirmacao = callback;
+
         const html = `
             <div id="modal-confirmacao" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center;">
                 <div style="background: #1a1a1a; width: 90%; max-width: 400px; border-radius: 15px; padding: 20px; color: white; text-align: center;">
@@ -318,7 +320,7 @@ window.CarrinhoSimples = {
                         <button onclick="$('#modal-confirmacao').remove()" style="flex: 1; background: #6c757d; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer;">
                             Cancelar
                         </button>
-                        <button onclick="$('#modal-confirmacao').remove(); CarrinhoSimples.executarCallback(${callback})" style="flex: 1; background: #dc3545; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                        <button onclick="$('#modal-confirmacao').remove(); CarrinhoSimples.executarCallback()" style="flex: 1; background: #dc3545; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; font-weight: bold;">
                             Confirmar
                         </button>
                     </div>
@@ -327,9 +329,6 @@ window.CarrinhoSimples = {
         `;
 
         $('body').append(html);
-        
-        // Salvar callback para execução
-        this._callbackConfirmacao = callback;
     },
 
     // Executar callback da confirmação
@@ -1302,8 +1301,38 @@ window.CarrinhoSimples = {
                     }
                 } catch(e) {}
             }
-            // Só abre popup se modo 3 sem endereço no localStorage
-            // Quando negociação está ativa e endereço existe (mesmo fora da cobertura), não abre popup
+            // Se não tem endereço no localStorage mas cliente está logado, buscar do banco antes de abrir popup
+            if (!enderecoEntrega && window.modoCadastro === 3 && window.clienteLogado?.logado) {
+                try {
+                    const res = await fetch('/cliente/endereco_atual', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                    const data = await res.json();
+                    if (data.sucesso && data.endereco && data.endereco.Endereco && data.endereco.Numero && data.endereco.Cidade) {
+                        const e = data.endereco;
+                        // Buscar bairro_id correspondente
+                        let bairroIdEncontrado = null;
+                        let bairroNomeEncontrado = e.Bairro || null;
+                        let taxaEncontrada = taxaEntrega;
+                        try {
+                            const rb = await fetch('/api/bairros');
+                            const db2 = await rb.json();
+                            if (db2.data) {
+                                const b = db2.data.find(x => x.nome.toLowerCase() === (e.Bairro || '').toLowerCase() && x.cidade.toLowerCase() === e.Cidade.toLowerCase());
+                                if (b) { bairroIdEncontrado = b.id; taxaEncontrada = parseFloat(b.valor_entrega) || taxaEntrega; }
+                            }
+                        } catch(_) {}
+                        const endObj = {
+                            cidade: e.Cidade, bairro_id: bairroIdEncontrado, bairro_nome: bairroNomeEncontrado,
+                            endereco: e.Endereco, numero: e.Numero, complemento: e.complemento || '', taxa_entrega: taxaEncontrada
+                        };
+                        localStorage.setItem('endereco_entrega_modo3', JSON.stringify(endObj));
+                        enderecoEntrega = e.Endereco + ', ' + e.Numero + (e.complemento ? ' - ' + e.complemento : '');
+                        bairroId = bairroIdEncontrado;
+                        bairroNome = bairroNomeEncontrado;
+                        taxaEntrega = taxaEncontrada;
+                    }
+                } catch(_) {}
+            }
+            // Só abre popup se modo 3 sem endereço no localStorage e sem endereço no banco
             if (!enderecoEntrega && window.modoCadastro === 3) {
                 if (window.FinalizarPedido && typeof window.FinalizarPedido.abrirPopupEndereco === 'function') {
                     window.FinalizarPedido.abrirPopupEndereco();

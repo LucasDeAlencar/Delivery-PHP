@@ -59,6 +59,7 @@ class DadosCorporativos extends BaseController
                 $db->table('dados_corporativos')->where('id', 1)->update($dados);
             }
 
+            \Config\Services::cache()->delete('dados_corporativos');
             return $this->response->setJSON(['sucesso' => true, 'msg' => 'Dados atualizados com sucesso']);
         } catch (\Exception $e) {
             log_message('error', 'DadosCorporativos::atualizar - ' . $e->getMessage());

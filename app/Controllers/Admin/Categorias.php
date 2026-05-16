@@ -94,6 +94,7 @@ class Categorias extends BaseController {
 
             if ($this->categoriaModel->save($categoria)) {
 
+                \Config\Services::cache()->delete('categorias_ativas');
                 return redirect()->to(site_url("admin/categorias/show/$categoria->id"))
                                 ->with('sucesso', "Categoria $categoria->nome atualizada com sucesso");
             } else {
@@ -165,6 +166,7 @@ class Categorias extends BaseController {
                 $categoria = $this->categoriaModel->find($insertId);
                 $nomeCategoria = $categoria ? $categoria->nome : 'Categoria';
 
+                \Config\Services::cache()->delete('categorias_ativas');
                 return redirect()->to(site_url("admin/categorias/show/" . $insertId))
                                 ->with('sucesso', "Categoria {$nomeCategoria} cadastrada com sucesso");
             } else {
@@ -210,6 +212,7 @@ class Categorias extends BaseController {
 
             // Usa soft delete
             if ($this->categoriaModel->delete($id)) {
+                \Config\Services::cache()->delete('categorias_ativas');
                 return redirect()->to(site_url('admin/categorias'))
                                 ->with('sucesso', "Categoria $categoria->nome excluída com sucesso");
             } else {
@@ -236,6 +239,7 @@ class Categorias extends BaseController {
                      ->update(['deletado_em' => null]);
         
         if ($result) {
+            \Config\Services::cache()->delete('categorias_ativas');
             return redirect()->to(site_url('admin/categorias/show/' . $id))
                             ->with('sucesso', 'Categoria restaurada com sucesso.');
         } else {
@@ -255,6 +259,7 @@ class Categorias extends BaseController {
         }
 
         if ($this->categoriaModel->delete($id, true)) {
+            \Config\Services::cache()->delete('categorias_ativas');
             return redirect()->to(site_url('admin/categorias'))
                            ->with('sucesso', 'Categoria apagada definitivamente!');
         } else {
@@ -284,6 +289,7 @@ class Categorias extends BaseController {
                          ->update(['ordem' => (int)$ordem]);
             
             if ($result) {
+                \Config\Services::cache()->delete('categorias_ativas');
                 return $this->response->setJSON(['sucesso' => true, 'msg' => 'Ordem atualizada com sucesso']);
             } else {
                 return $this->response->setJSON(['erro' => true, 'msg' => 'Nenhuma linha foi atualizada']);

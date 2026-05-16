@@ -1,12 +1,14 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # Se o arquivo existir na pasta public, use-o então se
-    RewriteCond %{DOCUMENT_ROOT}/public/$1 -f
-    RewriteRule ^(.*)$ public/$1 [L]
-
-    # Regra padrão do CodeIgniter para o index.php da raiz
+    # Arquivos estáticos de public/ servidos diretamente
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^(.*)$ index.php/$1 [L]
+    RewriteCond %{DOCUMENT_ROOT}/public/%{REQUEST_URI} -f
+    RewriteRule ^(.*)$ public/$1 [L]
+
+    # Tudo mais vai para o index.php da raiz (CI4)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php/$1 [L,QSA]
 </IfModule>

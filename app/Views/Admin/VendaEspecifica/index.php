@@ -3,33 +3,64 @@
 <?= $this->section('conteudos') ?>
 
 <style>
+/* ── Mobile-first base ── */
+.content-area { padding: 0 !important; }
+
 .ve-tab { display:none; }
 .ve-tab.active { display:block; }
-.ve-nav-btn { flex:1; border-radius:0; border:none; padding:.6rem .2rem; font-size:.75rem; background:#1a1a1a; color:#aaa; border-top:3px solid transparent; }
+
+.ve-nav-btn {
+  flex:1; border-radius:0; border:none;
+  padding:.55rem .2rem; font-size:.72rem;
+  background:#1a1a1a; color:#aaa;
+  border-top:3px solid transparent;
+  -webkit-tap-highlight-color: transparent;
+}
 .ve-nav-btn.active { color:#ffc107; border-top-color:#ffc107; background:#222; }
-.ve-nav-btn i { display:block; font-size:1.2rem; margin-bottom:2px; }
+.ve-nav-btn i { display:block; font-size:1.1rem; margin-bottom:2px; }
+
 .ve-card { background:#2d2d2d; border:1px solid #333; border-radius:8px; }
-.ve-card .ve-card-header { background:#0055ff; color:#000; padding:.5rem .75rem; border-radius:8px 8px 0 0; font-weight:600; }
-.comanda-card { background:#1a1a1a; border:2px solid #c47a00; border-radius:8px; padding:.6rem; cursor:pointer; }
-.comanda-card:active { opacity:.8; }
+.ve-card .ve-card-header { background:#0055ff; color:#fff; padding:.5rem .75rem; border-radius:8px 8px 0 0; font-weight:600; }
+
 #banner-comanda { position:sticky; top:0; z-index:100; }
 
-/* Tabela não estoura em mobile */
+/* Inputs e selects maiores para toque */
+.form-control, .form-select {
+  font-size: 1rem !important;
+  min-height: 44px;
+}
+.btn { min-height: 44px; }
+.btn-sm { min-height: 36px; }
+
+/* Tabela não estoura */
 #lista-itens, #detalhe-itens table { table-layout:fixed; width:100%; }
 #lista-itens td, #detalhe-itens td { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 #produto-autocomplete .list-group-item { white-space:normal; word-break:break-word; }
 
-/* Desktop: 2 colunas */
+/* Autocomplete acima do teclado */
+#produto-autocomplete, #cliente-autocomplete {
+  max-height: 40vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Cada aba tem scroll próprio, com espaço para a nav fixa */
+.ve-tab.active {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+}
+
+/* ── Desktop: 2 colunas ── */
 @media (min-width: 992px) {
   #ve-mobile-nav { display:none !important; }
-  #ve-content { padding-bottom:0 !important; display:flex; gap:1rem; align-items:flex-start; overflow:hidden; }
+  #ve-content { padding-bottom:0 !important; display:flex; gap:1rem; align-items:flex-start; overflow:hidden; padding:.5rem; }
   .ve-tab { display:block !important; }
+  .ve-tab.active { overflow-y: visible; padding-bottom: 0; }
   .ve-tab.ve-tab-hidden { display:none !important; }
   #ve-col-left { flex:0 0 340px; width:340px; min-width:0; display:flex; flex-direction:column; gap:1rem; overflow:hidden; }
   #ve-col-right { flex:1 1 0; min-width:0; display:flex; flex-direction:column; gap:1rem; overflow:hidden; }
   #tab-cliente.comanda-ativa-desktop { display:none !important; }
-  /* Remover padding do container pai nesta página */
-  .content-area { padding:0.5rem !important; }
 }
 </style>
 
@@ -46,7 +77,7 @@
 </div>
 
 <!-- Conteúdo das abas -->
-<div id="ve-content" style="padding-bottom:70px;">
+<div id="ve-content">
   <div id="ve-col-left">
 
   <!-- ABA: Comandas -->
@@ -57,26 +88,27 @@
         <button class="btn btn-sm btn-outline-warning py-0" onclick="carregarComandas()"><i class="fas fa-sync-alt"></i></button>
       </div>
       <div id="painel-comandas"><p class="text-muted text-center small py-3">Carregando...</p></div>
-      <!-- Detalhe da comanda selecionada -->
-      <div id="detalhe-comanda" style="display:none;" class="mt-2">
-        <div class="ve-card">
-          <div class="ve-card-header d-flex justify-content-between align-items-center">
-            <span><i class="fas fa-list"></i> Itens da Comanda <strong id="detalhe-comanda-id"></strong></span>
-            <button class="btn btn-sm btn-outline-light py-0" onclick="fecharDetalheComanda()">✕</button>
-          </div>
-          <div id="detalhe-itens" class="p-2"></div>
-          <div class="p-2 border-top border-secondary d-flex gap-2">
-            <button class="btn btn-warning btn-sm flex-grow-1" onclick="retomarComandaAtual()">
-              <i class="fas fa-plus"></i> Adicionar Itens
-            </button>
-            <button class="btn btn-success btn-sm flex-grow-1" id="btn-fechar-comanda-detalhe">
-              <i class="fas fa-check"></i> Fechar Comanda
-            </button>
-          </div>
-        </div>
+    </div>
+  </div>
+
+  <!-- Popup Ver Itens da Comanda -->
+  <div id="popup-ver-itens" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:10010;align-items:center;justify-content:center;padding:0 12px;box-sizing:border-box;">
+    <div style="background:#1a1a1a;width:100%;max-width:420px;border-radius:12px;overflow:hidden;max-height:85vh;display:flex;flex-direction:column;">
+      <div style="background:#c47a00;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;">
+        <strong style="color:#000;"><i class="fas fa-list me-2"></i>Itens da Comanda <span id="popup-comanda-titulo"></span></strong>
+        <button onclick="fecharDetalheComanda()" style="background:none;border:none;color:#000;font-size:1.4rem;cursor:pointer;line-height:1;">&times;</button>
+      </div>
+      <div id="detalhe-itens" style="overflow-y:auto;flex:1;padding:12px;"></div>
+      <div style="padding:12px;border-top:1px solid #333;display:flex;gap:8px;">
+        <button onclick="retomarComandaAtual()" style="flex:1;padding:10px;background:#0055ff;border:none;color:#fff;border-radius:6px;font-weight:600;cursor:pointer;"><i class="fas fa-plus me-1"></i>Add Itens</button>
+        <button id="btn-fechar-comanda-detalhe" style="flex:1;padding:10px;background:#28a745;border:none;color:#fff;border-radius:6px;font-weight:600;cursor:pointer;"><i class="fas fa-check me-1"></i>Fechar</button>
       </div>
     </div>
   </div>
+
+  <div id="ve-col-left-placeholder"></div>
+
+  </div><!-- /ve-col-left -->
 
   <!-- ABA: Cliente -->
   <div class="ve-tab" id="tab-cliente">
@@ -331,7 +363,7 @@
 </div>
 
 <!-- Navegação inferior fixa -->
-<nav id="ve-mobile-nav" class="d-flex" style="position:fixed;bottom:0;left:0;right:0;z-index:200;border-top:1px solid #333;">
+<nav id="ve-mobile-nav" class="d-flex" style="position:fixed;bottom:0;left:0;right:0;z-index:200;border-top:1px solid #333;padding-bottom:env(safe-area-inset-bottom,0);">
   <button class="ve-nav-btn active" id="nav-comandas" onclick="mudarAba('comandas')">
     <i class="fas fa-folder-open"></i>Comandas
   </button>
@@ -345,7 +377,7 @@
     <i class="fas fa-box"></i>Sachês
   </button>
   <button class="ve-nav-btn" id="nav-entrega" onclick="mudarAba('entrega')">
-    <i class="fas fa-receipt"></i>Fechar Conta
+    <i class="fas fa-receipt"></i>Fechar
   </button>
 </nav>
 
@@ -778,14 +810,23 @@ function removerProduto(idx){
 function atualizarTabela() {
     const tbody=document.getElementById('lista-itens');
     if (!itensVenda.length){
-        tbody.innerHTML='<tr id="sem-itens"><td colspan="5" class="text-center text-muted py-3 small">Nenhum produto</td></tr>';
+        tbody.innerHTML='<tr id="sem-itens"><td colspan="4" class="text-center text-muted py-3 small">Nenhum produto</td></tr>';
     } else {
         tbody.innerHTML=itensVenda.map((item,i)=>{
             const extrasHtml=item.extras?.length?`<br><small class="text-muted">+${item.extras.map(e=>`${e.nome}(${e.quantidade}x)`).join(', ')}</small>`:'';
             const tamHtml=item.tamanho_nome?`<br><small class="text-info">${item.tamanho_nome}</small>`:'';
-            const btnExtras = item.id ? `<button class="btn btn-outline-info btn-sm py-0 px-1" onclick="abrirEditarExtras(${i})" title="Extras"><i class="fas fa-list-ul"></i></button> ` : '';
+            const obsHtml=item.observacoes?`<br><small class="text-warning"><i class="fas fa-comment-alt"></i> ${item.observacoes}</small>`:'';
+            const btnExtras = item.id ? `<button class="btn btn-outline-info btn-sm py-0 px-1 mb-1" onclick="abrirEditarExtras(${i})" title="Extras"><i class="fas fa-list-ul"></i></button><br>` : '';
             return `<tr>
-                <td class="small ps-2">${item.nome}${tamHtml}${extrasHtml}</td>
+                <td class="small ps-2">
+                  ${item.nome}${tamHtml}${extrasHtml}${obsHtml}
+                  <div class="mt-1">
+                    <input type="text" class="form-control form-control-sm bg-dark text-light border-secondary"
+                      placeholder="Obs. deste item..." value="${(item.observacoes||'').replace(/"/g,'&quot;')}"
+                      oninput="itensVenda[${i}].observacoes=this.value"
+                      style="font-size:.72rem;padding:2px 6px;">
+                  </div>
+                </td>
                 <td class="text-center" style="width:90px;">
                   <div class="d-flex align-items-center gap-1 justify-content-center">
                     <button class="btn btn-secondary btn-sm py-0 px-1" onclick="alterarQtdItem(${i},-1)">−</button>
@@ -793,7 +834,7 @@ function atualizarTabela() {
                     <button class="btn btn-secondary btn-sm py-0 px-1" onclick="alterarQtdItem(${i},1)">+</button>
                   </div>
                 </td>
-                <td class="text-end">R$ ${item.total.toFixed(2).replace('.',',')}</td>
+                <td class="text-end small">R$ ${item.total.toFixed(2).replace('.',',')}</td>
                 <td class="pe-2 text-end">${btnExtras}<button class="btn btn-danger btn-sm py-0 px-1" onclick="removerProduto(${i})"><i class="fas fa-times"></i></button></td>
             </tr>`;
         }).join('');
@@ -801,7 +842,7 @@ function atualizarTabela() {
     atualizarTotais();
     const cats=[...new Set(itensVenda.map(i=>i.categoria_id).filter(Boolean))];
     if (cats.length) carregarSachesVE(cats);
-    else if (sachesVE.length) renderizarSachesVE(); // recalcular limites sem novo fetch
+    else if (sachesVE.length) renderizarSachesVE();
 }
 
 function alterarQtdItem(idx, delta) {
@@ -947,42 +988,111 @@ function abrirComanda() {
 function carregarComandas() {
     fetch('<?= site_url('admin/venda-especifica/comandas-abertas') ?>').then(r=>r.json()).then(data=>{
         const painel=document.getElementById('painel-comandas'),comandas=data.data||[];
-        document.getElementById('detalhe-comanda').style.display='none';
-        if (!comandas.length){painel.innerHTML='<p class="text-muted text-center small py-3 mb-0">Nenhuma comanda em aberto</p>';return;}
-        painel.innerHTML=`<div class="row g-2">${comandas.map(c=>`
-            <div class="col-6 col-md-4">
-              <div class="comanda-card">
-                <div class="d-flex justify-content-between">
-                  <strong class="text-warning">#${c.id}</strong>
-                  <small class="text-muted">${new Date(c.criado_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</small>
+        document.getElementById('popup-ver-itens').style.display='none';
+        if (!comandas.length){
+            painel.innerHTML=`<div class="text-center py-4">
+                <i class="fas fa-folder-open" style="font-size:2rem;color:#555;"></i>
+                <p class="text-muted small mt-2 mb-0">Nenhuma comanda em aberto</p>
+            </div>`;
+            return;
+        }
+        painel.innerHTML=comandas.map(c=>{
+            const hora = new Date(c.criado_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+            const total = parseFloat(c.valor_total).toFixed(2).replace('.',',');
+            return `<div class="mb-2" style="background:#111;border:1px solid #c47a00;border-radius:10px;overflow:hidden;">
+                <!-- Cabeçalho da comanda -->
+                <div style="background:#c47a00;padding:6px 10px;display:flex;justify-content:space-between;align-items:center;">
+                    <strong style="color:#000;font-size:.9rem;"><i class="fas fa-folder-open me-1"></i>#${c.id}</strong>
+                    <span style="color:#000;font-size:.75rem;">${hora}</span>
                 </div>
-                <div class="text-light small text-truncate">${c.nome_cliente}</div>
-                <div class="d-flex justify-content-between align-items-center mt-1">
-                  <span class="text-success small">R$ ${parseFloat(c.valor_total).toFixed(2).replace('.',',')}</span>
-                  <small class="text-muted">${c.total_itens} iten${c.total_itens==1?'':'s'}</small>
+                <!-- Corpo -->
+                <div style="padding:8px 10px;">
+                    <div style="color:#fff;font-weight:600;font-size:.9rem;margin-bottom:4px;">${c.nome_cliente}</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                        <span style="color:#aaa;font-size:.78rem;"><i class="fas fa-shopping-bag me-1"></i>${c.total_itens} iten${c.total_itens==1?'':'s'}</span>
+                        <span style="color:#28a745;font-weight:700;font-size:.95rem;">R$ ${total}</span>
+                    </div>
+                    <!-- Botões de ação -->
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+                        <button onclick="verDetalheComanda(${c.id},'${c.nome_cliente.replace(/'/g,"\\'")}')"
+                            style="padding:7px 4px;background:#2d2d2d;border:1px solid #555;border-radius:6px;color:#fff;font-size:.72rem;cursor:pointer;text-align:center;">
+                            <i class="fas fa-eye d-block mb-1" style="font-size:.9rem;"></i>Ver Itens
+                        </button>
+                        <button onclick="retomarComanda(${c.id},'${c.nome_cliente.replace(/'/g,"\\'")}')"
+                            style="padding:7px 4px;background:#0055ff;border:none;border-radius:6px;color:#fff;font-size:.72rem;cursor:pointer;text-align:center;">
+                            <i class="fas fa-plus d-block mb-1" style="font-size:.9rem;"></i>Add Itens
+                        </button>
+                        <button onclick="finalizarComandaDireta(${c.id},'${c.nome_cliente.replace(/'/g,"\\'")}')"
+                            style="padding:7px 4px;background:#28a745;border:none;border-radius:6px;color:#fff;font-size:.72rem;cursor:pointer;text-align:center;">
+                            <i class="fas fa-check d-block mb-1" style="font-size:.9rem;"></i>Fechar
+                        </button>
+                    </div>
                 </div>
-                <div class="d-flex gap-1 mt-2">
-                  <button class="btn btn-outline-warning btn-sm flex-grow-1 py-1" onclick="verDetalheComanda(${c.id},'${c.nome_cliente.replace(/'/g,"\\'")}')">
-                    <i class="fas fa-eye"></i> Ver
-                  </button>
-                  <button class="btn btn-warning btn-sm flex-grow-1 py-1" onclick="retomarComanda(${c.id},'${c.nome_cliente.replace(/'/g,"\\'")}')">
-                    <i class="fas fa-plus"></i> Add
-                  </button>
-                </div>
-              </div>
-            </div>`).join('')}
-        </div>`;
+            </div>`;
+        }).join('');
     });
+}
+
+// Fechar comanda diretamente do painel (sem precisar entrar no modo edição)
+function finalizarComandaDireta(id, nome) {
+    const popup = document.createElement('div');
+    popup.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:10003;display:flex;align-items:center;justify-content:center;padding:0 12px;box-sizing:border-box;';
+    popup.innerHTML = `
+        <div style="background:#1a1a1a;width:100%;max-width:360px;border-radius:12px;overflow:hidden;">
+            <div style="background:#28a745;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;">
+                <strong style="color:#fff;"><i class="fas fa-check-circle me-2"></i>Fechar Comanda #${id}</strong>
+                <button onclick="this.closest('[style*=fixed]').remove()" style="background:none;border:none;color:#fff;font-size:1.3rem;cursor:pointer;">&times;</button>
+            </div>
+            <div style="padding:16px;">
+                <p style="color:#ccc;font-size:.85rem;margin-bottom:12px;">Cliente: <strong style="color:#fff;">${nome}</strong></p>
+                <label style="color:#aaa;font-size:.8rem;display:block;margin-bottom:4px;">Forma de Pagamento</label>
+                <select id="fp-direta-${id}" class="form-select bg-dark text-light mb-3" onchange="toggleTrocoDireta(${id})">
+                    <option value="dinheiro">Dinheiro</option>
+                    <option value="pix">PIX</option>
+                    <option value="cartao_credito">Cartão de Crédito</option>
+                    <option value="cartao_debito">Cartão de Débito</option>
+                </select>
+                <div id="troco-direta-${id}" style="margin-bottom:12px;">
+                    <label style="color:#aaa;font-size:.8rem;display:block;margin-bottom:4px;">Troco para (R$)</label>
+                    <input type="number" id="troco-val-${id}" class="form-control bg-dark text-light" step="0.01" min="0" placeholder="0,00">
+                </div>
+            </div>
+            <div style="padding:0 16px 16px;display:flex;gap:8px;">
+                <button onclick="this.closest('[style*=fixed]').remove()" style="flex:1;padding:10px;background:#333;border:none;color:#ccc;border-radius:6px;cursor:pointer;">Cancelar</button>
+                <button onclick="_confirmarFecharComandaDireta(${id})" style="flex:1;padding:10px;background:#28a745;border:none;color:#fff;border-radius:6px;font-weight:600;cursor:pointer;">Confirmar</button>
+            </div>
+        </div>`;
+    document.body.appendChild(popup);
+}
+
+function toggleTrocoDireta(id) {
+    const fp = document.getElementById('fp-direta-'+id)?.value;
+    const div = document.getElementById('troco-direta-'+id);
+    if (div) div.style.display = fp === 'dinheiro' ? 'block' : 'none';
+}
+
+function _confirmarFecharComandaDireta(id) {
+    const fp = document.getElementById('fp-direta-'+id)?.value || 'dinheiro';
+    const troco = fp === 'dinheiro' ? (parseFloat(document.getElementById('troco-val-'+id)?.value)||0) : null;
+    const popup = document.querySelector('[style*="z-index: 10003"]') || document.querySelector('[style*="z-index:10003"]');
+
+    fetch('<?= site_url('admin/venda-especifica/adicionar-item-comanda') ?>', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({pedido_id:id, itens:[], saches:[], finalizar:true, forma_pagamento:fp, troco_para:troco})
+    }).then(r=>r.json()).then(data=>{
+        if (data.success) { popup?.remove(); window.location.href='<?= site_url('admin/pedidos') ?>/'+id; }
+        else alert('Erro: '+data.message);
+    }).catch(()=>alert('Erro ao fechar comanda'));
 }
 
 let comandaDetalheId = null;
 
 function verDetalheComanda(id, nome) {
     comandaDetalheId = id;
-    document.getElementById('detalhe-comanda-id').textContent = '#'+id+' — '+nome;
-    document.getElementById('detalhe-comanda').style.display = 'block';
+    document.getElementById('popup-comanda-titulo').textContent = '#'+id+(nome?' — '+nome:'');
     document.getElementById('btn-fechar-comanda-detalhe').onclick = () => finalizarComanda(id);
     document.getElementById('detalhe-itens').innerHTML = '<p class="text-muted small text-center py-2">Carregando...</p>';
+    document.getElementById('popup-ver-itens').style.display = 'flex';
     fetch('<?= site_url('admin/venda-especifica/itens-comanda') ?>/'+id)
         .then(r=>r.json()).then(data => renderizarItensComanda(data.data||[], id, data.saches||[]));
 }
@@ -1023,7 +1133,7 @@ function alterarQtdComanda(itemId, pedidoId, qtdAtual, delta) {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({item_id: itemId, pedido_id: pedidoId, quantidade: novaQtd})
     }).then(r=>r.json()).then(data => {
-        if (data.success) verDetalheComanda(pedidoId, document.getElementById('detalhe-comanda-id').textContent.split(' — ')[1]||'');
+        if (data.success) verDetalheComanda(pedidoId, document.getElementById('popup-comanda-titulo').textContent.replace(/^#\d+ — /,'')||'');
     });
 }
 
@@ -1038,13 +1148,14 @@ function removerItemComanda(itemId, pedidoId) {
 }
 
 function fecharDetalheComanda() {
-    document.getElementById('detalhe-comanda').style.display='none';
+    document.getElementById('popup-ver-itens').style.display = 'none';
     comandaDetalheId = null;
 }
 
 function retomarComandaAtual() {
     const id = comandaDetalheId;
-    const nome = document.getElementById('detalhe-comanda-id').textContent.replace(/^#\d+ — /,'');
+    const titulo = document.getElementById('popup-comanda-titulo').textContent;
+    const nome = titulo.replace(/^#\d+ — /,'');
     fecharDetalheComanda();
     retomarComanda(id, nome);
 }

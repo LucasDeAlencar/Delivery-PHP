@@ -34,10 +34,11 @@ class Filters extends BaseFilters {
         'forcehttps' => CustomForceHTTPS::class,
         'pagecache' => PageCache::class,
         'performance' => PerformanceMetrics::class,
-        'login' => \App\Filters\LoginFilter::class, // Filtro de login
-        'admin' => \App\Filters\AdminFilter::class, // Filtro admin
-        'visitante' => \App\Filters\VisitanteFilter::class, //Filtro visitante
-        'throttle' => \App\Filters\ThrottleFilter::class // filtro para defender ataque de força bruta
+        'login' => \App\Filters\LoginFilter::class,
+        'admin' => \App\Filters\AdminFilter::class,
+        'visitante' => \App\Filters\VisitanteFilter::class,
+        'cliente' => \App\Filters\ClienteFilter::class,
+        'throttle' => \App\Filters\ThrottleFilter::class
     ];
 
     /**
@@ -110,9 +111,24 @@ class Filters extends BaseFilters {
      * @var array<string, array<string, list<string>>>
      */
     public array $filters = [
+        'cliente' => [
+            'before' => [
+                'carrinho*',
+                'finalizar-pedido*',
+                'acompanhar-pedido*',
+            ]
+        ],
+        'visitante' => [
+            'before' => [
+                'login',
+                'login/entrar',
+                'login/cadastrar',
+                'login/criar',
+            ]
+        ],
         'login' => [
             'before' => [
-                'admin/*', // Todos os controller que estão dentro do namespace 'Admin' só serão acessados após o login
+                'admin/*',
             ]
         ],
         'admin' => [
@@ -130,7 +146,6 @@ class Filters extends BaseFilters {
                 'admin/entregadores*',
                 'admin/saches*',
                 'admin/dados-corporativos*',
-                // NÃO incluir: admin/pedidos*, admin/mesas*, admin/venda-especifica*
             ]
         ],
     ];

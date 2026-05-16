@@ -153,6 +153,7 @@ class Produtos extends BaseController {
             if (!empty($dadosProduto['com_tamanho']) && !empty($dadosProduto['tamanhos'])) {
                 $this->tamanhoProdutoModel->salvarTamanhosDoProduto($produtoId, $dadosProduto['tamanhos']);
             }
+            \Config\Services::cache()->delete('produtos_home');
             return redirect()->to(site_url('admin/produtos'))
                             ->with('sucesso', 'Produto criado com sucesso!');
         }
@@ -243,6 +244,7 @@ class Produtos extends BaseController {
                 // Se com_tamanho foi desmarcado, remove todos os tamanhos
                 $this->tamanhoProdutoModel->where('produto_id', $id)->delete();
             }
+            \Config\Services::cache()->delete('produtos_home');
             return redirect()->to(site_url("admin/produtos/show/$id"))
                             ->with('sucesso', 'Produto atualizado com sucesso!');
         }
@@ -463,6 +465,7 @@ class Produtos extends BaseController {
             
             log_message('info', "=== PRODUTO ID: {$id} EXCLUÍDO COM SUCESSO ===");
             
+            \Config\Services::cache()->delete('produtos_home');
             return redirect()->to(site_url('admin/produtos'))
                             ->with('sucesso', "Produto '{$produto->nome}' excluído com sucesso!");
                             

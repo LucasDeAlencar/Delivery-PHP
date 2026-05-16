@@ -56,32 +56,10 @@ class ProdutoModel extends Model {
     // Callbacks
     protected $beforeInsert = ['geraSlug'];
     protected $beforeUpdate = ['geraSlug'];
-    protected $afterInsert = ['resetAutoIncrement'];
-
-    /**
-     * Gera o slug automaticamente antes de inserir/atualizar
-     */
     protected function geraSlug(array $data) {
         if (isset($data['data']['nome'])) {
             $data['data']['slug'] = mb_url_title($data['data']['nome'], '-', true);
         }
-        return $data;
-    }
-
-    /**
-     * Reseta o AUTO_INCREMENT da tabela após inserção
-     */
-    protected function resetAutoIncrement($data): array
-    {
-        $table = $this->table;
-        $db = \Config\Database::connect();
-        
-        $query = $db->query("SELECT MAX(id) as max_id FROM $table");
-        $result = $query->getRow();
-        $maxId = $result->max_id ?? 0;
-
-        $db->query("ALTER TABLE $table AUTO_INCREMENT = " . ($maxId + 1));
-
         return $data;
     }
 

@@ -782,12 +782,14 @@ function resolverTodosSuporte(codigo) {
                                                 <select class="status-select" data-pedido-id="<?= $pedido->id ?>">
                                                     <option value="pendente" selected>⏳ Pendente</option>
                                                     <option value="confirmado">✅ Confirmado</option>
+                                                    <option value="em_aberto">📂 Em Aberto</option>
                                                     <option value="cancelado">❌ Cancelado</option>
                                                 </select>
                                             <?php elseif ($statusPedido === 'confirmado'): ?>
                                                 <select class="status-select" data-pedido-id="<?= $pedido->id ?>">
                                                     <option value="confirmado" selected>✅ Confirmado</option>
                                                     <option value="finalizado">✔️ Finalizado</option>
+                                                    <option value="em_aberto">📂 Em Aberto</option>
                                                     <option value="cancelado">❌ Cancelado</option>
                                                 </select>
                                             <?php elseif ($statusPedido === 'nao_concluido'): ?>
@@ -896,12 +898,14 @@ function resolverTodosSuporte(codigo) {
                                             <select class="status-select" data-pedido-id="<?= $pedido->id ?>">
                                                 <option value="pendente" selected>Pendente</option>
                                                 <option value="confirmado">Confirmado</option>
+                                                <option value="em_aberto">📂 Em Aberto</option>
                                                 <option value="cancelado">Cancelado</option>
                                             </select>
                                         <?php elseif ($statusPedido === 'confirmado'): ?>
                                             <select class="status-select" data-pedido-id="<?= $pedido->id ?>">
                                                 <option value="confirmado" selected>Confirmado</option>
                                                 <option value="finalizado">Finalizado</option>
+                                                <option value="em_aberto">📂 Em Aberto</option>
                                                 <option value="cancelado">Cancelado</option>
                                             </select>
                                         <?php elseif ($statusPedido === 'nao_concluido'): ?>
@@ -946,13 +950,19 @@ function resolverTodosSuporte(codigo) {
 
 <?php echo $this->section('scripts'); ?>
 <script>
-let ultimoPedidoId = <?= !empty($pedidos) ? $pedidos[0]->id : 0 ?>;
-const INTERVALO = 10000;
+let ultimoPedidoId = <?= $maxPedidoId ?? 0 ?>;
+const INTERVALO = 20000;
 const TEMPO_NOVO = 5 * 60 * 1000;
 let suporteAberto = false;
 
 // Recupera IDs de cancelamentos já notificados do sessionStorage
 let canceladosNotificados = JSON.parse(sessionStorage.getItem('canceladosNotificados') || '[]');
+// Recupera IDs de comandas já notificadas do sessionStorage (limpa a cada 5 minutos via timestamp)
+let _comandasTs = parseInt(sessionStorage.getItem('comandasNotificadasTs') || '0');
+let comandasNotificadas = (Date.now() - _comandasTs < 5 * 60 * 1000)
+    ? JSON.parse(sessionStorage.getItem('comandasNotificadas') || '[]')
+    : [];
+sessionStorage.setItem('comandasNotificadasTs', Date.now());
 
 
 
@@ -1168,14 +1178,27 @@ function verificarNovosPedidos() {
                 }
             }
             
-            // Houve alterações de status (pedidos viraram inativos)
-            if (response.recarregar) {
-                mensagem += '🔄 Alterações detectadas. ';
+            // Comandas finalizadas/alteradas (viraram pendente)
+            if (response.comandas_finalizadas && response.comandas_finalizadas.length > 0) {
+                let novasComandas = response.comandas_finalizadas.filter(p => !comandasNotificadas.includes(p.id));
+                if (novasComandas.length > 0) {
+                    tocarSom();
+                    mensagem += '📂 ' + novasComandas.length + ' comanda(s) finalizada(s)! ';
+                    tipoNotificacao = 'warning';
+                    recarregar = true;
+                    novasComandas.forEach(p => { if (!comandasNotificadas.includes(p.id)) comandasNotificadas.push(p.id); });
+                    sessionStorage.setItem('comandasNotificadas', JSON.stringify(comandasNotificadas));
+                }
+            }
+            
+            // Houve alterações de status (pedidos viraram inativos) — só recarrega se não houve outro motivo já
+            if (response.recarregar && !recarregar) {
                 recarregar = true;
+                // Sem som, sem mensagem — reload silencioso
             }
             
             if (recarregar) {
-                mostrarNotificacao(mensagem, tipoNotificacao);
+                if (mensagem) mostrarNotificacao(mensagem, tipoNotificacao);
                 setTimeout(() => location.reload(), 2000);
                 return;
             }
@@ -1188,6 +1211,7 @@ function verificarNovosPedidos() {
                 $('#stat-cancelados').text(response.estatisticas.cancelados || 0);
                 $('#stat-inativos').text(response.estatisticas.inativos || 0);
                 $('#stat-nao-concluido').text(response.estatisticas.nao_concluido || 0);
+                $('#stat-em-aberto').text(response.estatisticas.em_aberto || 0);
             }
         }
     });
@@ -1203,67 +1227,52 @@ function verificarBadgesExpirados() {
     });
 }
 
+let _audioCtx = null;
+function _getAudioCtx() {
+    if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return _audioCtx;
+}
+
 function tocarSom() {
     try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const agora = ctx.currentTime;
-        
-        // Som de sino (bell) - similar ao Saipos
-        // Harmônicos: fundamental + oitavas + quinta
-        const frequenciaBase = 1200;
-        const harmonicos = [1, 2, 3, 4.2, 5.4]; // Harmônicos do sino
-        const volumes = [0.6, 0.4, 0.25, 0.15, 0.1]; // Decaimento dos harmônicos
-        
-        harmonicos.forEach((multiplicador, i) => {
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.frequency.value = frequenciaBase * multiplicador;
-            osc.type = 'sine'; // Sino usa onda senoidal
-            
-            const now = agora;
-            const decay = 1.5 + (i * 0.3); // Cada harmônico dura mais
-            
-            gain.gain.setValueAtTime(0, now);
-            gain.gain.linearRampToValueAtTime(volumes[i], now + 0.01);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + decay);
-            
-            osc.start(now);
-            osc.stop(now + decay + 0.1);
-        });
-        
-        // Segundo sino (quinta acima) para reforçar
-        const freq2 = 1800;
-        const harm2 = [1, 2, 3];
-        const vol2 = [0.4, 0.25, 0.15];
-        
-        setTimeout(() => {
-            const t = ctx.currentTime;
-            harm2.forEach((mult, i) => {
+        const ctx = _getAudioCtx();
+        ctx.resume().then(() => {
+            const agora = ctx.currentTime;
+            const frequenciaBase = 1200;
+            const harmonicos = [1, 2, 3, 4.2, 5.4];
+            const volumes = [0.6, 0.4, 0.25, 0.15, 0.1];
+            harmonicos.forEach((multiplicador, i) => {
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.frequency.value = freq2 * mult;
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.frequency.value = frequenciaBase * multiplicador;
                 osc.type = 'sine';
-                
-                gain.gain.setValueAtTime(0, t);
-                gain.gain.linearRampToValueAtTime(vol2[i], t + 0.01);
-                gain.gain.exponentialRampToValueAtTime(0.001, t + 1.2);
-                
-                osc.start(t);
-                osc.stop(t + 1.3);
+                const decay = 1.5 + (i * 0.3);
+                gain.gain.setValueAtTime(0, agora);
+                gain.gain.linearRampToValueAtTime(volumes[i], agora + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.001, agora + decay);
+                osc.start(agora); osc.stop(agora + decay + 0.1);
             });
-        }, 200);
+            setTimeout(() => {
+                const t = ctx.currentTime;
+                [1, 2, 3].forEach((mult, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain); gain.connect(ctx.destination);
+                    osc.frequency.value = 1800 * mult;
+                    osc.type = 'sine';
+                    gain.gain.setValueAtTime(0, t);
+                    gain.gain.linearRampToValueAtTime([0.4, 0.25, 0.15][i], t + 0.01);
+                    gain.gain.exponentialRampToValueAtTime(0.001, t + 1.2);
+                    osc.start(t); osc.stop(t + 1.3);
+                });
+            }, 200);
+        });
     } catch(e) { console.warn('Som falhou:', e); }
 }
 
 function habilitarSom() {
-    try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        ctx.resume();
-    } catch(e) {}
+    try { _getAudioCtx().resume(); } catch(e) {}
 }
 
 function mostrarNotificacao(msg, tipo) {

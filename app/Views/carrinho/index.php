@@ -219,8 +219,8 @@ window.clienteTemEndereco = <?= json_encode($cliente_tem_endereco ?? false) ?>;
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?= base_url('assets/js/carrinho-simples.js?v=' . time()) ?>"></script>
-<script src="<?= base_url('assets/js/finalizar-pedido.js?v=' . time()) ?>"></script>
+<script src="<?= base_url('assets/js/carrinho-simples.min.js?v=' . (@filemtime(FCPATH . 'assets/js/carrinho-simples.min.js') ?: '1')) ?>"></script>
+<script src="<?= base_url('assets/js/finalizar-pedido.min.js?v=' . (@filemtime(FCPATH . 'assets/js/finalizar-pedido.min.js') ?: '1')) ?>"></script>
 <script>
 // Alimentar window.Carrinho com os itens do banco (página /carrinho)
 document.addEventListener('DOMContentLoaded', function() {

@@ -45,6 +45,9 @@ class Mesas extends BaseController
             $db->table('configuracao_mesas')->where('id', 1)->update($dados);
         }
 
+        $cache = \Config\Services::cache();
+        $cache->delete('config_mesas');
+        $cache->delete('mesas_ativas');
         return $this->response->setJSON(['sucesso' => true]);
     }
 
@@ -71,6 +74,7 @@ class Mesas extends BaseController
                 'ocupado'    => 0,
                 'created_at' => date('Y-m-d H:i:s'),
             ]);
+            \Config\Services::cache()->delete('mesas_ativas');
             return $this->response->setJSON(['sucesso' => true, 'msg' => "Mesa {$numero} criada"]);
         } catch (\Exception $e) {
             return $this->response->setJSON(['erro' => true, 'msg' => 'Erro ao criar mesa']);
@@ -98,6 +102,7 @@ class Mesas extends BaseController
                     'created_at' => date('Y-m-d H:i:s'),
                 ]);
             }
+            \Config\Services::cache()->delete('mesas_ativas');
             return $this->response->setJSON(['sucesso' => true, 'msg' => "{$quantidade} mesas criadas"]);
         } catch (\Exception $e) {
             return $this->response->setJSON(['erro' => true, 'msg' => 'Erro ao criar série']);
@@ -120,6 +125,7 @@ class Mesas extends BaseController
                 $dados['mostrar_no_carrinho'] = (int)$json->mostrar_no_carrinho;
             }
             $db->table('mesas')->where('id', $json->id)->update($dados);
+            \Config\Services::cache()->delete('mesas_ativas');
             return $this->response->setJSON(['sucesso' => true]);
         } catch (\Exception $e) {
             return $this->response->setJSON(['erro' => true, 'msg' => 'Erro ao atualizar']);
@@ -134,6 +140,7 @@ class Mesas extends BaseController
 
         try {
             $db->table('mesas')->where('id', $json->id)->delete();
+            \Config\Services::cache()->delete('mesas_ativas');
             return $this->response->setJSON(['sucesso' => true]);
         } catch (\Exception $e) {
             return $this->response->setJSON(['erro' => true, 'msg' => 'Erro ao excluir']);

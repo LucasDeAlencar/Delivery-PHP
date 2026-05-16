@@ -1100,24 +1100,33 @@ window.FinalizarPedido = {
                 method: 'POST',
                 headers: {'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},
                 body: JSON.stringify({ cidade, bairro_nome: bairroNome, endereco, numero, complemento })
-            }).catch(() => {});
+            }).catch(() => {}).finally(() => {
+                // Preencher campos do modal de finalização (se existir)
+                const endStr = endereco + ', ' + numero + (complemento ? ' - ' + complemento : '');
+                $('#endereco_entrega').val(endStr);
+                $('#bairro_id').val(bairroId).trigger('change');
 
-            // Preencher campos do modal de finalização (se existir)
-            const endStr = endereco + ', ' + numero + (complemento ? ' - ' + complemento : '');
-            $('#endereco_entrega').val(endStr);
-            $('#bairro_id').val(bairroId).trigger('change');
+                popup.remove();
 
-            popup.remove();
-
-            // Recalcular taxa no carrinho (mostrará aviso se fora da cobertura)
-            if (window.CarrinhoSimples && typeof window.CarrinhoSimples.calcularTaxaEntrega === 'function') {
+                // Recalcular taxa no carrinho APÓS o servidor ter o endereço atualizado
                 const subtotal = JSON.parse(localStorage.getItem('carrinho') || '[]')
                     .reduce((s, i) => s + i.total, 0);
-                window.CarrinhoSimples.calcularTaxaEntrega(subtotal);
-            } else if (window.location.pathname.includes('/carrinho')) {
-                // Na página de carrinho sem CarrinhoSimples, retomar finalização
-                self.concluirPedido();
-            }
+
+                if (window.CarrinhoSimples && typeof window.CarrinhoSimples.calcularTaxaEntrega === 'function') {
+                    window.CarrinhoSimples.calcularTaxaEntrega(subtotal);
+                }
+
+                // Atualizar total do modal do carrinho se estiver aberto
+                if ($('#modal-carrinho-total').length) {
+                    const taxaNum = parseFloat(taxa) || 0;
+                    const totalComTaxa = subtotal + taxaNum;
+                    $('#modal-carrinho-total').text('R$ ' + totalComTaxa.toFixed(2).replace('.', ','));
+                }
+
+                if (window.location.pathname.includes('/carrinho')) {
+                    self.concluirPedido();
+                }
+            });
         });
     },
 

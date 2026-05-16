@@ -5,7 +5,8 @@ use CodeIgniter\Router\RouteCollection;
 /**
  * @var RouteCollection $routes
  */
-$routes->get('/', 'Home::index');
+$routes->get('/', 'Home::index', ['filter' => 'cliente']);
+$routes->get('api/status-expediente', 'Home::statusExpediente', ['filter' => 'cliente']);
 $routes->get('login', 'Login::index');
 $routes->get('login/entrar', 'Login::novo');
 $routes->post('login/criar', 'Login::criar');

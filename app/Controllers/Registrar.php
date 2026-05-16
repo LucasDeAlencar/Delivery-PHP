@@ -381,6 +381,7 @@ class Registrar extends BaseController {
 
         $dados = [
             'nome' => $nome,
+            'email' => null,
             'telefone' => $telefone,
             'Cidade' => $cidade ?? null,
             'Bairro' => $bairro ?? null,
@@ -451,6 +452,7 @@ class Registrar extends BaseController {
         // Cadastrar novo cliente (modo 3)
         $dados = [
             'nome' => $nome,
+            'email' => null,
             'telefone' => $telefone,
             'modo_cadastro' => 3,
             'created_at' => date('Y-m-d H:i:s'),
