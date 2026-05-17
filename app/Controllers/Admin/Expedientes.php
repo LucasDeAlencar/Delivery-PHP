@@ -52,6 +52,7 @@ class Expedientes extends BaseController {
             $aberturas = $this->request->getPost('abertura');
             $fechamentos = $this->request->getPost('fechamento');
             $situacoes = $this->request->getPost('situacao');
+            $virasDia = $this->request->getPost('vira_dia') ?? [];
 
             log_message('info', 'Dados recebidos - IDs: ' . json_encode($ids));
             log_message('info', 'Dados recebidos - Aberturas: ' . json_encode($aberturas));
@@ -90,22 +91,20 @@ class Expedientes extends BaseController {
                 $abertura = $aberturas[$i];
                 $fechamento = $fechamentos[$i];
                 $situacao = $situacoes[$i];
+                $viraDia = isset($virasDia[$id]) ? 1 : 0;
 
-                log_message('info', "Processando expediente $id: $abertura - $fechamento (Situação: $situacao)");
-
-                // Valida horários antes de salvar (apenas se situacao = 1)
-                if ($situacao == 1 && !$this->expedienteModel->validarHorarioExpediente($abertura, $fechamento)) {
+                // Valida horários (apenas se aberto e sem virada de dia)
+                if ($situacao == 1 && !$this->expedienteModel->validarHorarioExpediente($abertura, $fechamento, (bool)$viraDia)) {
                     $success = false;
-                    $error = "Expediente ID $id: O horário de fechamento deve ser posterior ao horário de abertura.";
-                    $errors[] = $error;
-                    log_message('error', $error);
+                    $errors[] = "Expediente ID $id: O horário de fechamento deve ser posterior ao de abertura (ou marque 'Vira dia').";
                     continue;
                 }
 
                 $dados = [
-                    'abertura' => $abertura,
+                    'abertura'  => $abertura,
                     'fechamento' => $fechamento,
-                    'situacao' => $situacao
+                    'vira_dia'  => $viraDia,
+                    'situacao'  => $situacao,
                 ];
 
                 log_message('info', "Tentando atualizar expediente $id com dados: " . json_encode($dados));

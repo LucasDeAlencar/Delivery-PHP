@@ -1,357 +1,293 @@
 /**
- * Sistema de Popup de Produtos - Versão Simplificada
+ * Popup "Adicionar ao Pedido" — overlay customizado (sem Bootstrap modal)
  */
 
 window.PopupProduto = {
     produtoAtual: null,
-    extras: [],
+    tamanhoSelecionado: null,
 
-    // Abrir popup do produto
     abrir(dados) {
         this.produtoAtual = dados;
-        this.extras = [];
         this.tamanhoSelecionado = null;
-        
-        // Resetar extras no objeto global
+
         if (window.ProdutoExtras) {
             window.ProdutoExtras.extrasSelecionados = [];
             window.ProdutoExtras.obrigatorioExtras = 0;
             window.ProdutoExtras.maxExtras = 0;
-            $('#extras-selecionados-resumo').hide();
-            $('#modal-produto-preco-extras').text('Sem extras adicionados');
         }
-        
-        // Preencher dados básicos
-        $('#modal-produto-nome').text(dados.nome);
-        
-        const comTamanho = dados.com_tamanho == 1 || dados.comTamanho == 1;
-        if (comTamanho && dados.tamanhos && dados.tamanhos.length > 0) {
-            // Produto com tamanho: não exibir preço base, aguardar seleção
-            $('#modal-produto-preco').text('Selecione um tamanho');
-            $('#modal-produto-preco').attr('data-valor-base', 0);
-        } else {
-            $('#modal-produto-preco').text(`R$ ${parseFloat(dados.preco).toFixed(2).replace('.', ',')}`);
-            $('#modal-produto-preco').attr('data-valor-base', dados.preco);
-        }
-        
-        $('#modal-produto-categoria').text(`Categoria: ${dados.categoria || 'N/A'}`);
-        $('#modal-produto-descricao').text(dados.descricao || 'Produto delicioso');
-        
-        // Configurar imagem
-        if (dados.imagem) {
-            $('#modal-produto-imagem').attr('src', dados.imagem).show();
-        }
-        
-        // Reset campos
-        $('#quantidade').val(1);
-        $('#observacoes').val('');
 
-        // Configurar tamanhos
-        this.configurarTamanhos(dados);
-
+        this._criarOverlay(dados);
+        this._configurarTamanhos(dados);
         this.atualizarTotal();
-        
-        // Configurar modal
-        $('#modalCompra').attr('data-produto-id', dados.id);
-        
-        // Carregar extras
         this.carregarExtras(dados.id);
-        
-        // Abrir modal
-        $('#modalCompra').modal('show');
+
+        document.body.style.overflow = 'hidden';
     },
 
-     // Configurar seletor de tamanhos
-     configurarTamanhos(dados) {
-         const tamanhos = dados.tamanhos || [];
-         const comTamanho = dados.com_tamanho == 1 || dados.comTamanho == 1;
+    _criarOverlay(dados) {
+        document.getElementById('popup-produto-overlay')?.remove();
 
-         if (comTamanho && tamanhos.length > 0) {
-             const $opcoes = $('#tamanhos-opcoes').empty();
-             tamanhos.forEach((t, i) => {
-                 const preco = parseFloat(t.preco).toFixed(2).replace('.', ',');
-                  const $btn = $(`<button type="button" class="btn btn-outline-warning btn-sm btn-tamanho" data-nome="${t.nome}" data-preco="${t.preco}">
-                      ${t.nome} — R$ ${preco}
-                  </button>`);
-                  // Click handler para selecionar tamanho
-                  $btn.on('click', (e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      
-                      // Remove seleção anterior
-                      $('.btn-tamanho').removeClass('active');
-                      
-                      // Seleciona este
-                      $(e.currentTarget).addClass('active');
-                      
-                      // Atualiza tamanho selecionado
-                      this.tamanhoSelecionado = {
-                          id: t.id || null,
-                          nome: t.nome,
-                          preco: parseFloat(t.preco)
-                      };
-                      
-                      
-                      // Atualiza o preço exibido
-                      this.atualizarPrecoComTamanho();
-                  });
-                 
-                 $opcoes.append($btn);
-             });
-             $('#container-tamanhos').show();
-             $('#aviso-tamanho').addClass('d-none');
-             this.tamanhoSelecionado = null;
-         } else {
-             $('#container-tamanhos').hide();
-             this.tamanhoSelecionado = null;
-         }
-     },
-     
-     // Atualizar preço exibido quando tamanho é selecionado
-     atualizarPrecoComTamanho() {
-         const precoBase = parseFloat($('#modal-produto-preco').attr('data-valor-base')) || 0;
-         let precoFinal = precoBase;
-         
-         if (this.tamanhoSelecionado) {
-             precoFinal = this.tamanhoSelecionado.preco;
-         }
-         
-         // Atualiza o preço exibido
-         $('#modal-produto-preco').text(`R$ ${precoFinal.toFixed(2).replace('.', ',')}`);
-         $('#modal-produto-preco').attr('data-valor-base', precoFinal);
-         
-         // Atualiza o total
-         this.atualizarTotal();
-     },
+        const comTamanho = dados.com_tamanho == 1 || dados.comTamanho == 1;
+        const precoTexto = (comTamanho && dados.tamanhos?.length)
+            ? 'Selecione um tamanho'
+            : `R$ ${parseFloat(dados.preco).toFixed(2).replace('.', ',')}`;
+        const precoBase = comTamanho ? 0 : dados.preco;
 
-    // Carregar extras do produto
+        const html = `
+        <div id="popup-produto-overlay" class="pp-overlay">
+            <div class="pp-container">
+
+                <div class="pp-header">
+                    <span class="pp-title"><i class="fas fa-shopping-bag"></i> Adicionar ao pedido</span>
+                    <button class="pp-fechar" id="pp-btn-fechar" title="Fechar">&times;</button>
+                </div>
+
+                <div class="pp-body">
+                    ${dados.imagem ? `<img class="pp-imagem" src="${dados.imagem}" alt="${dados.nome}">` : ''}
+
+                    <div class="pp-info-bloco">
+                        <div class="pp-nome">${dados.nome}</div>
+                        ${dados.descricao ? `<div class="pp-descricao">${dados.descricao}</div>` : ''}
+                        <div class="pp-categoria"><i class="fas fa-tag"></i> ${dados.categoria || ''}</div>
+                    </div>
+
+                    <div class="pp-preco-row">
+                        <div>
+                            <div class="pp-label">Preço unitário</div>
+                            <div class="pp-preco" id="modal-produto-preco" data-valor-base="${precoBase}">${precoTexto}</div>
+                            <small class="pp-preco-extras" id="modal-produto-preco-extras"></small>
+                        </div>
+                        <div>
+                            <div class="pp-label">Quantidade</div>
+                            <div class="pp-qtd-ctrl">
+                                <button type="button" id="btn-diminuir">−</button>
+                                <input type="number" id="quantidade" value="1" min="1" max="99">
+                                <button type="button" id="btn-aumentar">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pp-total-bloco">
+                        <span class="pp-label">Total</span>
+                        <span class="pp-total" id="modal-total">—</span>
+                        <small class="pp-total-detalhe" id="modal-total-detalhe"></small>
+                    </div>
+
+                    <div id="container-tamanhos" style="display:none;" class="pp-secao">
+                        <div class="pp-label"><i class="fas fa-ruler"></i> Tamanho <span style="color:#ea5455;">*</span></div>
+                        <div id="tamanhos-opcoes" class="pp-tamanhos"></div>
+                        <small class="pp-aviso d-none" id="aviso-tamanho"><i class="fas fa-exclamation-circle"></i> Selecione um tamanho.</small>
+                    </div>
+
+                    <div id="container-btn-extras" style="display:none;" class="pp-secao">
+                        <button type="button" id="btn-selecionar-extras" class="pp-btn-extras">
+                            <i class="fas fa-plus-circle"></i>
+                            <span id="texto-btn-extras">Selecionar Extras</span>
+                            <span id="badge-obrigatorio" style="display:none;background:#ea5455;color:#fff;font-size:.7rem;padding:2px 7px;border-radius:10px;margin-left:6px;">*Obrigatório</span>
+                        </button>
+                        <div id="extras-selecionados-resumo" style="display:none;" class="pp-extras-resumo">
+                            <small><i class="fas fa-check-circle" style="color:#28c76f;"></i> <span id="contador-extras">0 extras</span></small>
+                            <small id="valor-extras-resumo" style="color:#888;"></small>
+                        </div>
+                        <small class="pp-aviso" id="aviso-extra-obrigatorio-modal" style="display:none;"></small>
+                    </div>
+
+                    <div class="pp-secao">
+                        <div class="pp-label">Observações <span style="color:#555;font-weight:400;">(opcional)</span></div>
+                        <textarea id="observacoes" class="pp-obs" rows="2" placeholder="Alguma observação especial?"></textarea>
+                    </div>
+                </div>
+
+                <div class="pp-footer">
+                    <button type="button" id="pp-btn-cancelar" class="pp-btn pp-btn-sec">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                    <button type="button" id="btn-adicionar-carrinho" class="pp-btn pp-btn-prim">
+                        <i class="fas fa-shopping-bag"></i> Adicionar
+                    </button>
+                </div>
+            </div>
+        </div>`;
+
+        document.body.insertAdjacentHTML('beforeend', html);
+
+        // Eventos
+        document.getElementById('pp-btn-fechar').addEventListener('click', () => this.fechar());
+        document.getElementById('pp-btn-cancelar').addEventListener('click', () => this.fechar());
+        document.getElementById('popup-produto-overlay').addEventListener('click', (e) => {
+            if (e.target.id === 'popup-produto-overlay') this.fechar();
+        });
+        document.getElementById('btn-diminuir').addEventListener('click', (e) => {
+            e.preventDefault();
+            const inp = document.getElementById('quantidade');
+            if (parseInt(inp.value) > 1) { inp.value = parseInt(inp.value) - 1; this.atualizarTotal(); }
+        });
+        document.getElementById('btn-aumentar').addEventListener('click', (e) => {
+            e.preventDefault();
+            const inp = document.getElementById('quantidade');
+            if (parseInt(inp.value) < 99) { inp.value = parseInt(inp.value) + 1; this.atualizarTotal(); }
+        });
+        document.getElementById('quantidade').addEventListener('input', () => this.atualizarTotal());
+        document.getElementById('btn-adicionar-carrinho').addEventListener('click', () => this.adicionarAoCarrinho());
+        document.getElementById('btn-selecionar-extras')?.addEventListener('click', () => {
+            if (window.ProdutoExtras) window.ProdutoExtras.abrirOverlayExtras();
+        });
+
+        // Fechar com ESC
+        this._escHandler = (e) => { if (e.key === 'Escape') this.fechar(); };
+        document.addEventListener('keydown', this._escHandler);
+    },
+
+    _configurarTamanhos(dados) {
+        const tamanhos = dados.tamanhos || [];
+        const comTamanho = dados.com_tamanho == 1 || dados.comTamanho == 1;
+
+        if (!comTamanho || !tamanhos.length) {
+            document.getElementById('container-tamanhos').style.display = 'none';
+            return;
+        }
+
+        document.getElementById('container-tamanhos').style.display = '';
+        const opcoes = document.getElementById('tamanhos-opcoes');
+        opcoes.innerHTML = '';
+
+        tamanhos.forEach(t => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'pp-btn-tamanho';
+            btn.dataset.preco = t.preco;
+            btn.textContent = `${t.nome} — R$ ${parseFloat(t.preco).toFixed(2).replace('.', ',')}`;
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.pp-btn-tamanho').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.tamanhoSelecionado = { id: t.id || null, nome: t.nome, preco: parseFloat(t.preco) };
+                const el = document.getElementById('modal-produto-preco');
+                el.textContent = `R$ ${this.tamanhoSelecionado.preco.toFixed(2).replace('.', ',')}`;
+                el.dataset.valorBase = this.tamanhoSelecionado.preco;
+                this.atualizarTotal();
+            });
+            opcoes.appendChild(btn);
+        });
+    },
+
     async carregarExtras(produtoId) {
         try {
-            const response = await fetch(`/api/produto-extras/${produtoId}`);
-            const data = await response.json();
+            const r = await fetch(`/api/produto-extras/${produtoId}`);
+            const data = await r.json();
 
-            if (data.success && data.extras && data.extras.length > 0) {
-                this.extras = data.extras;
-                
-                // Configurar no objeto global ProdutoExtras
+            if (data.success && data.extras?.length) {
                 if (window.ProdutoExtras) {
                     window.ProdutoExtras.extrasDisponiveis = data.extras;
                     window.ProdutoExtras.obrigatorioExtras = parseInt(data.obrigatorio_extras) || 0;
                     window.ProdutoExtras.maxExtras = parseInt(data.max_extras) || 0;
-                        obrigatorio: window.ProdutoExtras.obrigatorioExtras,
-                        max: window.ProdutoExtras.maxExtras
-                    });
                 }
-                
-                $('#container-btn-extras').show();
-                
-                let textoBtn = 'Selecionar Extras';
-                if (data.obrigatorio_extras > 0) {
-                    $('#badge-obrigatorio').show();
-                    textoBtn = `Selecionar Extras (${data.obrigatorio_extras} obrigatório)`;
-                } else if (data.max_extras > 0) {
-                    $('#badge-obrigatorio').hide();
-                    textoBtn = `Selecionar Extras (Máx. ${data.max_extras})`;
+
+                const obrig = parseInt(data.obrigatorio_extras) || 0;
+                const max   = parseInt(data.max_extras) || 0;
+                const badge = document.getElementById('badge-obrigatorio');
+                const texto = document.getElementById('texto-btn-extras');
+
+                if (obrig > 0) {
+                    badge.style.display = '';
+                    texto.textContent = `Selecionar Extras (${obrig} obrigatório)`;
+                } else if (max > 0) {
+                    badge.style.display = 'none';
+                    texto.textContent = `Selecionar Extras (Máx. ${max})`;
                 } else {
-                    $('#badge-obrigatorio').hide();
-                    textoBtn = 'Selecionar Extras (Opcional)';
+                    badge.style.display = 'none';
+                    texto.textContent = 'Selecionar Extras (Opcional)';
                 }
-                $('#texto-btn-extras').text(textoBtn);
+
+                document.getElementById('container-btn-extras').style.display = '';
             } else {
-                // Sem extras disponíveis - ainda assim configurar valores
-                if (window.ProdutoExtras) {
-                    window.ProdutoExtras.obrigatorioExtras = parseInt(data.obrigatorio_extras) || 0;
-                    window.ProdutoExtras.maxExtras = parseInt(data.max_extras) || 0;
-                }
-                $('#container-btn-extras').hide();
+                document.getElementById('container-btn-extras').style.display = 'none';
             }
-        } catch (error) {
-            console.error('Erro ao carregar extras:', error);
-            $('#container-btn-extras').hide();
+        } catch (e) {
+            document.getElementById('container-btn-extras').style.display = 'none';
         }
     },
 
-    // Atualizar total do produto
     atualizarTotal() {
-        const precoBase = parseFloat($('#modal-produto-preco').attr('data-valor-base')) || 0;
-        const quantidade = parseInt($('#quantidade').val()) || 1;
-        
-        // Se produto tem tamanho e nenhum foi selecionado, não calcular
+        const el = document.getElementById('modal-produto-preco');
+        if (!el) return;
+        const precoBase = parseFloat(el.dataset.valorBase) || 0;
+        const qtd = parseInt(document.getElementById('quantidade')?.value) || 1;
+
         const comTamanho = this.produtoAtual && (this.produtoAtual.com_tamanho == 1 || this.produtoAtual.comTamanho == 1);
         if (comTamanho && !this.tamanhoSelecionado) {
-            $('#modal-total').text('—');
-            $('#modal-total-detalhe').text('Selecione um tamanho');
+            document.getElementById('modal-total').textContent = '—';
+            document.getElementById('modal-total-detalhe').textContent = 'Selecione um tamanho';
             return;
         }
-        
+
         let totalExtras = 0;
-        if (window.ProdutoExtras && window.ProdutoExtras.extrasSelecionados) {
-            totalExtras = window.ProdutoExtras.extrasSelecionados.reduce((total, extra) => {
-                return total + (parseFloat(extra.preco) * parseInt(extra.quantidade));
-            }, 0);
+        if (window.ProdutoExtras?.extrasSelecionados) {
+            totalExtras = window.ProdutoExtras.getTotalExtras();
         }
-        
-        const total = (precoBase + totalExtras) * quantidade;
-        $('#modal-total').text(`R$ ${total.toFixed(2).replace('.', ',')}`);
-        
-        // Mostrar detalhes se há extras
+
+        const total = (precoBase + totalExtras) * qtd;
+        document.getElementById('modal-total').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+
+        const detalhe = document.getElementById('modal-total-detalhe');
+        const extrasEl = document.getElementById('modal-produto-preco-extras');
         if (totalExtras > 0) {
-            $('#modal-total-detalhe').text(`Base: R$ ${(precoBase * quantidade).toFixed(2).replace('.', ',')} | Extras: R$ ${(totalExtras * quantidade).toFixed(2).replace('.', ',')}`);
-            $('#modal-produto-preco-extras').text(`Inclui R$ ${totalExtras.toFixed(2).replace('.', ',')} em extras por unidade`);
+            detalhe.textContent = `Base: R$ ${(precoBase * qtd).toFixed(2).replace('.', ',')} | Extras: R$ ${(totalExtras * qtd).toFixed(2).replace('.', ',')}`;
+            if (extrasEl) extrasEl.textContent = `+ R$ ${totalExtras.toFixed(2).replace('.', ',')} em extras`;
         } else {
-            $('#modal-total-detalhe').text('');
-            $('#modal-produto-preco-extras').text('Sem extras adicionados');
+            detalhe.textContent = '';
+            if (extrasEl) extrasEl.textContent = '';
         }
     },
 
-     // Adicionar produto ao carrinho
-     adicionarAoCarrinho() {
-         if (!this.produtoAtual) return false;
+    adicionarAoCarrinho() {
+        if (!this.produtoAtual) return;
 
-         // Validar extras obrigatórios
-         if (window.ProdutoExtras && !window.ProdutoExtras.validarSelecao()) {
-             return false;
-         }
-         
-         // Validar tamanho se o produto tiver tamanho
-         const comTamanho = this.produtoAtual.com_tamanho == 1 || this.produtoAtual.comTamanho == 1;
-         if (comTamanho && this.produtoAtual.tamanhos && this.produtoAtual.tamanhos.length > 0) {
-             if (!this.tamanhoSelecionado) {
-                 $('#aviso-tamanho').removeClass('d-none').text('Selecione um tamanho para continuar.');
-                 return false;
-             }
-         }
+        if (window.ProdutoExtras && !window.ProdutoExtras.validarSelecao()) return;
 
-         // Calcular preço base (usa tamanho se houver)
-         let precoFinal = parseFloat(this.produtoAtual.preco);
-         if (this.tamanhoSelecionado) {
-             precoFinal = this.tamanhoSelecionado.preco;
-         }
-
-         const produto = {
-             id: this.produtoAtual.id,
-             nome: this.produtoAtual.nome,
-             preco: precoFinal,
-             quantidade: parseInt($('#quantidade').val()) || 1,
-             observacoes: $('#observacoes').val() || '',
-             extras: window.ProdutoExtras ? window.ProdutoExtras.getExtrasSelecionados() : [],
-             categoria_id: this.produtoAtual.categoria_id || null,
-             // Informações de tamanho (se houver)
-             tamanho: this.tamanhoSelecionado ? {
-                 id: this.tamanhoSelecionado.id,
-                 nome: this.tamanhoSelecionado.nome,
-                 preco: this.tamanhoSelecionado.preco
-             } : null,
-             tamanho_id: this.tamanhoSelecionado ? this.tamanhoSelecionado.id : null
-         };
-
-         // Adicionar ao carrinho
-         if (window.CarrinhoMenu) {
-             window.CarrinhoMenu.adicionar(produto);
-             this.fechar();
-             return true;
-         } else if (window.CarrinhoSimples) {
-             // Fallback para CarrinhoSimples
-             window.CarrinhoSimples.adicionarItem(produto);
-             this.fechar();
-             return true;
-         }
-
-         return false;
-     },
-
-    // Fechar popup
-    fechar() {
-        $('#modalCompra').modal('hide');
-        this.produtoAtual = null;
-        this.extras = [];
-        
-        // Limpar extras
-        if (window.ProdutoExtras) {
-            window.ProdutoExtras.limparExtras();
+        const comTamanho = this.produtoAtual.com_tamanho == 1 || this.produtoAtual.comTamanho == 1;
+        if (comTamanho && this.produtoAtual.tamanhos?.length && !this.tamanhoSelecionado) {
+            const av = document.getElementById('aviso-tamanho');
+            av.classList.remove('d-none');
+            av.textContent = 'Selecione um tamanho para continuar.';
+            return;
         }
+
+        const preco = this.tamanhoSelecionado ? this.tamanhoSelecionado.preco : parseFloat(this.produtoAtual.preco);
+
+        const produto = {
+            id: this.produtoAtual.id,
+            nome: this.produtoAtual.nome,
+            preco,
+            quantidade: parseInt(document.getElementById('quantidade').value) || 1,
+            observacoes: document.getElementById('observacoes').value || '',
+            extras: window.ProdutoExtras ? window.ProdutoExtras.getExtrasSelecionados() : [],
+            categoria_id: this.produtoAtual.categoria_id || null,
+            tamanho: this.tamanhoSelecionado || null,
+            tamanho_id: this.tamanhoSelecionado?.id || null
+        };
+
+        if (window.CarrinhoMenu) {
+            window.CarrinhoMenu.adicionar(produto);
+        } else if (window.CarrinhoSimples) {
+            window.CarrinhoSimples.adicionarItem(produto);
+        }
+
+        this.fechar();
+    },
+
+    fechar() {
+        document.getElementById('popup-produto-overlay')?.remove();
+        document.body.style.overflow = '';
+        document.removeEventListener('keydown', this._escHandler);
+        this.produtoAtual = null;
+        this.tamanhoSelecionado = null;
+        if (window.ProdutoExtras) window.ProdutoExtras.limparExtras();
     }
 };
 
-// Eventos
-$(document).ready(function() {
-    
-    // Clique nos produtos
-    $(document).on('click', '.produto-item, .block, .filtr-item', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        // Subir até o elemento com data-produto-id, ou descer para encontrá-lo
-        let elemento = $(this).closest('[data-produto-id]');
-        if (!elemento.length) elemento = $(this).find('[data-produto-id]').first();
-        if (!elemento.length) return;
-
-        // Verificar se produto está ativo
-        if (elemento.attr('data-produto-ativo') === '0') return false;
-
-        // Extrair dados do produto
-        let tamanhos = [];
-        try {
-            const raw = elemento.attr('data-tamanhos') || '[]';
-            tamanhos = JSON.parse(raw);
-        } catch(err) { tamanhos = []; }
-
-        const dados = {
-            id: elemento.attr('data-produto-id'),
-            nome: elemento.attr('data-produto-nome'),
-            preco: elemento.attr('data-produto-preco'),
-            imagem: elemento.attr('data-produto-imagem') || elemento.find('img').first().attr('src') || '',
-            categoria: elemento.attr('data-produto-categoria') || 'Produto',
-            categoria_id: parseInt(elemento.attr('data-categoria-id')) || null,
-            descricao: elemento.attr('data-produto-descricao') || '',
-            com_tamanho: elemento.attr('data-com-tamanho') == '1' ? 1 : 0,
-            tamanhos: tamanhos
-        };
-
-        if (dados.id && dados.nome && dados.preco) {
-            PopupProduto.abrir(dados);
-        } else {
-            console.error('❌ Dados do produto incompletos:', dados);
-        }
-    });
-
-    // Botões de quantidade - seletores mais específicos
-    $(document).off('click', '#btn-aumentar').on('click', '#btn-aumentar', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        const input = $('#quantidade');
-        let valor = parseInt(input.val()) || 1;
-        if (valor < 99) {
-            input.val(valor + 1);
-            PopupProduto.atualizarTotal();
-        }
-    });
-
-    $(document).off('click', '#btn-diminuir').on('click', '#btn-diminuir', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        const input = $('#quantidade');
-        let valor = parseInt(input.val()) || 1;
-        if (valor > 1) {
-            input.val(valor - 1);
-            PopupProduto.atualizarTotal();
-        }
-    });
-
-    // Mudança na quantidade
-    $(document).on('input change', '#quantidade', function() {
-        PopupProduto.atualizarTotal();
-    });
-
-    // Botão adicionar ao carrinho
-    $(document).on('click', '#btn-adicionar-carrinho', function(e) {
-        e.preventDefault();
-        PopupProduto.adicionarAoCarrinho();
-    });
-
-    // Atualizar total quando extras mudarem
-    $(document).on('extrasAtualizados', function() {
+// Atualizar total quando extras mudarem (o clique é gerenciado pelo sistema-produto.js)
+$(document).ready(function () {
+    $(document).on('extrasAtualizados', function () {
         PopupProduto.atualizarTotal();
     });
 });
-

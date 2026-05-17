@@ -364,6 +364,20 @@ window.CarrinhoSimples = {
 
     // Mostrar carrinho
     mostrar() {
+        // Bloquear se não logado
+        if (window.clienteLogado && !window.clienteLogado.logado) {
+            const overlay = document.getElementById('overlay-login-modo3');
+            if (overlay) { overlay.classList.add('ativo'); return; }
+            alert('Faça login para acessar o carrinho.');
+            return;
+        }
+
+        // Bloquear se estabelecimento fechado
+        if (typeof window.estaAberto !== 'undefined' && !window.estaAberto) {
+            alert('O estabelecimento está fechado no momento.');
+            return;
+        }
+
         // Verificar se há pedido em andamento e se pertence ao cliente
         this.verificarPedidoEmAndamento((temPedido) => {
             if (temPedido) {

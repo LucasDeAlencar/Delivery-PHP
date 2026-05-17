@@ -4,7 +4,7 @@
     <title><?= $this->renderSection('titulo') ?> - Delivery</title>
     
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -194,6 +194,13 @@
     <!-- CSRF token para uso em requisições AJAX -->
     <?= csrf_meta('csrf_token_meta') ?>
     
+    <!-- Fix: impede overflow horizontal que causa layout "espichado" no mobile -->
+    <style>
+        body { overflow-x: hidden; max-width: 100%; }
+        .container-wrap { max-width: 100%; overflow-x: hidden; }
+        img, iframe, video { max-width: 100%; }
+    </style>
+
     <!-- Estilos personalizados -->
     <?= $this->renderSection('estilos') ?>
 
@@ -257,7 +264,11 @@
               </span>
             <?php endif; ?>
             <?php if (!empty($expedienteHoje) && $expedienteHoje->situacao == 1): ?>
-              <span class="hero-chip chip-info"><i class="fas fa-clock"></i> <?= substr($expedienteHoje->abertura,0,5) ?>–<?= substr($expedienteHoje->fechamento,0,5) ?></span>
+              <span class="hero-chip chip-info">
+                <i class="fas fa-clock"></i>
+                <?= substr($expedienteHoje->abertura,0,5) ?>–<?= substr($expedienteHoje->fechamento,0,5) ?>
+                <?= !empty($expedienteHoje->vira_dia) ? ' (+madrugada)' : '' ?>
+              </span>
             <?php endif; ?>
             <?php if (!empty($dadosCorporativos->tempo_entrega_min)): ?>
               <span class="hero-chip chip-info"><i class="fas fa-motorcycle"></i> <?= esc($dadosCorporativos->tempo_entrega_min) ?>–<?= esc($dadosCorporativos->tempo_entrega_max ?? ($dadosCorporativos->tempo_entrega_min+15)) ?> min</span>
@@ -291,7 +302,10 @@
         <?php if (isset($estaAberto)): ?>
           <strong style="color:<?= $estaAberto ? '#28c76f' : '#ea5455' ?>"><?= $estaAberto ? 'Aberto Agora' : 'Fechado' ?></strong>
           <?php if (!empty($expedienteHoje) && $expedienteHoje->situacao == 1): ?>
-            <small><?= substr($expedienteHoje->abertura,0,5) ?> – <?= substr($expedienteHoje->fechamento,0,5) ?></small>
+            <small>
+              <?= substr($expedienteHoje->abertura,0,5) ?> – <?= substr($expedienteHoje->fechamento,0,5) ?>
+              <?= !empty($expedienteHoje->vira_dia) ? ' (+madrugada)' : '' ?>
+            </small>
           <?php endif; ?>
         <?php else: ?>
           <strong>Horário</strong><small>Consulte abaixo</small>
@@ -488,7 +502,7 @@
                         <?= $exp->dia == $diaAtual ? '➡️ ' : '' ?>
                         <?= esc($exp->dia_descricao) ?>: 
                         <?php if ($exp->situacao == 1): ?>
-                          <?= substr($exp->abertura, 0, 5) ?> - <?= substr($exp->fechamento, 0, 5) ?>
+                          <?= substr($exp->abertura, 0, 5) ?> - <?= substr($exp->fechamento, 0, 5) ?><?= !empty($exp->vira_dia) ? ' (+madrugada)' : '' ?>
                         <?php else: ?>
                           <span style="color: #dc3545;">Fechado</span>
                         <?php endif; ?>
@@ -603,6 +617,7 @@
         };
         window.modoCadastro = <?= json_encode($modoCadastro ?? 1) ?>;
         window.negociacaoEntrega = <?= json_encode(!empty($dadosCorporativos->negociacao_entrega) ? true : false) ?>;
+        window.estaAberto = <?= json_encode($estaAberto ?? false) ?>;
     </script>
     <script src="<?= site_url('web/src/js/jquery.min.js') ?>"></script>
     <script src="<?= site_url('web/src/js/jquery-migrate-3.0.1.min.js') ?>"></script>
@@ -620,8 +635,9 @@
     <script src="<?= site_url('web/src/js/scrollax.min.js') ?>"></script>
     <script src="<?= site_url('web/src/js/main.js') ?>"></script>
     <script src="<?= site_url('web/src/js/ajax-config.js?v=' . (@filemtime(FCPATH . 'web/src/js/ajax-config.js') ?: '1')) ?>"></script>
-    <script src="<?= site_url('assets/js/sistema-produto.js?v=' . (@filemtime(FCPATH . 'assets/js/sistema-produto.js') ?: '1')) ?>"></script>
     <script src="<?= site_url('assets/js/carrinho-simples.min.js?v=' . (@filemtime(FCPATH . 'assets/js/carrinho-simples.min.js') ?: '1')) ?>"></script>
+    <script src="<?= site_url('assets/js/popup-produto.js?v=' . (@filemtime(FCPATH . 'assets/js/popup-produto.js') ?: '1')) ?>"></script>
+    <script src="<?= site_url('assets/js/sistema-produto.js?v=' . (@filemtime(FCPATH . 'assets/js/sistema-produto.js') ?: '1')) ?>"></script>
     <script src="<?= site_url('assets/js/finalizar-pedido.min.js?v=' . (@filemtime(FCPATH . 'assets/js/finalizar-pedido.min.js') ?: '1')) ?>"></script>
 
     <?php if (($modoCadastro ?? 1) == 3): ?>
@@ -905,17 +921,18 @@
     </style>
     
     <!-- Indicador de cliente logado (desktop) -->
-    <div id="cliente-logado" style="position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.8); color: #00557f; padding: 10px 15px; border-radius: 25px; font-size: 14px; cursor: pointer; z-index: 1055; display: none; border: 1px solid #00557f;">
+    <div id="cliente-logado" style="position:fixed;bottom:20px;right:20px;background:#1a1a1a;color:#f8b531;padding:9px 16px;border-radius:25px;font-size:13px;cursor:pointer;z-index:1055;display:none;border:1px solid #333;box-shadow:0 4px 15px rgba(0,0,0,.4);font-family:'Poppins',sans-serif;">
         <i class="fas fa-user-circle mr-2"></i>
         <span id="email-cliente"></span>
     </div>
     <!-- Menu logout independente — funciona no mobile e desktop -->
-    <div id="menu-logout" style="position: fixed; bottom: 70px; right: 12px; background: rgba(0,0,0,0.95); border: 1px solid #00557f; border-radius: 8px; padding: 10px; margin-bottom: 5px; display: none; white-space: nowrap; z-index: 1060;">
-        <a href="#" id="btn-editar" style="color: #00557f; text-decoration: none; font-size: 13px; display: block; margin-bottom: 8px;">
-            <i class="fas fa-edit mr-2"></i>Editar Dados
+    <div id="menu-logout" style="position:fixed;bottom:70px;right:12px;background:#1a1a1a;border:1px solid #333;border-radius:10px;padding:8px 0;display:none;white-space:nowrap;z-index:1060;box-shadow:0 8px 24px rgba(0,0,0,.5);min-width:160px;">
+        <a href="#" id="btn-editar" style="color:#ccc;text-decoration:none;font-size:13px;display:flex;align-items:center;gap:10px;padding:9px 16px;transition:background .15s;">
+            <i class="fas fa-user-edit" style="color:#0055ff;width:14px;"></i>Meus Dados
         </a>
-        <a href="#" id="btn-logout" style="color: #ff6b6b; text-decoration: none; font-size: 13px;">
-            <i class="fas fa-sign-out-alt mr-2"></i>Sair
+        <div style="height:1px;background:#222;margin:4px 0;"></div>
+        <a href="#" id="btn-logout" style="color:#ff6b6b;text-decoration:none;font-size:13px;display:flex;align-items:center;gap:10px;padding:9px 16px;transition:background .15s;">
+            <i class="fas fa-sign-out-alt" style="width:14px;"></i>Sair
         </a>
     </div>
 
@@ -1022,61 +1039,39 @@
                     // Remover popup anterior se existir
                     document.getElementById('edicao-popup')?.remove();
 
+                    const campo = (label, id, type, required) => `
+                        <div style="margin-bottom:13px;">
+                            <label style="color:#888;font-size:.78rem;display:block;margin-bottom:4px;">${label}</label>
+                            <input type="${type}" id="${id}" ${required ? 'required' : ''}
+                                style="width:100%;padding:10px 12px;background:#222;border:1px solid #333;border-radius:7px;color:#fff;font-size:16px;box-sizing:border-box;">
+                        </div>`;
+
                     const popup = document.createElement('div');
                     popup.id = 'edicao-popup';
-                    popup.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;padding:0 12px;box-sizing:border-box;';
+                    popup.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:0 12px;box-sizing:border-box;';
                     popup.innerHTML = `
-                        <div style="background:#1a1a1a;width:100%;max-width:500px;max-height:90vh;min-height:0;border-radius:15px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.5);">
-                            <!-- Header -->
-                            <div style="background:linear-gradient(135deg,#2d2d2d,#1a1a1a);border-bottom:1px solid #333;padding:16px 20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative;border-radius:15px 15px 0 0;">
-                                <h5 style="color:#f8b531;font-family:'Poppins',sans-serif;font-weight:600;margin:0;font-size:1rem;">
-                                    <i class="fas fa-edit" style="margin-right:8px;"></i>Editar Meus Dados
+                        <div style="background:#1a1a1a;width:100%;max-width:460px;max-height:90vh;border-radius:15px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.6);">
+                            <div style="border-bottom:1px solid #2a2a2a;padding:16px 20px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
+                                <h5 style="color:#f8b531;font-family:'Poppins',sans-serif;font-weight:600;margin:0;font-size:.95rem;">
+                                    <i class="fas fa-user-edit" style="margin-right:8px;color:#0055ff;"></i>Meus Dados
                                 </h5>
-                                <button onclick="document.getElementById('edicao-popup').remove()" style="position:absolute;right:16px;background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer;opacity:.7;line-height:1;">&times;</button>
+                                <button onclick="document.getElementById('edicao-popup').remove()" style="background:none;border:none;color:#666;font-size:1.4rem;cursor:pointer;line-height:1;padding:0;">&times;</button>
                             </div>
-                            <!-- Body -->
                             <div style="flex:1 1 auto;overflow-y:auto;padding:20px;-webkit-overflow-scrolling:touch;">
                                 <form id="formEdicaoCliente">
-                                    <div style="margin-bottom:14px;">
-                                        <label style="color:#00557f;font-size:.85rem;display:block;margin-bottom:4px;">Nome Completo *</label>
-                                        <input type="text" id="edit-nome" class="form-control" readonly style="background:#1a1a1a;border:1px solid #444;color:#ccc;font-size:16px;">
-                                    </div>
-                                    <div style="margin-bottom:14px;">
-                                        <label style="color:#00557f;font-size:.85rem;display:block;margin-bottom:4px;">Telefone *</label>
-                                        <input type="tel" id="edit-telefone" class="form-control" required style="background:#2d2d2d;border:1px solid #444;color:#fff;font-size:16px;">
-                                    </div>
-                                    <div style="margin-bottom:14px;">
-                                        <label style="color:#00557f;font-size:.85rem;display:block;margin-bottom:4px;">E-mail</label>
-                                        <input type="email" id="edit-email" class="form-control" style="background:#2d2d2d;border:1px solid #444;color:#ccc;font-size:16px;">
-                                    </div>
-                                    <div style="margin-bottom:14px;">
-                                        <label style="color:#00557f;font-size:.85rem;display:block;margin-bottom:4px;">CEP</label>
-                                        <input type="text" id="edit-cep" class="form-control" style="background:#2d2d2d;border:1px solid #444;color:#ccc;font-size:16px;">
-                                    </div>
-                                    <div style="margin-bottom:14px;">
-                                        <label style="color:#00557f;font-size:.85rem;display:block;margin-bottom:4px;">Cidade</label>
-                                        <input type="text" id="edit-cidade" class="form-control" style="background:#2d2d2d;border:1px solid #444;color:#ccc;font-size:16px;">
-                                    </div>
-                                    <div style="margin-bottom:14px;">
-                                        <label style="color:#00557f;font-size:.85rem;display:block;margin-bottom:4px;">Bairro</label>
-                                        <input type="text" id="edit-bairro" class="form-control" style="background:#2d2d2d;border:1px solid #444;color:#ccc;font-size:16px;">
-                                    </div>
-                                    <div style="margin-bottom:14px;">
-                                        <label style="color:#00557f;font-size:.85rem;display:block;margin-bottom:4px;">Endereço</label>
-                                        <input type="text" id="edit-endereco" class="form-control" style="background:#2d2d2d;border:1px solid #444;color:#ccc;font-size:16px;">
-                                    </div>
-                                    <div style="margin-bottom:14px;">
-                                        <label style="color:#00557f;font-size:.85rem;display:block;margin-bottom:4px;">Número</label>
-                                        <input type="text" id="edit-numero" class="form-control" style="background:#2d2d2d;border:1px solid #444;color:#ccc;font-size:16px;">
-                                    </div>
-                                    <div style="margin-bottom:18px;">
-                                        <label style="color:#00557f;font-size:.85rem;display:block;margin-bottom:4px;">Complemento</label>
-                                        <input type="text" id="edit-complemento" class="form-control" style="background:#2d2d2d;border:1px solid #444;color:#ccc;font-size:16px;">
-                                    </div>
-
-                                    <button type="submit" class="btn" style="width:100%;padding:12px;background:linear-gradient(135deg,#0055ff,#003f88);border:none;border-radius:8px;color:#fff;font-weight:600;cursor:pointer;">
-                                        <i class="fas fa-save mr-2"></i>Salvar Alterações
+                                    ${campo('Nome', 'edit-nome', 'text', true)}
+                                    ${campo('Telefone *', 'edit-telefone', 'tel', true)}
+                                    ${campo('E-mail', 'edit-email', 'email', false)}
+                                    ${campo('CEP', 'edit-cep', 'text', false)}
+                                    ${campo('Cidade', 'edit-cidade', 'text', false)}
+                                    ${campo('Bairro', 'edit-bairro', 'text', false)}
+                                    ${campo('Endereço', 'edit-endereco', 'text', false)}
+                                    ${campo('Número', 'edit-numero', 'text', false)}
+                                    ${campo('Complemento', 'edit-complemento', 'text', false)}
+                                    <button type="submit" style="width:100%;padding:12px;background:#0055ff;border:none;border-radius:8px;color:#fff;font-weight:600;cursor:pointer;font-size:.95rem;margin-top:4px;">
+                                        Salvar Alterações
                                     </button>
+                                    <div id="edit-msg" style="text-align:center;font-size:.82rem;margin-top:10px;display:none;"></div>
                                 </form>
                             </div>
                         </div>
@@ -1106,8 +1101,9 @@
                     document.getElementById('formEdicaoCliente').addEventListener('submit', function(e) {
                         e.preventDefault();
                         const btn = this.querySelector('button[type="submit"]');
+                        const msg = document.getElementById('edit-msg');
                         btn.disabled = true;
-                        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+                        btn.textContent = 'Salvando...';
 
                         const dados = {
                             nome: document.getElementById('edit-nome').value,
@@ -1129,24 +1125,31 @@
                         .then(r => r.json())
                         .then(res => {
                             btn.disabled = false;
-                            btn.innerHTML = '<i class="fas fa-save mr-2"></i>Salvar Alterações';
+                            btn.textContent = 'Salvar Alterações';
                             if (res.sucesso) {
-                                popup.remove();
+                                msg.style.color = '#4caf50';
+                                msg.textContent = 'Dados atualizados!';
+                                msg.style.display = 'block';
                                 // Atualizar nome no menu
-                                infoCliente.textContent = dados.nome;
-                                const label = document.getElementById('mob-user-label');
-                                if (label) label.textContent = dados.nome.split(' ')[0];
-                                // Atualizar global
-                                window.clienteLogado.nome = dados.nome;
-                                alert('Dados atualizados com sucesso!');
+                                if (dados.nome) {
+                                    infoCliente.textContent = dados.nome;
+                                    const label = document.getElementById('mob-user-label');
+                                    if (label) label.textContent = dados.nome.split(' ')[0];
+                                    if (window.clienteLogado) window.clienteLogado.nome = dados.nome;
+                                }
+                                setTimeout(() => popup.remove(), 1200);
                             } else {
-                                alert('Erro: ' + (res.msg || 'falha ao salvar'));
+                                msg.style.color = '#ff6b6b';
+                                msg.textContent = res.msg || 'Erro ao salvar.';
+                                msg.style.display = 'block';
                             }
                         })
                         .catch(() => {
                             btn.disabled = false;
-                            btn.innerHTML = '<i class="fas fa-save mr-2"></i>Salvar Alterações';
-                            alert('Erro de conexão');
+                            btn.textContent = 'Salvar Alterações';
+                            msg.style.color = '#ff6b6b';
+                            msg.textContent = 'Erro de conexão.';
+                            msg.style.display = 'block';
                         });
                     });
                 });
@@ -1160,6 +1163,14 @@
     
     <!-- Scripts personalizados -->
     <script src="<?= site_url('web/src/js/carrinho-popup.js?v=' . (@filemtime(FCPATH . 'web/src/js/carrinho-popup.js') ?: '1')) ?>"></script>
+    <script>
+        // Fix: Bootstrap 4 adiciona padding-right inline em elementos fixed/sticky ao abrir modal.
+        // Removemos esse padding dos elementos que não devem ser afetados.
+        function fixModalPaddingRight() {
+            $('#app-navbar, #barra-categorias, #busca-cardapio, #mobile-bottom-nav').css('padding-right', '');
+        }
+        $(document).on('show.bs.modal shown.bs.modal hidden.bs.modal', fixModalPaddingRight);
+    </script>
     <script>
         function fecharCarrinhoEVoltarMenu() {
             $('#modalCarrinho').modal('hide');

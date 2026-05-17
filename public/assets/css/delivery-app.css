@@ -15,7 +15,8 @@
     align-items: center;
     justify-content: space-between;
     padding: 10px 16px;
-    height: 58px;
+    padding-top: calc(10px + env(safe-area-inset-top, 0px));
+    height: calc(58px + env(safe-area-inset-top, 0px));
 }
 
 .app-brand {
@@ -106,7 +107,7 @@
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    max-width: 1100px;
+    max-width: 100%;
     margin: 0 auto;
     padding: 40px 24px;
     gap: 24px;
@@ -383,7 +384,8 @@
     .app-brand-sub { display: none; }
     /* Busca */
     #busca-cardapio { top: 95px; }
-    .titulo-categoria { top: 135px; }
+    /* 95px (busca) + 41px (altura busca) = 136px */
+    .titulo-categoria { top: 136px; }
     /* Serviços */
     .as-services { gap: 10px; }
     .as-srv span, .as-srv i { font-size: 1.4rem; }
@@ -403,6 +405,9 @@
     z-index: 100;
     background: #111;
     border-bottom: 1px solid #1e1e1e;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 #categorias-scroll {
@@ -435,10 +440,12 @@
    LISTA DE PRODUTOS
    ===================================================== */
 #lista-produtos {
-    max-width: 720px;
+    width: 100%;
+    max-width: 100%;
     margin: 0 auto;
     padding-bottom: 80px;
     background: #111;
+    box-sizing: border-box;
 }
 
 .secao-categoria { padding: 0; }
@@ -454,7 +461,8 @@
     margin: 0;
     background: #111;
     position: sticky;
-    top: 103px;
+    /* 58px navbar + 45px barra-categorias + 41px busca = 144px */
+    top: 144px;
     z-index: 90;
     border-bottom: 1px solid #1a1a1a;
 }
@@ -578,6 +586,7 @@
     background: #111;
     border-top: 1px solid #1e1e1e;
     display: flex;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .mob-nav-btn {
@@ -604,7 +613,7 @@
 .mob-nav-btn:hover, .mob-nav-btn.active { color: #f8b531 !important; border-top-color: #f8b531 !important; text-decoration: none; }
 
 @media (max-width: 991px) {
-    body { padding-bottom: 56px; }
+    body { padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px)); }
     #cliente-logado { display: none !important; }
 }
 @media (min-width: 992px) {

@@ -17,6 +17,31 @@ class FinalizarPedidoController extends Controller
         try {
             $db->transBegin();
 
+            // Verificar se estabelecimento está aberto
+            $expedienteModel = new \App\Models\ExpedienteModel();
+            $expedientes = $expedienteModel->orderBy('dia', 'ASC')->findAll();
+            helper('timezone');
+            $agora       = sao_paulo_now('H:i:s');
+            $diaAtual    = (int) sao_paulo_now('w');
+            $diaAnterior = ($diaAtual + 6) % 7;
+            $normalizar  = fn($h) => sprintf('%02d:%02d:%02d', ...array_pad(explode(':', $h), 3, 0));
+            $porDia = [];
+            foreach ($expedientes as $exp) $porDia[(int)$exp->dia] = $exp;
+            $aberto = false;
+            if (isset($porDia[$diaAtual]) && $porDia[$diaAtual]->situacao == 1) {
+                $exp = $porDia[$diaAtual];
+                $ab  = $normalizar($exp->abertura);
+                if ((int)$exp->vira_dia === 1) { if ($agora >= $ab) $aberto = true; }
+                else { $fe = $normalizar($exp->fechamento); if ($agora >= $ab && $agora <= $fe) $aberto = true; }
+            }
+            if (!$aberto && isset($porDia[$diaAnterior]) && $porDia[$diaAnterior]->situacao == 1 && (int)$porDia[$diaAnterior]->vira_dia === 1) {
+                if ($agora <= $normalizar($porDia[$diaAnterior]->fechamento)) $aberto = true;
+            }
+            if (!$aberto) {
+                $db->transRollback();
+                return $this->response->setJSON(['success' => false, 'message' => 'O estabelecimento está fechado no momento.']);
+            }
+
             // Dados do pedido
             $dadosPedido = $this->request->getJSON(true);
             $sessionID = session_id();

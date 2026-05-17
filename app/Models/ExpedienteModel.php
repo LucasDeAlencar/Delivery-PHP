@@ -9,7 +9,7 @@ class ExpedienteModel extends Model
     protected $table            = 'expedientes';
     protected $primaryKey       = 'id';
     protected $returnType       = 'object';
-    protected $allowedFields    = ['dia', 'dia_descricao', 'abertura', 'fechamento', 'situacao'];
+    protected $allowedFields    = ['dia', 'dia_descricao', 'abertura', 'fechamento', 'vira_dia', 'situacao'];
 
     // Validation
     protected $validationRules = [
@@ -37,20 +37,19 @@ class ExpedienteModel extends Model
 
     protected function validarHorarios(array $data)
     {
+        // Com vira_dia=1, fechamento pode ser menor que abertura (passa da meia-noite)
+        if (!empty($data['data']['vira_dia'])) {
+            return $data;
+        }
+
         if (isset($data['data']['abertura']) && isset($data['data']['fechamento'])) {
-            $abertura = $data['data']['abertura'];
-            $fechamento = $data['data']['fechamento'];
-            
-            // Converte para timestamp para comparação
-            $horaAbertura = strtotime($abertura);
-            $horaFechamento = strtotime($fechamento);
-            
-            if ($horaFechamento <= $horaAbertura) {
-                $this->errors[] = 'O horário de fechamento deve ser posterior ao horário de abertura.';
-                return false;
+            if (strtotime($data['data']['fechamento']) <= strtotime($data['data']['abertura'])) {
+                // No CI4, setar data como array vazio cancela a operação
+                $this->errors['horario'] = 'O horário de fechamento deve ser posterior ao de abertura (ou marque "Vira dia").';
+                $data['data'] = [];
             }
         }
-        
+
         return $data;
     }
 
@@ -71,11 +70,9 @@ class ExpedienteModel extends Model
     /**
      * Valida se o horário de fechamento é posterior ao de abertura
      */
-    public function validarHorarioExpediente($abertura, $fechamento)
+    public function validarHorarioExpediente($abertura, $fechamento, $viraDia = false)
     {
-        $horaAbertura = strtotime($abertura);
-        $horaFechamento = strtotime($fechamento);
-        
-        return $horaFechamento > $horaAbertura;
+        if ($viraDia) return true;
+        return strtotime($fechamento) > strtotime($abertura);
     }
 }

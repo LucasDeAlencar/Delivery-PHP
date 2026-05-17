@@ -61,41 +61,41 @@ class Cliente extends BaseController
             return $this->response->setJSON(['erro' => true, 'msg' => 'Requisição inválida']);
         }
 
-        $json = $this->request->getJSON();
-        $email = $json->email ?? '';
-
-        if (empty($email)) {
-            return $this->response->setJSON(['erro' => true, 'msg' => 'Email não informado']);
+        $clienteId = session()->get('cliente_id');
+        if (!$clienteId) {
+            return $this->response->setJSON(['erro' => true, 'msg' => 'Não autenticado']);
         }
 
-        $dados = [
-            'telefone' => $json->telefone ?? '',
-            'cep' => preg_replace("/[^0-9]/", "", $json->cep ?? ''),
-            'Cidade' => $json->cidade ?? '',
-            'Bairro' => $json->bairro ?? '',
-            'Endereco' => $json->endereco ?? '',
-            'Numero' => (int)($json->numero ?? 0),
-            'complemento' => $json->complemento ?? ''
-        ];
+        $json = $this->request->getJSON();
 
-        // Validações básicas
-        if (empty($dados['telefone'])) {
+        if (empty($json->telefone)) {
             return $this->response->setJSON(['erro' => true, 'msg' => 'Telefone é obrigatório']);
         }
 
-        $db = \Config\Database::connect();
-        
-        try {
-            $resultado = $db->table('clientes')
-                           ->where('email', $email)
-                           ->update($dados);
+        $dados = [
+            'nome'        => trim($json->nome ?? '') ?: null,
+            'telefone'    => $json->telefone,
+            'email'       => trim($json->email ?? '') ?: null,
+            'cep'         => preg_replace('/[^0-9]/', '', $json->cep ?? ''),
+            'Cidade'      => $json->cidade ?? '',
+            'Bairro'      => $json->bairro ?? '',
+            'Endereco'    => $json->endereco ?? '',
+            'Numero'      => (int)($json->numero ?? 0),
+            'complemento' => $json->complemento ?? '',
+            'updated_at'  => date('Y-m-d H:i:s'),
+        ];
+        // Não sobrescrever nome se vazio
+        if ($dados['nome'] === null) unset($dados['nome']);
 
-            if ($resultado) {
-                return $this->response->setJSON(['sucesso' => true, 'msg' => 'Dados atualizados com sucesso']);
-            } else {
-                return $this->response->setJSON(['erro' => true, 'msg' => 'Nenhuma alteração foi feita']);
-            }
+        $db = \Config\Database::connect();
+        try {
+            $db->table('clientes')->where('id', $clienteId)->update($dados);
+            // Atualizar sessão
+            if (!empty($json->nome))  session()->set('cliente_nome',     trim($json->nome));
+            if (!empty($json->telefone)) session()->set('cliente_telefone', $json->telefone);
+            return $this->response->setJSON(['sucesso' => true, 'msg' => 'Dados atualizados com sucesso']);
         } catch (\Exception $e) {
+            log_message('error', 'Cliente::atualizar - ' . $e->getMessage());
             return $this->response->setJSON(['erro' => true, 'msg' => 'Erro ao atualizar dados']);
         }
     }

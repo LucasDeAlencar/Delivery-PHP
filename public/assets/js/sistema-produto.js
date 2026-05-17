@@ -19,32 +19,29 @@ window.SistemaProduto = {
         const dados = this.extrairDados(elemento);
         if (!dados.id) return;
 
+        // Delegar para PopupProduto (overlay customizado)
+        if (window.PopupProduto) {
+            window.PopupProduto.abrir(dados);
+            return false;
+        }
+
+        // Fallback: Bootstrap modal (legado)
         this.produto = dados;
         this.extras = [];
         this.tamanhoSelecionado = null;
 
-        // Limpar extras COMPLETAMENTE antes de abrir novo produto
         if (window.ProdutoExtras) {
             window.ProdutoExtras.extrasSelecionados = [];
             window.ProdutoExtras.extrasDisponiveis = [];
             window.ProdutoExtras.produtoAtual = null;
             window.ProdutoExtras.obrigatorioExtras = 0;
             window.ProdutoExtras.maxExtras = 0;
-            $('#container-btn-extras').hide();
-            $('#extras-selecionados-resumo').hide();
-            $('#modal-produto-preco-extras').text('Sem extras');
         }
 
         this.preencherModal(dados);
         this.carregarExtras(dados.id);
 
-        $('#modalCompra').modal({
-            show: true,
-            scrollable: true,
-            focus: false,
-            backdrop: true,
-            keyboard: true
-        });
+        $('#modalCompra').modal({ show: true, backdrop: true, keyboard: true });
 
         return false;
     },
@@ -339,7 +336,24 @@ window.SistemaProduto = {
             e.preventDefault();
             e.stopPropagation();
             e.stopImmediatePropagation();
-            
+
+            // Bloquear se estabelecimento fechado
+            if (typeof window.estaAberto !== 'undefined' && !window.estaAberto) {
+                return false;
+            }
+
+            // Modo 3: exige login antes de abrir o modal do produto
+            if (window.modoCadastro === 3 && window.clienteLogado && !window.clienteLogado.logado) {
+                const overlay = document.getElementById('overlay-login-modo3');
+                if (overlay) {
+                    overlay.classList.add('ativo');
+                    const input = document.getElementById('popup-celular');
+                    if (input) setTimeout(() => input.focus(), 100);
+                    return false;
+                }
+                // overlay não encontrado no DOM — prossegue normalmente
+            }
+
             const elemento = e.currentTarget;
             const that = this;
             
@@ -350,27 +364,9 @@ window.SistemaProduto = {
             return false;
         });
 
-        $(document).on('click', '#btn-aumentar', () => {
-            const input = $('#quantidade');
-            const val = parseInt(input.val()) || 1;
-            if (val < 99) {
-                input.val(val + 1);
-                this.atualizarTotal();
-            }
+        $(document).on('extrasAtualizados', () => {
+            this.atualizarTotal();
         });
-
-        $(document).on('click', '#btn-diminuir', () => {
-            const input = $('#quantidade');
-            const val = parseInt(input.val()) || 1;
-            if (val > 1) {
-                input.val(val - 1);
-                this.atualizarTotal();
-            }
-        });
-
-        $(document).on('input', '#quantidade', () => this.atualizarTotal());
-
-        $(document).on('click', '#btn-adicionar-carrinho', () => this.adicionarAoCarrinho());
     },
 
     mostrarModalMobile(titulo, mensagem, tipo = 'info') {

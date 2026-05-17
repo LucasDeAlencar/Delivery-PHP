@@ -22,18 +22,8 @@ const ProdutoExtras = {
      * Vincula eventos aos elementos
      */
     bindEvents() {
-        // Botão para abrir modal de extras
-        $('#btn-selecionar-extras').on('click', () => {
-            this.abrirModalExtras();
-        });
-
-        // Botão para confirmar seleção de extras
-        $('#btn-confirmar-extras').on('click', () => {
-            this.confirmarExtras();
-        });
-
-        // Limpar extras ao fechar modal de compra
-        $('#modalCompra').on('hidden.bs.modal', () => {
+        // Limpar extras ao fechar overlay de produto
+        $(document).on('popupProdutoFechado', () => {
             this.limparExtras();
         });
     },
@@ -102,21 +92,67 @@ const ProdutoExtras = {
     },
 
     /**
-     * Abre o modal de seleção de extras
+     * Abre o overlay de seleção de extras
+     */
+    abrirOverlayExtras() {
+        document.getElementById('extras-overlay')?.remove();
+
+        const html = `
+        <div id="extras-overlay" class="pp-overlay" style="z-index:10001;">
+            <div class="pp-container">
+                <div class="pp-header">
+                    <span class="pp-title"><i class="fas fa-plus-circle"></i> Selecionar Extras</span>
+                    <button class="pp-fechar" id="extras-btn-fechar">&times;</button>
+                </div>
+                <div class="pp-body" style="flex:1;overflow-y:auto;">
+                    <div id="extras-loading" class="text-center" style="padding:40px 0;">
+                        <div class="spinner-border text-warning" role="status"></div>
+                        <p style="color:#aaa;margin-top:12px;">Carregando extras...</p>
+                    </div>
+                    <div id="extras-lista" style="display:none;">
+                        <div id="aviso-obrigatorio" style="display:none;background:rgba(0,85,255,.1);border:1px solid #0055ff;color:#6699ff;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:.85rem;">
+                            <i class="fas fa-exclamation-triangle"></i> <span id="texto-aviso-obrigatorio"></span>
+                        </div>
+                        <div id="extras-container"></div>
+                        <div id="extras-vazio" style="display:none;text-align:center;padding:40px 0;color:#555;">
+                            <i class="fas fa-inbox" style="font-size:2.5rem;opacity:.3;"></i>
+                            <p style="margin-top:10px;">Nenhum extra disponível.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="pp-footer">
+                    <span style="color:#aaa;font-size:.85rem;">Selecionados: <strong id="contador-extras-modal" style="color:#f8b531;">0</strong></span>
+                    <div style="display:flex;gap:8px;">
+                        <button type="button" id="extras-btn-cancelar" class="pp-btn pp-btn-sec">Cancelar</button>
+                        <button type="button" id="btn-confirmar-extras" class="pp-btn pp-btn-prim">
+                            <i class="fas fa-check"></i> Confirmar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+
+        document.body.insertAdjacentHTML('beforeend', html);
+
+        document.getElementById('extras-btn-fechar').addEventListener('click', () => this._fecharOverlayExtras());
+        document.getElementById('extras-btn-cancelar').addEventListener('click', () => this._fecharOverlayExtras());
+        document.getElementById('btn-confirmar-extras').addEventListener('click', () => this.confirmarExtras());
+        document.getElementById('extras-overlay').addEventListener('click', (e) => {
+            if (e.target.id === 'extras-overlay') this._fecharOverlayExtras();
+        });
+
+        setTimeout(() => this.renderizarExtras(), 200);
+    },
+
+    _fecharOverlayExtras() {
+        document.getElementById('extras-overlay')?.remove();
+    },
+
+    /**
+     * @deprecated use abrirOverlayExtras
      */
     abrirModalExtras() {
-
-        // Mostrar loading
-        $('#extras-loading').show();
-        $('#extras-lista').hide();
-
-        // Abrir modal
-        $('#modalExtras').modal('show');
-
-        // Renderizar extras
-        setTimeout(() => {
-            this.renderizarExtras();
-        }, 300);
+        this.abrirOverlayExtras();
     },
 
     /**
@@ -358,13 +394,22 @@ const ProdutoExtras = {
 
         // Mostrar resumo
         if (this.extrasSelecionados.length > 0) {
-            $('#extras-selecionados-resumo').show();
+            const resumo = document.getElementById('extras-selecionados-resumo');
+            if (resumo) resumo.style.display = '';
+            const contador = document.getElementById('contador-extras');
+            if (contador) contador.textContent = `${this.extrasSelecionados.length} extra${this.extrasSelecionados.length !== 1 ? 's' : ''} selecionado${this.extrasSelecionados.length !== 1 ? 's' : ''}`;
+            const valorResumo = document.getElementById('valor-extras-resumo');
+            if (valorResumo) {
+                const total = this.getTotalExtras();
+                valorResumo.textContent = total > 0 ? `+ R$ ${total.toFixed(2).replace('.', ',')}` : '';
+            }
         } else {
-            $('#extras-selecionados-resumo').hide();
+            const resumo = document.getElementById('extras-selecionados-resumo');
+            if (resumo) resumo.style.display = 'none';
         }
 
-        // Fechar modal
-        $('#modalExtras').modal('hide');
+        // Fechar overlay
+        this._fecharOverlayExtras();
     },
 
     /**

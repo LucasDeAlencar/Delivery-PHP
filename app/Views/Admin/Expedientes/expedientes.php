@@ -327,11 +327,12 @@
                     <?= csrf_field() ?>
 
                     <div class="container-btn-salvar" style="text-align: right; margin-bottom: 15px;">
-                        <button type="submit" class="btn btn-success" id="btn-salvar">
+                        <button type="submit" class="btn" id="btn-salvar"
+                            style="background-color: var(--primary-color); color: var(--text-light); border: none; padding: 8px 20px; border-radius: 6px; font-weight: 500;">
                             <i class="fas fa-save"></i>
                             Salvar Expedientes
                         </button>
-                        <small class="d-block text-muted mt-2">
+                        <small class="d-block mt-2" style="color: var(--text-muted);">
                             <i class="fas fa-info-circle"></i> Certifique-se de que o horário de fechamento seja posterior ao de abertura
                         </small>
                     </div>
@@ -345,6 +346,7 @@
                                     <th>Dia</th>
                                     <th>Abertura</th>
                                     <th>Fechamento</th>
+                                    <th>Vira dia</th>
                                     <th>Situação</th>
                                 </tr>
                             </thead>
@@ -363,7 +365,22 @@
                                                 <input type="time" name="abertura[]" class="form-control" value="<?= esc($dia->abertura); ?>" required>
                                             </td>
                                             <td>
-                                                <input type="time" name="fechamento[]" class="form-control" value="<?= esc($dia->fechamento); ?>" required>
+                                                <input type="time" name="fechamento[]" class="form-control fechamento-input" value="<?= esc($dia->fechamento); ?>" required>
+                                                <?php if (!empty($dia->vira_dia)): ?>
+                                                <small class="vira-dia-hint" style="color:#f8b531;font-size:.7rem;display:block;margin-top:3px;"><i class="fas fa-moon"></i> dia seguinte</small>
+                                                <?php else: ?>
+                                                <small class="vira-dia-hint" style="color:var(--text-muted);font-size:.7rem;display:none;margin-top:3px;"><i class="fas fa-moon"></i> dia seguinte</small>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td class="text-center" style="vertical-align:middle;">
+                                                <div class="d-flex flex-column align-items-center">
+                                                    <input type="checkbox" name="vira_dia[<?= $dia->id ?>]"
+                                                           class="vira-dia-chk"
+                                                           data-index="<?= $dia->id ?>"
+                                                           <?= !empty($dia->vira_dia) ? 'checked' : '' ?>
+                                                           style="width:18px;height:18px;cursor:pointer;">
+                                                    <small class="mt-1" style="font-size:.7rem;color:var(--text-muted);">passa meia-noite</small>
+                                                </div>
                                             </td>
                                             <td>
                                                 <select class="form-control" name="situacao[]" required>
@@ -405,33 +422,36 @@
         function validarHorarios(row) {
             var abertura = row.find('input[name="abertura[]"]').val();
             var fechamento = row.find('input[name="fechamento[]"]').val();
-            var isValid = true;
+            var viraDia = row.find('.vira-dia-chk').is(':checked');
 
-            // Remove erros anteriores
             row.find('input[name="abertura[]"], input[name="fechamento[]"]').removeClass('is-invalid');
             row.find('.invalid-feedback').remove();
             row.removeClass('has-error');
 
-            if (abertura && fechamento) {
-                if (fechamento <= abertura) {
-                    isValid = false;
+            // Com virada de dia, fechamento pode ser menor — não valida
+            if (viraDia) return true;
 
-                    // Marca ambos os campos como inválidos
-                    row.find('input[name="abertura[]"], input[name="fechamento[]"]').addClass('is-invalid');
-                    row.addClass('has-error');
-
-                    // Adiciona mensagem de erro no campo de fechamento
-                    row.find('input[name="fechamento[]"]').after(
-                            '<div class="invalid-feedback">' +
-                            '<i class="fas fa-exclamation-triangle"></i> ' +
-                            'O horário de fechamento deve ser posterior ao de abertura.' +
-                            '</div>'
-                            );
-                }
+            if (abertura && fechamento && fechamento <= abertura) {
+                row.find('input[name="abertura[]"], input[name="fechamento[]"]').addClass('is-invalid');
+                row.addClass('has-error');
+                row.find('input[name="fechamento[]"]').after(
+                    '<div class="invalid-feedback"><i class="fas fa-exclamation-triangle"></i> ' +
+                    'O horário de fechamento deve ser posterior ao de abertura (ou marque "Vira dia").</div>'
+                );
+                return false;
             }
-
-            return isValid;
+            return true;
         }
+
+        // Mostrar/esconder hint "dia seguinte" no campo fechamento
+        $(document).on('change', '.vira-dia-chk', function () {
+            var hint = $(this).closest('tr').find('.vira-dia-hint');
+            if ($(this).is(':checked')) {
+                hint.show();
+            } else {
+                hint.hide();
+            }
+        });
 
         // Validação de horários em tempo real
         $('input[name="abertura[]"], input[name="fechamento[]"]').on('change blur', function () {

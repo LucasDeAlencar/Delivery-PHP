@@ -61,42 +61,151 @@
     },
 
      /**
-      * Abre modal de extras
+      * Abre overlay customizado de extras
       */
      abrirModalExtras() {
-         
-         // Mostrar loading
-         $('#extras-loading').show();
-         $('#extras-lista').hide();
-         $('#extras-vazio').hide();
-         
-         // Limpar pesquisa anterior
-         $('#pesquisa-extras').val('');
-         $('#limpar-pesquisa').hide();
-         this.termoPesquisa = '';
-         
-         // Configurar evento de pesquisa (se ainda não estiver configurado)
-         if (!$('#pesquisa-extras').data('evento-configurado')) {
-             $('#pesquisa-extras').on('input', (e) => {
-                 const termo = e.target.value.trim().toLowerCase();
-                 this.termoPesquisa = termo;
-                 this.renderizarExtras();
-                 
-                 // Mostrar/ocultar botão limpar
-                 if (termo.length > 0) {
-                     $('#limpar-pesquisa').show();
-                 } else {
-                     $('#limpar-pesquisa').hide();
-                 }
-             });
-             $('#pesquisa-extras').data('evento-configurado', true);
+         this.abrirOverlayExtras();
+     },
+
+     abrirOverlayExtras() {
+         document.getElementById('pe-overlay')?.remove();
+
+         const obrig = this.obrigatorioExtras;
+         const max   = this.maxExtras;
+         let subtitulo = 'Opcional';
+         if (obrig > 0) subtitulo = `${obrig} obrigatório(s)`;
+         else if (max > 0) subtitulo = `Máx. ${max}`;
+
+         const html = `
+         <div id="pe-overlay" class="pe-overlay">
+             <div class="pe-container">
+                 <div class="pe-header">
+                     <div>
+                         <span class="pe-title"><i class="fas fa-plus-circle"></i> Extras</span>
+                         <small class="pe-subtitle">${subtitulo}</small>
+                     </div>
+                     <button class="pe-fechar" id="pe-btn-fechar">&times;</button>
+                 </div>
+                 <div class="pe-body">
+                     <div class="pe-aviso" id="pe-aviso" style="display:none;"></div>
+                     <div id="pe-lista"></div>
+                 </div>
+                 <div class="pe-footer">
+                     <div class="pe-contador" id="pe-contador">0 selecionado(s)</div>
+                     <button type="button" id="pe-btn-confirmar" class="pe-btn-confirmar">
+                         <i class="fas fa-check"></i> Confirmar
+                     </button>
+                 </div>
+             </div>
+         </div>`;
+
+         document.body.insertAdjacentHTML('beforeend', html);
+
+         document.getElementById('pe-btn-fechar').addEventListener('click', () => this._fecharOverlay());
+         document.getElementById('pe-overlay').addEventListener('click', (e) => {
+             if (e.target.id === 'pe-overlay') this._fecharOverlay();
+         });
+         document.getElementById('pe-btn-confirmar').addEventListener('click', () => this.confirmarExtras());
+
+         this._renderizarOverlay();
+     },
+
+     _fecharOverlay() {
+         document.getElementById('pe-overlay')?.remove();
+     },
+
+     _renderizarOverlay() {
+         const lista = document.getElementById('pe-lista');
+         if (!lista) return;
+         lista.innerHTML = '';
+
+         if (!this.extrasDisponiveis.length) {
+             lista.innerHTML = '<p class="pe-vazio">Nenhum extra disponível.</p>';
+             return;
          }
-         
-         // Abrir modal
-         $('#modalExtras').modal('show');
-         
-         // Renderizar após abrir
-         setTimeout(() => this.renderizarExtras(), 200);
+
+         this.extrasDisponiveis.forEach(extra => {
+             const sel = this.extrasSelecionados.find(e => e.id == extra.id);
+             const qtd = sel ? sel.quantidade : 0;
+             const precoStr = parseFloat(extra.preco) > 0
+                 ? `+R$ ${parseFloat(extra.preco).toFixed(2).replace('.', ',')}`
+                 : 'Grátis';
+
+             const div = document.createElement('div');
+             div.className = `pe-item${qtd > 0 ? ' pe-item-sel' : ''}`;
+             div.dataset.id = extra.id;
+
+             if (extra.multitude == 1) {
+                 div.innerHTML = `
+                     <div class="pe-item-info">
+                         <span class="pe-item-nome">${extra.nome}</span>
+                         ${extra.descricao ? `<small class="pe-item-desc">${extra.descricao}</small>` : ''}
+                         <span class="pe-item-preco">${precoStr}</span>
+                     </div>
+                     <div class="pe-item-ctrl">
+                         <button type="button" class="pe-qty-btn" data-acao="menos" data-id="${extra.id}">−</button>
+                         <span class="pe-qty-val" id="pe-qty-${extra.id}">${qtd}</span>
+                         <button type="button" class="pe-qty-btn" data-acao="mais" data-id="${extra.id}">+</button>
+                     </div>`;
+             } else {
+                 div.innerHTML = `
+                     <label class="pe-item-label">
+                         <div class="pe-item-info">
+                             <span class="pe-item-nome">${extra.nome}</span>
+                             ${extra.descricao ? `<small class="pe-item-desc">${extra.descricao}</small>` : ''}
+                             <span class="pe-item-preco">${precoStr}</span>
+                         </div>
+                         <div class="pe-check-wrap">
+                             <input type="checkbox" class="pe-chk" data-id="${extra.id}" ${qtd > 0 ? 'checked' : ''}>
+                             <span class="pe-checkmark"></span>
+                         </div>
+                     </label>`;
+             }
+             lista.appendChild(div);
+         });
+
+         // Eventos dos botões de quantidade
+         lista.querySelectorAll('.pe-qty-btn').forEach(btn => {
+             btn.addEventListener('click', () => {
+                 const id = parseInt(btn.dataset.id);
+                 if (btn.dataset.acao === 'mais') this.aumentarQtd(id);
+                 else this.diminuirQtd(id);
+                 // Atualizar visual
+                 const qtdEl = document.getElementById(`pe-qty-${id}`);
+                 if (qtdEl) qtdEl.textContent = this.getQtdExtra(id);
+                 const item = lista.querySelector(`.pe-item[data-id="${id}"]`);
+                 if (item) item.classList.toggle('pe-item-sel', this.getQtdExtra(id) > 0);
+                 this._atualizarContadorOverlay();
+             });
+         });
+
+         // Eventos dos checkboxes
+         lista.querySelectorAll('.pe-chk').forEach(chk => {
+             chk.addEventListener('change', () => {
+                 const id = parseInt(chk.dataset.id);
+                 this.toggleExtra(id);
+                 const item = lista.querySelector(`.pe-item[data-id="${id}"]`);
+                 if (item) item.classList.toggle('pe-item-sel', chk.checked);
+                 this._atualizarContadorOverlay();
+             });
+         });
+
+         this._atualizarContadorOverlay();
+     },
+
+     _atualizarContadorOverlay() {
+         const total = this.getTotalItens();
+         const el = document.getElementById('pe-contador');
+         if (!el) return;
+         const max = this.maxExtras;
+         el.textContent = max > 0 ? `${total}/${max} selecionado(s)` : `${total} selecionado(s)`;
+
+         const btn = document.getElementById('pe-btn-confirmar');
+         if (!btn) return;
+         const invalido = (this.obrigatorioExtras > 0 && total < this.obrigatorioExtras)
+                       || (max > 0 && total > max);
+         btn.disabled = invalido;
+         btn.style.opacity = invalido ? '.5' : '1';
      },
 
      /**
@@ -332,42 +441,41 @@
             alert(`Selecione pelo menos ${this.obrigatorioExtras} extra(s).`);
             return;
         }
-
         if (this.maxExtras > 0 && total > this.maxExtras) {
             alert(`Você pode selecionar no máximo ${this.maxExtras} extras.`);
             return;
         }
         
-        // Atualizar resumo no modal de compra
         this.atualizarResumoCompra();
         
-        // Atualizar total no modal de produto
-        if (window.SistemaProduto && typeof window.SistemaProduto.atualizarTotal === 'function') {
-            window.SistemaProduto.atualizarTotal();
-        }
+        if (window.PopupProduto) window.PopupProduto.atualizarTotal();
+        else if (window.SistemaProduto) window.SistemaProduto.atualizarTotal();
         
-        // Fechar modal
-        $('#modalExtras').modal('hide');
+        this._fecharOverlay();
     },
 
     /**
-     * Atualizar resumo no modal de compra
+     * Atualizar resumo no popup de produto
      */
     atualizarResumoCompra() {
         const totalValor = this.getTotalExtras();
         const totalItens = this.extrasSelecionados.length;
         
+        const resumo = document.getElementById('extras-selecionados-resumo');
+        const contador = document.getElementById('contador-extras');
+        const valorEl = document.getElementById('valor-extras-resumo');
+        const precosExtras = document.getElementById('modal-produto-preco-extras');
+
         if (totalItens > 0) {
-            $('#extras-selecionados-resumo').show();
-            $('#contador-extras').text(`${totalItens} extra(s) selecionado(s)`);
-            $('#valor-extras-resumo').text(`+R$ ${totalValor.toFixed(2).replace('.', ',')}`);
-            $('#modal-produto-preco-extras').text(`Inclui R$ ${totalValor.toFixed(2).replace('.', ',')} em extras`);
+            if (resumo) resumo.style.display = '';
+            if (contador) contador.textContent = `${totalItens} extra(s) selecionado(s)`;
+            if (valorEl) valorEl.textContent = `+R$ ${totalValor.toFixed(2).replace('.', ',')}`;
+            if (precosExtras) precosExtras.textContent = `+R$ ${totalValor.toFixed(2).replace('.', ',')} em extras`;
         } else {
-            $('#extras-selecionados-resumo').hide();
-            $('#modal-produto-preco-extras').text('Sem extras adicionados');
+            if (resumo) resumo.style.display = 'none';
+            if (precosExtras) precosExtras.textContent = '';
         }
         
-        // Disparar evento para atualizar total
         $(document).trigger('extrasAtualizados');
     },
 
@@ -440,34 +548,9 @@
 
  // Inicializar eventos quando o documento estiver pronto
  $(document).ready(function() {
-     // Botão para abrir modal de extras
-     $('#btn-selecionar-extras').on('click', function() {
-         window.ProdutoExtras.abrirModalExtras();
+     // Botão para abrir extras (delegado — o overlay é criado dinamicamente)
+     $(document).on('click', '#btn-selecionar-extras', function() {
+         window.ProdutoExtras.abrirOverlayExtras();
      });
-
-     // Botão para confirmar seleção de extras
-     $('#btn-confirmar-extras').on('click', function() {
-         window.ProdutoExtras.confirmarExtras();
-     });
-
-     // Limpar pesquisa e extras ao fechar modal de extras
-     $('#modalExtras').on('hidden.bs.modal', function() {
-         $('#pesquisa-extras').val('');
-         $('#limpar-pesquisa').hide();
-         window.ProdutoExtras.termoPesquisa = '';
-     });
-
-     // Limpar extras ao fechar modal de compra
-     $('#modalCompra').on('hidden.bs.modal', function() {
-         window.ProdutoExtras.extrasSelecionados = [];
-         window.ProdutoExtras.extrasDisponiveis = [];
-         window.ProdutoExtras.produtoAtual = null;
-         window.ProdutoExtras.obrigatorioExtras = 0;
-         window.ProdutoExtras.maxExtras = 0;
-         $('#container-btn-extras').hide();
-         $('#extras-selecionados-resumo').hide();
-         $('#modal-produto-preco-extras').text('Sem extras');
-     });
-
  });
 

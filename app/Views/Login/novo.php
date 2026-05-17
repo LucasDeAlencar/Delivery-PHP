@@ -50,11 +50,6 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         #campo-senha { display: none; }
-        #admin-badge {
-            display: none; background: rgba(248,181,49,.15); border: 1px solid rgba(248,181,49,.4);
-            border-radius: 6px; padding: 6px 12px; margin-bottom: 12px;
-            color: #f8b531; font-size: .82rem; text-align: center;
-        }
     </style>
 </head>
 <body>
@@ -122,21 +117,12 @@
                             <input type="tel" name="celular" id="celular_m1" value="<?= old('celular') ?>" class="form-control" placeholder="(00) 00000-0000">
                         </div>
                     </div>
-                    <div id="campo-senha" class="form-group">
-                        <label class="form-label" for="password">Senha</label>
-                        <input type="password" name="password" id="password" class="form-control" placeholder="Digite a sua senha">
-                    </div>
                 <?php else: ?>
                     <!-- Modo 2 e 3: celular com detecção de admin -->
                     <div class="form-group">
                         <label class="form-label" for="celular">Celular/WhatsApp *</label>
                         <input type="tel" name="celular" id="celular" value="<?= old('celular') ?>"
                                class="form-control" placeholder="(00) 00000-0000" required autofocus autocomplete="tel">
-                    </div>
-                    <div id="admin-badge"><i class="fas fa-shield-alt mr-1"></i>Usuário administrador detectado</div>
-                    <div id="campo-senha" class="form-group">
-                        <label class="form-label" for="password">Senha *</label>
-                        <input type="password" name="password" id="password" class="form-control" placeholder="Digite a sua senha">
                     </div>
                 <?php endif; ?>
 
@@ -235,55 +221,8 @@
             emailInput.focus();
 
         } else {
-            // ── Modo 2 e 3: celular + detecção de admin ──────────────────
-            const celularInput = document.getElementById('celular');
-            const campoSenha   = document.getElementById('campo-senha');
-            const adminBadge   = document.getElementById('admin-badge');
-            const passwordInput= document.getElementById('password');
-            let isAdmin = false;
-            let debounceTimer = null;
-
-            aplicarMascara(celularInput);
-
-            celularInput.addEventListener('input', function () {
-                const digits = this.value.replace(/\D/g, '');
-                clearTimeout(debounceTimer);
-
-                if (digits.length < 10) {
-                    campoSenha.style.display = 'none';
-                    adminBadge.style.display = 'none';
-                    isAdmin = false;
-                    return;
-                }
-
-                debounceTimer = setTimeout(() => {
-                    fetch('<?= site_url('login/verificarTelefoneAdmin') ?>', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
-                        body: JSON.stringify({telefone: digits})
-                    })
-                    .then(r => r.json())
-                    .then(data => {
-                        isAdmin = data.is_admin === true;
-                        campoSenha.style.display = isAdmin ? 'block' : 'none';
-                        adminBadge.style.display  = isAdmin ? 'block' : 'none';
-                        if (isAdmin) passwordInput.focus();
-                    })
-                    .catch(() => {});
-                }, 400);
-            });
-
-            // Ao submeter: se admin, usa login normal (email/senha via telefone não existe)
-            // O controller já trata modo 2/3 por celular; para admin precisamos de senha
-            document.getElementById('loginForm').addEventListener('submit', function (e) {
-                if (isAdmin) {
-                    // Adicionar campo hidden com telefone como identificador para o controller
-                    // O controller modo 2/3 já busca por celular; se encontrar admin, verifica senha
-                    // Não precisa de alteração extra — o controller já tem a lógica
-                }
-            });
-
-            celularInput.focus();
+            aplicarMascara(document.getElementById('celular'));
+            document.getElementById('celular').focus();
         }
     });
     </script>

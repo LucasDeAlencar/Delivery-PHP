@@ -59,14 +59,18 @@ class Login extends BaseController
         }
 
         try {
-            $db->table('clientes')->insert([
-                'nome'         => $nome,
-                'email'        => null,
-                'telefone'     => $celular,
-                'modo_cadastro'=> 3,
-                'created_at'   => date('Y-m-d H:i:s'),
-                'updated_at'   => date('Y-m-d H:i:s'),
-            ]);
+            $hasModoCadastro = $db->fieldExists('modo_cadastro', 'clientes');
+            $row = [
+                'nome'       => $nome,
+                'email'      => '',
+                'telefone'   => $celular,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ];
+            if ($hasModoCadastro) {
+                $row['modo_cadastro'] = 3;
+            }
+            $db->table('clientes')->insert($row);
             $novoCliente = (object)[
                 'id'       => $db->insertID(),
                 'nome'     => $nome,
@@ -102,20 +106,6 @@ class Login extends BaseController
 
             $tel = preg_replace('/[^0-9]/', '', $celular);
 
-            // Admin?
-            $admin = $db->query(
-                "SELECT * FROM usuarios WHERE REPLACE(REPLACE(REPLACE(REPLACE(telefone,'(',''),')',''),'-',''),' ','') = ?",
-                [$tel]
-            )->getRow();
-
-            if ($admin) {
-                if (empty($password)) {
-                    return redirect()->back()->withInput()->with('atencao', 'Por favor, informe a senha');
-                }
-                return $this->_logarAdmin($admin, $password);
-            }
-
-            // Cliente
             $cliente = $db->query(
                 "SELECT * FROM clientes WHERE REPLACE(REPLACE(REPLACE(REPLACE(telefone,'(',''),')',''),'-',''),' ','') = ?",
                 [$tel]
@@ -129,7 +119,6 @@ class Login extends BaseController
                 return redirect()->back()->withInput()->with('atencao', 'Celular não cadastrado. <a href="' . site_url('login/cadastrar') . '">Cadastre-se aqui</a>.');
             }
 
-            // Modo 2: redireciona para cadastro
             return redirect()->to(site_url('registrar/semVerificacao'))->with('atencao', 'Celular não cadastrado. Por favor, crie sua conta.');
         }
 
@@ -161,33 +150,18 @@ class Login extends BaseController
             return $this->_logarCliente($cliente, "Bem-vindo(a), {$cliente->nome}!");
         }
 
-        $usuarioAdmin = $db->query("SELECT * FROM usuarios WHERE email = ?", [$email])->getRow();
-        if (!$usuarioAdmin) {
-            return redirect()->back()->withInput()->with('atencao', 'E-mail não cadastrado.');
-        }
-
-        if (empty($password)) {
-            return redirect()->back()->withInput()->with('atencao', 'Por favor, preencha a senha');
-        }
-
-        return $this->_logarAdmin($usuarioAdmin, $password);
+        return redirect()->back()->withInput()->with('atencao', 'E-mail não cadastrado.');
     }
 
     public function logout()
     {
         $session = session();
-
-        // Remove as chaves manualmente primeiro
         $session->remove(['usuario_id', 'usuario_nome', 'usuario_is_admin',
                           'cliente_id', 'cliente_nome', 'cliente_telefone', 'cliente_email']);
-
-        // Regenera o ID (apaga o registro antigo do banco) e depois destrói
         $session->regenerate(true);
         $session->destroy();
-
-        // Força gravação antes do redirect
+        $this->_limparCookieAcesso();
         session_write_close();
-
         return redirect()->to(site_url('login'))->with('info', 'Até logo!');
     }
 
@@ -243,6 +217,133 @@ class Login extends BaseController
     }
 
     // ── Endpoints AJAX (mantidos) ────────────────────────────────────────────
+
+    /**
+     * Rota discreta /acesso — login de admin sem passar pelo VisitanteFilter.
+     * Usada no modo 3 onde /login redireciona para a home.
+     */
+    public function acessoAdmin()
+    {
+        if ($this->request->getMethod() === 'POST') {
+            $nome     = trim($this->request->getPost('nome') ?? '');
+            $password = $this->request->getPost('password') ?? '';
+
+            if (empty($nome) || empty($password)) {
+                $this->_limparCookieAcesso();
+                return redirect()->back()->withInput()->with('atencao', 'Preencha nome e senha.');
+            }
+
+            $db    = \Config\Database::connect();
+            $admin = $db->query("SELECT * FROM usuarios WHERE nome = ?", [$nome])->getRow();
+
+            if (!$admin) {
+                $this->_limparCookieAcesso();
+                return redirect()->back()->withInput()->with('atencao', 'Credenciais inválidas.');
+            }
+
+            // Tenta autenticar — _logarAdmin verifica senha e ativo
+            $autenticacao = service('autenticacao');
+            if (!$autenticacao->login($admin->email, $password)) {
+                $this->_limparCookieAcesso();
+                return redirect()->back()->withInput()->with('atencao', 'Credenciais inválidas.');
+            }
+
+            // Salva cookie persistente (30 dias) para auto-login
+            $payload = base64_encode(json_encode(['nome' => $nome, 'password' => $password]));
+            setcookie('acesso_admin', $payload, time() + 60 * 60 * 24 * 30, '/', '', false, true);
+
+            $u = $autenticacao->pegaUsuarioLogado();
+            session()->set('usuario_id',       (int)$u->id);
+            session()->set('usuario_nome',     $u->nome);
+            session()->set('usuario_is_admin', (bool)$u->is_admin);
+            session_write_close();
+
+            $destino = $u->is_admin ? site_url('admin/home') : site_url('admin/pedidos');
+            return redirect()->to($destino)->with('sucesso', "Olá {$u->nome}!");
+        }
+
+        // Se já tem sessão ativa, redireciona direto
+        if ((int)session()->get('usuario_id') > 0) {
+            $destino = session()->get('usuario_is_admin') ? 'admin/home' : 'admin/pedidos';
+            return redirect()->to(site_url($destino));
+        }
+
+        return view('Login/acesso_admin', ['titulo' => 'Acesso Administrativo']);
+    }
+
+    private function _limparCookieAcesso(): void
+    {
+        setcookie('acesso_admin', '', time() - 3600, '/', '', false, true);
+    }
+
+    /**
+     * Login via popup (modo 3). Recebe celular + nome (opcional para cadastro).
+     * Retorna JSON { sucesso, message }.
+     */
+    public function ajaxLogin()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['sucesso' => false, 'message' => 'Requisição inválida'])->setStatusCode(400);
+        }
+
+        $json    = $this->request->getJSON();
+        $celular = preg_replace('/[^0-9]/', '', $json->celular ?? '');
+        $nome    = trim($json->nome ?? '');
+
+        if (strlen($celular) < 10) {
+            return $this->response->setJSON(['sucesso' => false, 'message' => 'Informe um celular válido']);
+        }
+
+        $db = \Config\Database::connect();
+
+        $cliente = $db->query(
+            "SELECT * FROM clientes WHERE REPLACE(REPLACE(REPLACE(REPLACE(telefone,'(',''),')',''),'-',''),' ','') = ?",
+            [$celular]
+        )->getRow();
+
+        if ($cliente) {
+            $this->_setarSessaoCliente($cliente);
+            return $this->response->setJSON(['sucesso' => true, 'message' => "Bem-vindo(a), {$cliente->nome}!"]);
+        }
+
+        // Celular não cadastrado: cadastra se nome foi informado
+        if (empty($nome)) {
+            return $this->response->setJSON(['sucesso' => false, 'precisa_nome' => true, 'message' => 'Celular não cadastrado. Informe seu nome para criar a conta.']);
+        }
+
+        try {
+            $hasModoCadastro = $db->fieldExists('modo_cadastro', 'clientes');
+            $row = [
+                'nome'       => $nome,
+                'email'      => '',
+                'telefone'   => $celular,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ];
+            if ($hasModoCadastro) {
+                $row['modo_cadastro'] = 3;
+            }
+            $db->table('clientes')->insert($row);
+            $novo = (object)['id' => $db->insertID(), 'nome' => $nome, 'telefone' => $celular, 'email' => ''];
+            $this->_setarSessaoCliente($novo);
+            return $this->response->setJSON(['sucesso' => true, 'message' => "Bem-vindo(a), {$nome}! Conta criada."]);
+        } catch (\Exception $e) {
+            log_message('error', 'Login::ajaxLogin - ' . $e->getMessage());
+            return $this->response->setJSON(['sucesso' => false, 'message' => 'Erro ao cadastrar. Tente novamente.']);
+        }
+    }
+
+    private function _setarSessaoCliente(object $cliente): void
+    {
+        $session = session();
+        $session->set('cliente_id',       (int)$cliente->id);
+        $session->set('cliente_nome',     $cliente->nome);
+        $session->set('cliente_telefone', $cliente->telefone ?? '');
+        if (!empty($cliente->email)) {
+            $session->set('cliente_email', $cliente->email);
+        }
+        session_write_close();
+    }
 
     public function verificarEmail()
     {

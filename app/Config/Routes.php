@@ -9,6 +9,8 @@ $routes->get('/', 'Home::index', ['filter' => 'cliente']);
 $routes->get('api/status-expediente', 'Home::statusExpediente', ['filter' => 'cliente']);
 $routes->get('login', 'Login::index');
 $routes->get('login/entrar', 'Login::novo');
+$routes->get('acesso', 'Login::acessoAdmin');
+$routes->post('acesso', 'Login::acessoAdmin');
 $routes->post('login/criar', 'Login::criar');
 $routes->get('login/cadastrar', 'Login::cadastrar');
 $routes->post('login/cadastrar', 'Login::cadastrar');
@@ -19,6 +21,7 @@ $routes->post('login/verificarNomeCelular', 'Login::verificarNomeCelular');
 $routes->post('login/enviarCodigo', 'Login::enviarCodigo');
 $routes->post('login/verificarCodigo', 'Login::verificarCodigo');
 $routes->post('login/buscar_cep', 'Login::buscar_cep');
+$routes->post('login/ajaxLogin', 'Login::ajaxLogin');
 $routes->get('login/logout', 'Login::logout');
 // $routes->get('teste-auth', 'Login::testarAutenticacao'); // Rota de teste desabilitada
 
