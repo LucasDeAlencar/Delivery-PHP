@@ -1,7 +1,5 @@
 <?php
 // CODEIGNITER 4 - VERSÃO COMPATÍVEL
-
-// InfinityFree proxy: forçar HTTPS antes de qualquer coisa
 if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
     $_SERVER['HTTPS'] = 'on';
 }
